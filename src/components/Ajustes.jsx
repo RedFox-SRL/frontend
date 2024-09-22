@@ -10,7 +10,7 @@ export default function Ajustes() {
     profilePicture: ''
   });
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState({});
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -46,18 +46,12 @@ export default function Ajustes() {
       };
       const response = await putData('/profile', updatedData);
       setMessage(response.message);
-      setError('');
+      setError({});
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 422) {
-          setError(error.response.data.message);
-        } else if (error.response.status === 401) {
-          setError('Invalid email or password.');
-        } else {
-          setError('An unexpected error occurred.');
-        }
+      if (error.response && error.response.status === 422) {
+        setError(error.response.data.data);
       } else {
-        setError('An unexpected error occurred.');
+        setError({ general: 'An unexpected error occurred.' });
       }
       setMessage('');
     }
@@ -73,7 +67,8 @@ export default function Ajustes() {
       <p className="text-center text-gray-500 mb-1">Estudiante</p>
       <p className="text-center mb-6">{userData.email}</p>
       {message && <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">{message}</div>}
-      {error && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">{error}</div>}
+      {error.general && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">{error.general}</div>}
+      {error.email && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">{error.email[0]}</div>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
