@@ -29,3 +29,13 @@ export const putData = async (endpoint, data) => {
     throw error;
   }
 };
+
+export const getUserData = async () => {
+  try {
+    const response = await api.get('/me');
+    return response.data;
+  } catch (error) {
+    console.error('Error en la solicitud GET /me:', error);
+    throw error;
+  }
+};
