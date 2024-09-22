@@ -81,7 +81,7 @@ const LoginRegister = () => {
           <button
             type="button"
             onClick={() => navigate('/login')}
-            className="bg-black border-white text-white px-6 py-2 rounded-lg hover:bg-gray-300">
+            className="bg-black border border-white text-white px-6 py-2 rounded-lg">
             ENTRAR
           </button>
           <a
@@ -93,7 +93,7 @@ const LoginRegister = () => {
         </div>
 
         <div className="w-full md:w-1/2 bg-secondary-bg p-8">
-          <h2 className="text-center font-semibold text-black mb-4">Crea tu cuenta</h2>
+          <h2 className="text-center text-3xl font-semibold text-black mb-4">Crea tu cuenta</h2>
           <p className="text-center text-black mb-6">Rellena el formulario</p>
 
           <form className="space-y-4" onSubmit={handleRegisterClick}>

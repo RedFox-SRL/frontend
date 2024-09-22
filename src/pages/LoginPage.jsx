@@ -1,5 +1,5 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import { postData } from '../api/apiService';
 import useAuth from '../hooks/useAuth';
 
@@ -9,6 +9,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Inicializa useNavigate
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,6 +31,10 @@ const LoginPage = () => {
     }
   };
 
+  const handleRegisterClick = () => {
+    navigate('/'); // Redirige a la ruta de registro
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-primary-bg">
       <div className="w-full max-w-6xl bg-secondary-bg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden">
@@ -38,10 +43,9 @@ const LoginPage = () => {
           <p className="text-lg font-medium mb-6">Bienvenido!</p>
           <button
             type="button"
-            onClick={handleRegisterClick}
-            className="bg-black border-white text-white px-6 py-2 rounded-lg hover:bg-gray-300"
-          >
-            ENTRAR
+            onClick={handleRegisterClick} // Asigna la función al evento onClick
+            className="bg-black border border-white text-white px-6 py-2 rounded-lg">
+            REGISTRATE
           </button>
         </div>
 
