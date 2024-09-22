@@ -1,25 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/pages/LoginPage.jsx
+import React, { useState } from 'react';
 import { postData } from '../api/apiService';
 import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (user) {
-      if (user.role === 'student') {
-        navigate('/DashboardStudent');
-      } else if (user.role === 'teacher') {
-        navigate('/DashboardTeacher');
-      }
-    }
-  }, [user, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -29,16 +18,8 @@ const LoginPage = () => {
       const response = await postData('/login', { email, password });
       const { token, role } = response.data;
 
-      if (rememberMe) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-      } else {
-        sessionStorage.setItem('token', token);
-        sessionStorage.setItem('role', role);
-      }
-
-      login(token, role);
-      navigate('/home');
+      // Llamar a la función `login` desde el contexto con token, role y rememberMe
+      login(token, role, rememberMe);
     } catch (error) {
       if (error.response && error.response.status === 401) {
         setError('Error en la autenticación. Verifica tus credenciales.');
@@ -47,10 +28,6 @@ const LoginPage = () => {
       }
       console.error('Error:', error);
     }
-  };
-
-  const handleRegisterClick = () => {
-    navigate('/');
   };
 
   return (

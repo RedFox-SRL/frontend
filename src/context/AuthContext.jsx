@@ -1,12 +1,12 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Hook correcto
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const navigate = useNavigate(); // Asegúrate de usarlo dentro de un Router
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -16,15 +16,24 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (token, role) => {
-    localStorage.setItem('token', token);
+  const login = (token, role, rememberMe) => {
+    if (rememberMe) {
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+    } else {
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('role', role);
+    }
+
     setUser({ token, role });
+
+    // Redirigir según el rol
     if (role === 'student') {
       navigate('/DashboardStudent');
     } else if (role === 'teacher') {
       navigate('/DashboardTeacher');
     } else {
-      navigate('/login');
+      navigate('/');
     }
   };
 
