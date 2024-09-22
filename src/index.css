@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* src/index.css */
 body {
-  font-family: 'Ubuntu', sans-serif;
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #f0f0f0; /* Asegúrate de que el fondo no sea blanco */
+    color: #333; /* Asegúrate de que el texto no sea blanco */
 }
