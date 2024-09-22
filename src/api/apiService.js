@@ -39,3 +39,13 @@ export const getUserData = async () => {
     throw error;
   }
 };
+
+export const deleteData = async (endpoint) => {
+  try {
+    const response = await api.delete(endpoint);
+    return response.data;
+  } catch (error) {
+    console.error('Error en la solicitud DELETE:', error);
+    throw error;
+  }
+};
