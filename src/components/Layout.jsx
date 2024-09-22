@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, Menu } from 'lucide-react';
 import { getData } from '../api/apiService';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 
 export default function Layout({ children, setCurrentView }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -32,7 +33,10 @@ export default function Layout({ children, setCurrentView }) {
         <h1 className="text-2xl font-bold mb-10">TRACKMASTER</h1>
         {user && (
           <div className="mb-8">
-            <div className="w-20 h-20 bg-purple-600 rounded-full mx-auto mb-2"></div>
+            <Avatar className="w-20 h-20 mx-auto mb-2">
+              <AvatarImage src={user.profilePicture} alt={`${user.name} ${user.last_name}`} />
+              <AvatarFallback>{user.name.charAt(0)}{user.last_name.charAt(0)}</AvatarFallback>
+            </Avatar>
             <p className="text-center">{user.name} {user.last_name}</p>
             <p className="text-center text-sm text-purple-300">{user.role}</p>
           </div>
