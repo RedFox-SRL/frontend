@@ -1,11 +1,12 @@
+// src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Hook correcto
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Asegúrate de usarlo dentro de un Router
 
   useEffect(() => {
     const token = localStorage.getItem('token');
