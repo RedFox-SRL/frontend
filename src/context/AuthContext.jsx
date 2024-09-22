@@ -9,8 +9,8 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const role = localStorage.getItem('role') || sessionStorage.getItem('role');
     if (token && role) {
       setUser({ token, role });
     }
@@ -40,6 +40,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('role');
     setUser(null);
     navigate('/login');
   };
