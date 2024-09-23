@@ -7,7 +7,8 @@ export default function Ajustes() {
     nombre: '',
     apellido: '',
     email: '',
-    profilePicture: ''
+    profilePicture: '',
+    role: ''
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState({});
@@ -16,12 +17,13 @@ export default function Ajustes() {
     const fetchUserData = async () => {
       try {
         const response = await getData('/me');
-        const { name, last_name, email, profilePicture } = response.data.item;
+        const { name, last_name, email, profilePicture, role } = response.data.item;
         setUserData({
           nombre: name,
           apellido: last_name,
           email: email,
-          profilePicture: profilePicture
+          profilePicture: profilePicture,
+          role: role
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -64,7 +66,7 @@ export default function Ajustes() {
         <AvatarFallback>{userData.nombre.charAt(0)}{userData.apellido.charAt(0)}</AvatarFallback>
       </Avatar>
       <h2 className="text-center text-2xl font-bold mb-2">{userData.nombre} {userData.apellido}</h2>
-      <p className="text-center text-gray-500 mb-1">Estudiante</p>
+      {userData.role && <p className="text-center text-gray-500 mb-1">{userData.role}</p>}
       <p className="text-center mb-6">{userData.email}</p>
       {message && <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">{message}</div>}
       {error.general && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">{error.general}</div>}
