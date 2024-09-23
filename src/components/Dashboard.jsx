@@ -45,8 +45,19 @@ export default function Dashboard() {
             const groupsResponse = await getData(`/managements/${managementId}/groups`);
             if (groupsResponse && groupsResponse.success && groupsResponse.data && groupsResponse.data.groups) {
                 setGroups(groupsResponse.data.groups);
+            } else {
+                setGroups([]); // Si no hay grupos, establecer una lista vacía
             }
+        } catch (error) {
+            if (error.response && (error.response.status === 404 || error.response.data.code === 267)) {
+                // Manejar el caso de 404 o código de error 267 para grupos
+                setGroups([]);
+            } else {
+                console.error('Error fetching groups:', error);
+            }
+        }
 
+        try {
             // Fetch students and teacher for the management
             const participantsResponse = await getData(`/managements/${managementId}/students`);
             if (participantsResponse && participantsResponse.teacher && participantsResponse.students) {
@@ -54,9 +65,16 @@ export default function Dashboard() {
                     teacher: participantsResponse.teacher,
                     students: participantsResponse.students
                 });
+            } else {
+                setParticipants({teacher: null, students: []}); // Si no hay participantes, establecer valores por defecto
             }
         } catch (error) {
-            console.error('Error fetching groups and participants:', error);
+            if (error.response && error.response.status === 404) {
+                // Manejar el caso de 404 para participantes
+                setParticipants({teacher: null, students: []});
+            } else {
+                console.error('Error fetching participants:', error);
+            }
         }
     };
 
