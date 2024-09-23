@@ -200,6 +200,7 @@ export default function GruposYPlanificacion() {
             <p>Nombre largo: {managementDetails.long_name}</p>
             <p>Correo de contacto: {managementDetails.contact_email}</p>
             <p>Teléfono de contacto: {managementDetails.contact_phone}</p>
+            <p>Código del grupo: {managementDetails.code}</p>
           </CardContent>
         </Card>
         <Card className="bg-white shadow-lg">
