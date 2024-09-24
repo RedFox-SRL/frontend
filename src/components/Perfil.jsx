@@ -3,7 +3,7 @@ import { getData, putData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Loader2 } from "lucide-react";
 
-export default function Ajustes() {
+export default function Perfil() {
   const [userData, setUserData] = useState({
     nombre: '',
     apellido: '',
@@ -80,7 +80,11 @@ export default function Ajustes() {
         <AvatarFallback>{userData.nombre.charAt(0)}{userData.apellido.charAt(0)}</AvatarFallback>
       </Avatar>
       <h2 className="text-center text-2xl font-bold mb-2">{userData.nombre} {userData.apellido}</h2>
-      {userData.role && <p className="text-center text-gray-500 mb-1">{userData.role}</p>}
+      {userData.role && (
+        <p className="text-center text-gray-500 mb-1">
+          {userData.role === 'student' ? 'Estudiante' : userData.role === 'teacher' ? 'Docente' : userData.role}
+        </p>
+      )}
       <p className="text-center mb-6">{userData.email}</p>
       {message && <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">{message}</div>}
       {error.general && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">{error.general}</div>}

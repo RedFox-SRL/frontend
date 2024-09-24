@@ -26,7 +26,7 @@ const Sidebar = () => {
                     Grupo
                 </div>
                 <div className="text-white p-4 hover:bg-purple-600 cursor-pointer">
-                    {/* Aquí puedes poner el ícono de Ajustes */}
+                    {/* Aquí puedes poner el ícono de Perfil */}
                     Ajustes
                 </div>
                 <div className="text-white p-4 hover:bg-purple-600 cursor-pointer">
