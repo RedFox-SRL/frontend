@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getData, putData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
+import { Loader2 } from "lucide-react";
 
 export default function Ajustes() {
   const [userData, setUserData] = useState({
@@ -12,9 +13,11 @@ export default function Ajustes() {
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setIsLoading(true);
       try {
         const response = await getData('/me');
         const { name, last_name, email, profilePicture, role } = response.data.item;
@@ -27,6 +30,8 @@ export default function Ajustes() {
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -58,6 +63,15 @@ export default function Ajustes() {
       setMessage('');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[500px]">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+        <span className="ml-2 text-lg font-medium text-purple-600">Cargando...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
