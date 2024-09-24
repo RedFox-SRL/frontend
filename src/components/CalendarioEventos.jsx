@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -7,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Toaster } from "@/components/ui/toaster"
+import { useToast } from "@/hooks/use-toast"
 import { getData, postData, putData, deleteData } from '../api/apiService';
-import { Loader2, AlertCircle, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 moment.locale('es');
 const localizer = momentLocalizer(moment);
@@ -52,18 +55,18 @@ export default function CalendarioEventos({ calendarId }) {
     const [newEvent, setNewEvent] = useState({title: '', start: '', end: '', description: ''});
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState('');
-    const [isError, setIsError] = useState(false);
     const [formErrors, setFormErrors] = useState({});
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast()
 
     useEffect(() => {
         fetchEvents();
     }, [calendarId]);
 
     const fetchEvents = async () => {
+        setIsLoading(true);
         try {
             const response = await getData(`/events?calendar_id=${calendarId}`);
             setEvents(response.map(event => ({
@@ -73,7 +76,9 @@ export default function CalendarioEventos({ calendarId }) {
             })));
         } catch (error) {
             console.error('Error fetching events:', error);
-            showAlertMessage('Error al cargar los eventos', true);
+            showToast('Error al cargar los eventos', true);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -106,10 +111,10 @@ export default function CalendarioEventos({ calendarId }) {
                 }]);
                 setNewEvent({title: '', start: '', end: '', description: ''});
                 setIsDialogOpen(false);
-                showAlertMessage('Evento creado exitosamente', false);
+                showToast('Evento creado exitosamente', false);
             } catch (error) {
                 console.error('Error adding event:', error);
-                showAlertMessage('Error al crear el evento', true);
+                showToast('Error al crear el evento', true);
             }
         }
     };
@@ -130,10 +135,10 @@ export default function CalendarioEventos({ calendarId }) {
                 } : e)));
                 setSelectedEvent(null);
                 setIsDialogOpen(false);
-                showAlertMessage('Evento actualizado exitosamente', false);
+                showToast('Evento actualizado exitosamente', false);
             } catch (error) {
                 console.error('Error updating event:', error);
-                showAlertMessage('Error al actualizar el evento', true);
+                showToast('Error al actualizar el evento', true);
             }
         }
     };
@@ -145,20 +150,21 @@ export default function CalendarioEventos({ calendarId }) {
                 setEvents(events.filter(event => event.id !== selectedEvent.id));
                 setSelectedEvent(null);
                 setIsDialogOpen(false);
-                showAlertMessage('Evento eliminado exitosamente', false);
+                showToast('Evento eliminado exitosamente', false);
             } catch (error) {
                 console.error('Error deleting event:', error);
-                showAlertMessage('Error al eliminar el evento', true);
+                showToast('Error al eliminar el evento', true);
             }
         });
         setIsConfirmDialogOpen(true);
     };
 
-    const showAlertMessage = (message, isError) => {
-        setAlertMessage(message);
-        setIsError(isError);
-        setShowAlert(true);
-        setTimeout(() => setShowAlert(false), 5000);
+    const showToast = (message, isError) => {
+        toast({
+            title: isError ? "Error" : "Éxito",
+            description: message,
+            variant: isError ? "destructive" : "default",
+        })
     };
 
     const handleSelectSlot = ({ start, end }) => {
@@ -190,21 +196,28 @@ export default function CalendarioEventos({ calendarId }) {
                     <Button onClick={() => setIsDialogOpen(true)} className="bg-purple-600 text-white">Agregar Evento</Button>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Calendar
-                        localizer={localizer}
-                        events={events}
-                        startAccessor="start"
-                        endAccessor="end"
-                        messages={messages}
-                        formats={formats}
-                        culture="es"
-                        style={{height: 500}}
-                        onSelectEvent={handleSelectEvent}
-                        onSelectSlot={handleSelectSlot}
-                        selectable
-                        views={['month', 'week', 'day', 'agenda']}
-                        defaultView="month"
-                    />
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-[500px]">
+                            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                            <span className="ml-2 text-lg font-medium text-purple-600">Cargando eventos...</span>
+                        </div>
+                    ) : (
+                        <Calendar
+                            localizer={localizer}
+                            events={events}
+                            startAccessor="start"
+                            endAccessor="end"
+                            messages={messages}
+                            formats={formats}
+                            culture="es"
+                            style={{height: 500}}
+                            onSelectEvent={handleSelectEvent}
+                            onSelectSlot={handleSelectSlot}
+                            selectable
+                            views={['month', 'week', 'day', 'agenda']}
+                            defaultView="month"
+                        />
+                    )}
                 </CardContent>
             </Card>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -266,20 +279,7 @@ export default function CalendarioEventos({ calendarId }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            {showAlert && (
-                <Alert className={`fixed bottom-4 right-4 z-50 ${isError ? 'bg-red-100 border-red-400' : 'bg-green-100 border-green-400'}`}>
-                    <AlertCircle className={`h-4 w-4 ${isError ? 'text-red-400' : 'text-green-400'}`} />
-                    <AlertTitle>{isError ? 'Error' : 'Éxito'}</AlertTitle>
-                    <AlertDescription>{alertMessage}</AlertDescription>
-                    <Button
-                        className="absolute top-2 right-2 p-1"
-                        onClick={() => setShowAlert(false)}
-                        variant="ghost"
-                    >
-                        <X className="h-4 w-4" />
-                    </Button>
-                </Alert>
-            )}
+            <Toaster />
         </div>
     );
 }
