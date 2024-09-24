@@ -60,8 +60,8 @@ export default function Layout({ children, setCurrentView }) {
           <button onClick={() => setCurrentView('perfil')} className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left">
             <span className="mr-2">✏️</span> Perfil
           </button>
-          <button onClick={() => setCurrentView('grupos')} className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left">
-            <span className="mr-2">👥</span> Grupos
+          <button onClick={() => setCurrentView('grupo')} className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left">
+            <span className="mr-2">👥</span> Grupo
           </button>
           <button onClick={handleLogout} className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left">
             <span className="mr-2">🚪</span> Cerrar Sesión

@@ -11,7 +11,7 @@ export default function StudentDashboard() {
     switch (currentView) {
       case 'inicio':
         return <Dashboard />
-      case 'grupos':
+      case 'grupo':
         return <GruposYPlanificacion />
       case 'perfil':
         return <Perfil />
