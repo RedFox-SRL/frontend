@@ -1,44 +1,40 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Plus, MoreVertical } from "lucide-react";
+import { Plus, MoreVertical, Calendar } from "lucide-react";
 
 const initialColumns = [
   {
     id: 'por-hacer',
     title: 'Por Hacer',
-    tasks: [
-      { id: 'task-1', title: 'Diseñar UI', description: 'Crear mockups de la interfaz', assignee: 'Ana' },
-      { id: 'task-2', title: 'Implementar auth', description: 'Configurar sistema de autenticación', assignee: 'Carlos' },
-    ],
+    tasks: [],
   },
   {
     id: 'en-progreso',
     title: 'En Progreso',
-    tasks: [
-      { id: 'task-3', title: 'Desarrollar API', description: 'Implementar endpoints REST', assignee: 'María' },
-    ],
+    tasks: [],
   },
   {
     id: 'hecho',
     title: 'Hecho',
-    tasks: [
-      { id: 'task-4', title: 'Setup inicial', description: 'Configurar entorno de desarrollo', assignee: 'Juan' },
-    ],
+    tasks: [],
   },
 ];
 
 const teamMembers = ['Ana', 'Carlos', 'María', 'Juan', 'Laura'];
 
-export default function KanbanBoardComponent() {
+export default function SprintKanbanBoard() {
+  const [sprints, setSprints] = useState([]);
+  const [currentSprint, setCurrentSprint] = useState(null);
   const [columns, setColumns] = useState(initialColumns);
   const [newTask, setNewTask] = useState({});
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [isSprintDialogOpen, setIsSprintDialogOpen] = useState(false);
+  const [newSprint, setNewSprint] = useState({ name: '', startDate: '', endDate: '' });
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -70,6 +66,7 @@ export default function KanbanBoardComponent() {
       });
 
       setColumns(updatedColumns);
+      updateSprintColumns(updatedColumns);
     }
   };
 
@@ -91,101 +88,215 @@ export default function KanbanBoardComponent() {
     });
 
     setColumns(newColumns);
+    updateSprintColumns(newColumns);
     setNewTask({});
-    setIsDialogOpen(false);
+    setIsTaskDialogOpen(false);
+  };
+
+  const addNewSprint = () => {
+    if (!newSprint.name || !newSprint.startDate || !newSprint.endDate) return;
+
+    const newSprintObj = {
+      id: `sprint-${Date.now()}`,
+      name: newSprint.name,
+      startDate: newSprint.startDate,
+      endDate: newSprint.endDate,
+      columns: initialColumns,
+    };
+
+    setSprints([...sprints, newSprintObj]);
+    setNewSprint({ name: '', startDate: '', endDate: '' });
+    setIsSprintDialogOpen(false);
+
+    if (!currentSprint) {
+      setCurrentSprint(newSprintObj);
+      setColumns(newSprintObj.columns);
+    }
+  };
+
+  const updateSprintColumns = (updatedColumns) => {
+    if (currentSprint) {
+      const updatedSprints = sprints.map(sprint =>
+        sprint.id === currentSprint.id ? { ...sprint, columns: updatedColumns } : sprint
+      );
+      setSprints(updatedSprints);
+      setCurrentSprint({ ...currentSprint, columns: updatedColumns });
+    }
+  };
+
+  const handleSprintChange = (sprintId) => {
+    const selectedSprint = sprints.find(sprint => sprint.id === sprintId);
+    if (selectedSprint) {
+      setCurrentSprint(selectedSprint);
+      setColumns(selectedSprint.columns);
+    }
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Card className="w-full bg-[#2D1B69] text-white">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-[#3D2B79]">
-          <CardTitle className="text-2xl font-bold">Tablero Kanban</CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" className="hover:bg-[#3D2B79]">
-                <Plus className="h-5 w-5" />
-                <span className="ml-2">Nueva Tarea</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-[#2D1B69] text-white">
-              <DialogHeader>
-                <DialogTitle>Agregar Nueva Tarea</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="taskTitle" className="text-right">Título</Label>
-                  <Input
-                    id="taskTitle"
-                    value={newTask.title || ''}
-                    onChange={(e) => setNewTask({...newTask, title: e.target.value})}
-                    className="col-span-3 bg-[#3D2B79] border-[#4D3B89]" />
+    <div className="w-full bg-white rounded-lg shadow-lg overflow-hidden mt-6">
+      <div className="bg-purple-600 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Tablero Kanban de Sprints</h2>
+          <div className="flex flex-wrap gap-2">
+            <Dialog open={isSprintDialogOpen} onOpenChange={setIsSprintDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="bg-white text-purple-600 hover:bg-purple-100">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <span>Nuevo Sprint</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-white sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="text-purple-600">Crear Nuevo Sprint</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="sprintName" className="text-right">Nombre</Label>
+                    <Input
+                      id="sprintName"
+                      value={newSprint.name}
+                      onChange={(e) => setNewSprint({...newSprint, name: e.target.value})}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="startDate" className="text-right">Fecha Inicio</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={newSprint.startDate}
+                      onChange={(e) => setNewSprint({...newSprint, startDate: e.target.value})}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="endDate" className="text-right">Fecha Fin</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={newSprint.endDate}
+                      onChange={(e) => setNewSprint({...newSprint, endDate: e.target.value})}
+                      className="col-span-3"
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="taskDescription" className="text-right">Descripción</Label>
-                  <Input
-                    id="taskDescription"
-                    value={newTask.description || ''}
-                    onChange={(e) => setNewTask({...newTask, description: e.target.value})}
-                    className="col-span-3 bg-[#3D2B79] border-[#4D3B89]" />
+                <Button onClick={addNewSprint} className="bg-purple-600 text-white hover:bg-purple-700">Crear Sprint</Button>
+              </DialogContent>
+            </Dialog>
+
+            <Select onValueChange={handleSprintChange}>
+              <SelectTrigger className="bg-white text-purple-600 border-purple-300 w-full sm:w-auto">
+                <SelectValue placeholder="Seleccionar Sprint" />
+              </SelectTrigger>
+              <SelectContent>
+                {sprints.map((sprint) => (
+                  <SelectItem key={sprint.id} value={sprint.id}>{sprint.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="bg-purple-500 text-white hover:bg-purple-400" disabled={!currentSprint}>
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <span>Nueva Tarea</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-white sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="text-purple-600">Agregar Nueva Tarea</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="taskTitle" className="text-right">Título</Label>
+                    <Input
+                      id="taskTitle"
+                      value={newTask.title || ''}
+                      onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="taskDescription" className="text-right">Descripción</Label>
+                    <Input
+                      id="taskDescription"
+                      value={newTask.description || ''}
+                      onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="taskAssignee" className="text-right">Asignar a</Label>
+                    <Select onValueChange={(value) => setNewTask({...newTask, assignee: value})}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Seleccionar miembro" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {teamMembers.map((member) => (
+                          <SelectItem key={member} value={member}>{member}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="taskAssignee" className="text-right">Asignar a</Label>
-                  <Select onValueChange={(value) => setNewTask({...newTask, assignee: value})}>
-                    <SelectTrigger className="col-span-3 bg-[#3D2B79] border-[#4D3B89]">
-                      <SelectValue placeholder="Seleccionar miembro" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#3D2B79]">
-                      {teamMembers.map((member) => (
-                        <SelectItem key={member} value={member}>{member}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <Button onClick={addNewTask} className="bg-[#4D3B89] hover:bg-[#5D4B99]">Agregar Tarea</Button>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-3 gap-6">
-            {columns.map((column) => (
-              <div key={column.id} className="bg-[#3D2B79] rounded-lg p-4">
-                <h3 className="font-semibold mb-4 text-lg">{column.title}</h3>
-                <Droppable droppableId={column.id}>
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="min-h-[200px]"
-                    >
-                      {column.tasks.map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id} index={index}>
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className="bg-[#4D3B89] p-3 mb-3 rounded-lg shadow-md"
-                            >
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="font-semibold">{task.title}</span>
-                                <MoreVertical className="h-5 w-5 text-gray-400" />
-                              </div>
-                              <p className="text-sm text-gray-300 mb-2">{task.description}</p>
-                              <div className="text-xs text-gray-400">Asignado a: {task.assignee}</div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </div>
-            ))}
+                <Button onClick={addNewTask} className="bg-purple-600 text-white hover:bg-purple-700">Agregar Tarea</Button>
+              </DialogContent>
+            </Dialog>
           </div>
-        </CardContent>
-      </Card>
-    </DragDropContext>
+        </div>
+      </div>
+      <div className="p-4 sm:p-6">
+        {currentSprint ? (
+          <>
+            <h3 className="text-lg sm:text-xl font-semibold mb-4 text-purple-800">
+              Sprint: {currentSprint.name} ({currentSprint.startDate} - {currentSprint.endDate})
+            </h3>
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {columns.map((column) => (
+                  <div key={column.id} className="bg-purple-100 rounded-lg p-4">
+                    <h4 className="font-semibold mb-4 text-lg text-purple-800">{column.title}</h4>
+                    <Droppable droppableId={column.id}>
+                      {(provided) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="min-h-[200px]"
+                        >
+                          {column.tasks.map((task, index) => (
+                            <Draggable key={task.id} draggableId={task.id} index={index}>
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className="bg-white p-3 mb-3 rounded-lg shadow-sm"
+                                >
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="font-semibold text-purple-800">{task.title}</span>
+                                    <MoreVertical className="h-5 w-5 text-purple-400" />
+                                  </div>
+                                  <p className="text-sm text-purple-600 mb-2">{task.description}</p>
+                                  <div className="text-xs text-purple-500">Asignado a: {task.assignee}</div>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </div>
+                ))}
+              </div>
+            </DragDropContext>
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-lg sm:text-xl text-purple-600">No hay sprint seleccionado. Por favor, crea o selecciona un sprint para comenzar.</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
