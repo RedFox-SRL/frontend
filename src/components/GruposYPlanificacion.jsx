@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getData, postData } from '../api/apiService';
 import { Loader2, Calendar, Users, LayoutDashboard, Mail, Phone, Hash } from "lucide-react";
 import CalendarioEventos from './CalendarioEventos';
+import KanbanBoardComponent from './kanban-board';
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 
@@ -215,7 +216,7 @@ export default function GruposYPlanificacion() {
                 {activeCard === 'tablero' && (
                     <Card>
                         <CardContent>
-                            <p>Contenido del Tablero (en desarrollo)</p>
+                            <KanbanBoardComponent /> {/* Render Kamban component */}
                         </CardContent>
                     </Card>
                 )}
