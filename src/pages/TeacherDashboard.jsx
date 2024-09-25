@@ -1,13 +1,29 @@
 // src/pages/TeacherPage.jsx
-import React from 'react';
+import React, { useState } from 'react'
+import Layout from '../components/Layout'
+import DashboardTeacher from '../components/DashboardTeacher'
+import Ajustes from '../components/Ajustes'
+//import Grupos from "@/components/Grupos";
 
-const TeacherDashboard = () => {
-  return (
-    <div>
-      <h1>Bienvenido Profesor</h1>
-      <p>Esta es la página para profesores.</p>
-    </div>
-  );
-};
+export default function TeacherDashboard() {
+    const [currentView, setCurrentView] = useState('inicio')
 
-export default TeacherDashboard;
+    const renderContent = () => {
+        switch (currentView) {
+            case 'inicio':
+                return <DashboardTeacher />
+            //case 'grupos':
+            //  return <Grupos />
+            case 'ajustes':
+                return <Ajustes />
+            default:
+                return <DashboardTeacher />
+        }
+    }
+
+    return (
+        <Layout setCurrentView={setCurrentView}>
+            {renderContent()}
+        </Layout>
+    )
+}
