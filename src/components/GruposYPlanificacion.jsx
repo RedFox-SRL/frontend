@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getData, postData } from '../api/apiService';
 import { Loader2, Calendar, Users, LayoutDashboard, Mail, Phone, Hash } from "lucide-react";
 import CalendarioEventos from './CalendarioEventos';
-import KanbanBoardComponent from './kanban-board';
+import SprintKanbanBoard from './SprintKanbanBoard.jsx';
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 
@@ -224,7 +224,7 @@ export default function GruposYPlanificacion() {
                     <CalendarioEventos calendarId={calendarId} />
                 </div>
                 <div ref={kanbanRef} className={activeCard === 'tablero' ? '' : 'hidden'}>
-                    <KanbanBoardComponent groupId={groupId} />
+                    <SprintKanbanBoard groupId={groupId} />
                 </div>
                 <div ref={equipoRef} className={activeCard === 'equipo' ? '' : 'hidden'}>
                     <Card>
