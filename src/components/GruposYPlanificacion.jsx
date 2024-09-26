@@ -25,9 +25,12 @@ export default function GruposYPlanificacion() {
     const [managementDetails, setManagementDetails] = useState(null);
     const [generatedCode, setGeneratedCode] = useState('');
     const [calendarId, setCalendarId] = useState(null);
+    const [groupId, setGroupId] = useState(null);
     const [activeCard, setActiveCard] = useState(null);
     const { toast } = useToast()
     const calendarRef = useRef(null);
+    const kanbanRef = useRef(null);
+    const equipoRef = useRef(null);
 
     useEffect(() => {
         const checkGroup = async () => {
@@ -37,6 +40,7 @@ export default function GruposYPlanificacion() {
                 if (response && response.success && response.data && response.data.group) {
                     setManagementDetails(response.data.group);
                     setCalendarId(response.data.group.calendar_id);
+                    setGroupId(response.data.group.id);
                     setIsInGroup(true);
                 } else {
                     setIsInGroup(false);
@@ -58,17 +62,22 @@ export default function GruposYPlanificacion() {
     useEffect(() => {
         if (activeCard === 'planificacion' && calendarRef.current) {
             calendarRef.current.scrollIntoView({ behavior: 'smooth' });
+        } else if (activeCard === 'tablero' && kanbanRef.current) {
+            kanbanRef.current.scrollIntoView({ behavior: 'smooth' });
+        } else if (activeCard === 'equipo' && equipoRef.current) {
+            equipoRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [activeCard]);
 
     const handleJoinGroup = async () => {
         setIsLoading(true);
         try {
-            const response = await postData('/groups/join', {group_code: groupCode});
+            const response = await postData('/groups/join', { group_code: groupCode });
             if (response && response.success) {
                 setIsInGroup(true);
                 setManagementDetails(response.data.group);
                 setCalendarId(response.data.group.calendar_id);
+                setGroupId(response.data.group.id);
                 showToast('Te has unido al grupo exitosamente', false);
             }
         } catch (error) {
@@ -97,6 +106,7 @@ export default function GruposYPlanificacion() {
                 setManagementDetails(response.data.group);
                 setGeneratedCode(response.data.group.code);
                 setCalendarId(response.data.group.calendar_id);
+                setGroupId(response.data.group.id);
                 showToast('Grupo creado exitosamente', false);
             }
         } catch (error) {
@@ -213,20 +223,16 @@ export default function GruposYPlanificacion() {
                 <div ref={calendarRef} className={activeCard === 'planificacion' ? '' : 'hidden'}>
                     <CalendarioEventos calendarId={calendarId} />
                 </div>
-                {activeCard === 'tablero' && (
-                    <Card>
-                        <CardContent>
-                            <KanbanBoardComponent /> {/* Render Kamban component */}
-                        </CardContent>
-                    </Card>
-                )}
-                {activeCard === 'equipo' && (
+                <div ref={kanbanRef} className={activeCard === 'tablero' ? '' : 'hidden'}>
+                    <KanbanBoardComponent groupId={groupId} />
+                </div>
+                <div ref={equipoRef} className={activeCard === 'equipo' ? '' : 'hidden'}>
                     <Card>
                         <CardContent>
                             <p>Contenido del Equipo (en desarrollo)</p>
                         </CardContent>
                     </Card>
-                )}
+                </div>
                 <Toaster />
             </div>
         );
@@ -272,28 +278,28 @@ export default function GruposYPlanificacion() {
                         <Input
                             placeholder="Nombre corto"
                             value={groupData.short_name}
-                            onChange={(e) => setGroupData({...groupData, short_name: e.target.value})}
+                            onChange={(e) => setGroupData({ ...groupData, short_name: e.target.value })}
                             className="w-full p-2 border rounded" />
                         <Input
                             placeholder="Nombre largo"
                             value={groupData.long_name}
-                            onChange={(e) => setGroupData({...groupData, long_name: e.target.value})}
+                            onChange={(e) => setGroupData({ ...groupData, long_name: e.target.value })}
                             className="w-full p-2 border rounded" />
                         <Input
                             placeholder="Correo de contacto"
                             value={groupData.contact_email}
-                            onChange={(e) => setGroupData({...groupData, contact_email: e.target.value})}
+                            onChange={(e) => setGroupData({ ...groupData, contact_email: e.target.value })}
                             className="w-full p-2 border rounded" />
                         <Input
                             placeholder="Teléfono de contacto"
                             value={groupData.contact_phone}
-                            onChange={(e) => setGroupData({...groupData, contact_phone: e.target.value})}
+                            onChange={(e) => setGroupData({ ...groupData, contact_phone: e.target.value })}
                             className="w-full p-2 border rounded" />
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                             <p>Logo de la empresa</p>
                             <Input
                                 type="file"
-                                onChange={(e) => setGroupData({...groupData, logo: e.target.files[0]})}
+                                onChange={(e) => setGroupData({ ...groupData, logo: e.target.files[0] })}
                                 className="w-full p-2 border rounded" />
                             <label
                                 htmlFor="logo-upload"
