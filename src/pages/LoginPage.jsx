@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importa useNavigate
-import { postData } from '../api/apiService';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
+import { postData } from '../api/apiService';
+import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,9 +14,9 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    document.body.classList.add('overflow-hidden');
+    document.body.style.overflow = 'auto';
     return () => {
-      document.body.classList.remove('overflow-hidden');
+      document.body.style.overflow = '';
     };
   }, []);
 
@@ -41,23 +43,24 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-indigo-700 animate-gradient-x">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-indigo-700 animate-gradient-x p-4">
       <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden">
         <div className="md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
-          <h1 className="text-5xl font-bold mb-6">TrackMaster</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">TrackMaster</h1>
           <p className="text-lg mb-6">¡Bienvenido!<br/>Ingrese ahora mismo a su cuenta</p>
           <button
             type="button"
             onClick={handleRegisterClick}
-            className="bg-transparent border border-white text-white px-6 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:text-black">
+            className="bg-transparent border border-white text-white px-6 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:text-black"
+          >
             REGISTRATE
           </button>
-          <a
-            href="#"
+          <button
             onClick={() => navigate('/forgot-password')}
-            className="mt-6 text-center underline hover:text-purple-200 transition duration-300 ease-in-out">
+            className="mt-6 text-center underline hover:text-purple-200 transition duration-300 ease-in-out"
+          >
             ¿Olvidaste tu contraseña?
-          </a>
+          </button>
         </div>
 
         <div className="w-full md:w-1/2 bg-white p-8 rounded-r-lg">
@@ -94,10 +97,12 @@ const LoginPage = () => {
               <div className="flex items-center">
                 <input
                   type="checkbox"
+                  id="rememberMe"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded text-purple-600 focus:ring-purple-500"
                 />
-                <label className="ml-2 text-black">Recuérdame</label>
+                <label htmlFor="rememberMe" className="ml-2 text-black">Recuérdame</label>
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
               <button
