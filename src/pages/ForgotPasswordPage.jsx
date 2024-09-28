@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { postData } from '../api/apiService'; // Import your apiService
+import { postData } from '../api/apiService';
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
@@ -12,18 +12,12 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
 
     try {
-      const response = await postData('/password/email', { email });
-
-      if (!response.ok) {
-        throw new Error('Error al enviar el correo de recuperación');
-      }
-
+      await postData('/password/email', { email });
       setSuccess('Correo de recuperación enviado exitosamente');
       setError(null);
     } catch (error) {
       setError('Error al enviar el correo de recuperación. Verifica el email ingresado.');
       setSuccess(null);
-      console.error('Error:', error);
     }
   };
 
