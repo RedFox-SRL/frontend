@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { getData } from '../api/apiService';
+import React, { useState, useEffect } from "react";
+import { getData, postData, putData } from "../api/apiService";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Users, Clipboard } from "lucide-react";
+import { Switch } from "@headlessui/react";
 
 export default function ManagementView({ management, onBack }) {
     const [groups, setGroups] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [selectedGroup, setSelectedGroup] = useState(null); // Estado para manejar el grupo seleccionado
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Estado para controlar la sidebar
+    const [errorMessage, setErrorMessage] = useState("");
+    const [newGroupLimit, setNewGroupLimit] = useState(management.group_limit); // Estado para el límite de grupos
+    const [isEditingLimit, setIsEditingLimit] = useState(false); // Controla cuándo se puede editar el límite
+    const [isCodeActive, setIsCodeActive] = useState(management.is_code_active);
 
     const fetchGroups = async () => {
         setIsLoading(true);
@@ -17,12 +19,12 @@ export default function ManagementView({ management, onBack }) {
             if (response && response.success && response.data.groups.length > 0) {
                 setGroups(response.data.groups);
             } else if (response && response.code === 404) {
-                setErrorMessage('No hay grupos registrados en esta gestión.');
+                setErrorMessage("No hay grupos registrados en esta gestión.");
             } else {
-                setErrorMessage('Error al cargar los grupos.');
+                setErrorMessage("Error al cargar los grupos.");
             }
         } catch (error) {
-            setErrorMessage('No hay grupos registrados en esta gestion.');
+            setErrorMessage("No hay grupos registrados en esta gestion.");
         } finally {
             setIsLoading(false);
         }
@@ -34,43 +36,55 @@ export default function ManagementView({ management, onBack }) {
         }
     }, [management]);
 
-    const handleViewGroupDetails = (group) => {
-        setSelectedGroup(group); // Establece el grupo seleccionado
-        setIsSidebarOpen(true); // Muestra la sidebar
+    // Manejar el cambio del límite de grupo
+    const handleGroupLimitChange = (e) => {
+        setNewGroupLimit(e.target.value); // Actualiza el valor conforme el usuario lo edita
     };
 
-    const closeSidebar = () => {
-        setIsSidebarOpen(false);
-        setSelectedGroup(null); // Limpia el grupo seleccionado cuando se cierra la sidebar
+    // Guardar el nuevo límite de grupo
+    const saveGroupLimit = async () => {
+        try {
+            const response = await putData(`/managements/${management.id}/update-group-limit`, {
+                group_limit: parseInt(newGroupLimit, 10)
+            });
+            if (response && response.success) {
+                alert("Límite de grupo actualizado exitosamente.");
+                setIsEditingLimit(false); // Desactivar el modo de edición
+            } else {
+                alert("Error al actualizar el límite de grupos.");
+            }
+        } catch (error) {
+            alert("Error al actualizar el límite de grupos.");
+        }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <span>Cargando detalles de la gestión...</span>
-            </div>
-        );
-    }
-
-    if (!management) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <span>No se encontró la gestión solicitada</span>
-            </div>
-        );
-    }
+    // Toggle para activar o desactivar el código de la gestión
+    const toggleCodeStatus = async () => {
+        try {
+            const response = await putData(`/managements/${management.id}/toggle-code`);
+            if (response && response.success) {
+                setIsCodeActive(response.data.management.is_code_active);
+                alert("Estado del código de la gestión actualizado.");
+            } else {
+                alert("Error al actualizar el estado del código.");
+            }
+        } catch (error) {
+            alert("Error al actualizar el estado del código.");
+        }
+    };
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            {/* Botón de regreso */}
             <Button onClick={onBack} className="flex items-center mb-4 bg-gray-400 hover:bg-gray-500">
                 <ArrowLeft className="mr-2" />
                 Volver al Listado
             </Button>
 
-            {/* Detalles de la gestión */}
             <div className="bg-white shadow-md p-6 rounded-lg mb-8">
-                <h1 className="text-3xl font-bold mb-4 text-purple-700">{management.semester}</h1>
+                <h1 className="text-3xl font-bold mb-4 text-purple-700">
+                    Gestión {management.semester === "first" ? "1" : "2"}/{new Date(management.start_date).getFullYear()}
+                </h1>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center">
                         <Calendar className="h-6 w-6 text-purple-600 mr-3" />
@@ -90,14 +104,43 @@ export default function ManagementView({ management, onBack }) {
                         <Users className="h-6 w-6 text-purple-600 mr-3" />
                         <div>
                             <p className="font-semibold">Límite de grupos:</p>
-                            <p>{management.group_limit}</p>
+                            {isEditingLimit ? (
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="number"
+                                        value={newGroupLimit}
+                                        onChange={handleGroupLimitChange}
+                                        className="border rounded p-1"
+                                    />
+                                    <Button onClick={saveGroupLimit} className="bg-purple-600 hover:bg-purple-700">
+                                        Guardar
+                                    </Button>
+                                </div>
+                            ) : (
+                                <>
+                                    <p>{newGroupLimit}</p>
+                                    <Button onClick={() => setIsEditingLimit(true)} className="ml-2 bg-purple-600 hover:bg-purple-700">
+                                        Editar
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center">
                         <Clipboard className="h-6 w-6 text-purple-600 mr-3" />
                         <div>
                             <p className="font-semibold">Código de la gestión:</p>
-                            <p className="font-bold text-lg">{management.code || 'Cargando...'}</p>
+                            <p className="font-bold text-lg">{management.code}</p>
+                            <Switch
+                                checked={isCodeActive}
+                                onChange={toggleCodeStatus}
+                                className={`${isCodeActive ? 'bg-purple-600' : 'bg-gray-400'} relative inline-flex items-center h-6 rounded-full w-11`}
+                            >
+                                <span className="sr-only">Toggle code</span>
+                                <span
+                                    className={`${isCodeActive ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
+                                />
+                            </Switch>
                         </div>
                     </div>
                 </div>
@@ -109,61 +152,35 @@ export default function ManagementView({ management, onBack }) {
                 {errorMessage ? (
                     <p className="mt-4 text-red-500">{errorMessage}</p>
                 ) : groups.length > 0 ? (
-                    <ul className="divide-y divide-gray-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {groups.map((group) => (
-                            <li key={group.short_name} className="py-4">
-                                <div className="flex justify-between items-center">
+                            <div key={group.short_name} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
+                                <div className="flex items-center space-x-4">
+                                    <div className="flex-shrink-0">
+                                        {group.logo ? (
+                                            <img src={group.logo} alt={group.short_name} className="h-14 w-14 rounded-full object-cover shadow-md" />
+                                        ) : (
+                                            <div className="h-14 w-14 rounded-full bg-purple-700 flex items-center justify-center text-lg font-bold text-white shadow-md">
+                                                {group.short_name[0]}
+                                            </div>
+                                        )}
+                                    </div>
                                     <div>
-                                        <p className="font-bold text-lg">{group.long_name || group.short_name}</p>
+                                        <p className="font-semibold text-lg">{group.long_name || group.short_name}</p>
                                         <p className="text-sm text-gray-600">Representante: {group.representative.name} {group.representative.last_name}</p>
-                                        <p className="text-sm text-gray-600">Email: {group.contact_email}</p>
-                                        <p className="text-sm text-gray-600">Teléfono: {group.contact_phone}</p>
                                         <p className="text-sm text-gray-600">Integrantes: {group.members.length}</p>
                                     </div>
-                                    {group.logo && (
-                                        <div className="ml-4">
-                                            <img src={group.logo} alt={`Logo de ${group.short_name}`} className="h-12 w-12 object-cover rounded-full" />
-                                        </div>
-                                    )}
-                                    <Button onClick={() => handleViewGroupDetails(group)} className="ml-4 bg-purple-600 hover:bg-purple-700 text-white">
-                                        Ver Detalles
-                                    </Button>
                                 </div>
-                            </li>
+                                <Button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition-all duration-300" onClick={() => {/* Acción para evaluar */}}>
+                                    Evaluar
+                                </Button>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 ) : (
                     <p>No hay grupos registrados en esta gestión.</p>
                 )}
             </div>
-
-            {/* Sidebar de detalles del grupo */}
-            {isSidebarOpen && selectedGroup && (
-                <div className={`fixed inset-0 flex z-50 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} justify-end`}>
-                    <div className="absolute inset-0 bg-black opacity-50" onClick={closeSidebar}></div>
-                    <div className="relative bg-white w-80 p-6 overflow-auto shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} right-0">
-                        <h2 className="text-xl font-bold mb-4">Detalles del Grupo: {selectedGroup.long_name || selectedGroup.short_name}</h2>
-                        <p><strong>Representante:</strong> {selectedGroup.representative.name} {selectedGroup.representative.last_name}</p>
-                        <p><strong>Email:</strong> {selectedGroup.contact_email}</p>
-                        <p><strong>Teléfono:</strong> {selectedGroup.contact_phone}</p>
-                        <p><strong>Integrantes:</strong></p>
-                        <ul className="list-disc ml-6">
-                            {selectedGroup.members.map((member) => (
-                                <li key={member.id}>{member.name} {member.last_name}</li>
-                            ))}
-                        </ul>
-                        {selectedGroup.logo && (
-                            <div className="mt-4">
-                                <img src={selectedGroup.logo} alt={`Logo de ${selectedGroup.short_name}`} className="h-24 w-24 object-cover rounded-lg" />
-                            </div>
-                        )}
-                        <Button onClick={closeSidebar} className="mt-4 bg-purple-600 hover:bg-purple-700 text-white">
-                            Cerrar
-                        </Button>
-                    </div>
-                </div>
-            )}
-
         </div>
     );
 }
