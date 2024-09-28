@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import { postData } from '../api/apiService';
-import useAuth from '../hooks/useAuth';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Inicializa useNavigate
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.add('overflow-hidden');
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,8 +25,6 @@ const LoginPage = () => {
     try {
       const response = await postData('/login', { email, password });
       const { token, role } = response.data;
-
-      // Llamar a la función `login` desde el contexto con token, role y rememberMe
       login(token, role, rememberMe);
     } catch (error) {
       if (error.response && error.response.status === 401) {
@@ -32,59 +37,76 @@ const LoginPage = () => {
   };
 
   const handleRegisterClick = () => {
-    navigate('/'); // Redirige a la ruta de registro
+    navigate('/');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary-bg">
-      <div className="w-full max-w-6xl bg-secondary-bg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden">
-        <div className="md:w-1/2 bg-black text-white p-12 flex flex-col justify-center items-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-indigo-700 animate-gradient-x">
+      <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden">
+        <div className="md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
           <h1 className="text-5xl font-bold mb-6">TrackMaster</h1>
-          <p className="text-lg font-medium mb-6">Bienvenido!</p>
+          <p className="text-lg mb-6">¡Bienvenido!<br/>Ingrese ahora mismo a su cuenta</p>
           <button
             type="button"
-            onClick={handleRegisterClick} // Asigna la función al evento onClick
-            className="bg-black border border-white text-white px-6 py-2 rounded-lg">
+            onClick={handleRegisterClick}
+            className="bg-transparent border border-white text-white px-6 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:text-black">
             REGISTRATE
           </button>
+          <a
+            href="#"
+            onClick={() => navigate('/forgot-password')}
+            className="mt-6 text-center underline hover:text-purple-200 transition duration-300 ease-in-out">
+            ¿Olvidaste tu contraseña?
+          </a>
         </div>
 
-        <div className="md:w-1/2 bg-purple-100 p-12 flex flex-col justify-center">
-          <h2 className="text-center text-3xl font-semibold text-black mb-4">Inicia sesión !!</h2>
-          <p className="text-center text-black mb-8">Ingresa tus datos</p>
+        <div className="w-full md:w-1/2 bg-white p-8 rounded-r-lg">
+          <h2 className="text-center text-3xl font-semibold text-purple-900 mb-4">Inicia sesión !!</h2>
+          <p className="text-center text-purple-700 mb-6">Ingresa tus datos</p>
 
-          <form className="space-y-6" onSubmit={handleLogin}>
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full px-4 py-2 bg-primary-bg text-white rounded-lg focus:outline-none"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              className="w-full px-4 py-2 bg-primary-bg text-white rounded-lg focus:outline-none"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <div className="flex items-center">
+          <form className="space-y-4" onSubmit={handleLogin}>
+            <div className="flex flex-col space-y-4">
               <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+                type="email"
+                placeholder="Email"
+                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
-              <label className="ml-2 text-black">Recuérdame</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Contraseña"
+                  className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <label className="ml-2 text-black">Recuérdame</label>
+              </div>
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              <button
+                type="submit"
+                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out"
+              >
+                INICIAR SESIÓN
+              </button>
             </div>
-            {error && <p className="text-red-500">{error}</p>}
-            <button
-              type="submit"
-              className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800"
-            >
-              INICIAR SESIÓN
-            </button>
           </form>
         </div>
       </div>
