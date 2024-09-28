@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { postData } from '../api/apiService';
 import { Eye, EyeOff } from 'lucide-react';
+import { debounce } from 'lodash';
 
 const LoginRegister = () => {
   const navigate = useNavigate();
@@ -17,11 +18,19 @@ const LoginRegister = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    document.body.classList.remove('overflow-hidden');
+    document.body.style.overflow = 'auto';
+    document.body.style.WebkitOverflowScrolling = 'touch';
     return () => {
-      document.body.classList.remove('overflow-hidden');
+      document.body.style.overflow = '';
+      document.body.style.WebkitOverflowScrolling = '';
     };
   }, []);
+
+  const debouncedSetName = debounce(setName, 300);
+  const debouncedSetLastName = debounce(setLastName, 300);
+  const debouncedSetEmail = debounce(setEmail, 300);
+  const debouncedSetPassword = debounce(setPassword, 300);
+  const debouncedSetConfirmPassword = debounce(setConfirmPassword, 300);
 
   const isPasswordSecure = (password) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,15}$/;
@@ -99,115 +108,114 @@ const LoginRegister = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-indigo-700 animate-gradient-x p-4">
-      <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden">
-        <div className="md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">TrackMaster</h1>
-          <p className="text-lg mb-6">¡Bienvenido!<br/>Ingrese ahora mismo a su cuenta</p>
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            className="bg-transparent border border-white text-white px-6 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:text-black">
-            ENTRAR
-          </button>
-          <button
-            onClick={() => navigate('/forgot-password')}
-            className="mt-6 text-center underline hover:text-purple-200 transition duration-300 ease-in-out">
-            ¿Olvidaste tu contraseña?
-          </button>
-        </div>
-
-        <div className="w-full md:w-1/2 bg-white p-8 rounded-r-lg">
-          <h2 className="text-center text-3xl font-semibold text-purple-900 mb-4">Crea tu cuenta</h2>
-          <p className="text-center text-purple-700 mb-6">Rellena el formulario</p>
-
-          <form className="space-y-4" onSubmit={handleRegisterClick}>
-            <div className="flex flex-col space-y-4">
-              <input
-                type="text"
-                placeholder="Nombres"
-                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={15}
-                required
-              />
-              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-              <input
-                type="text"
-                placeholder="Apellidos"
-                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                maxLength={15}
-                required
-              />
-              {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Contraseña"
-                  className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-              {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirmar contraseña"
-                  className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-              {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
-              <select
-                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                required
-              >
-                <option value="">Seleccione su rol</option>
-                <option value="student">Estudiante</option>
-                <option value="teacher">Docente</option>
-              </select>
-              {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+    <div className="min-h-screen bg-gradient-to-br from-pink-950 to-indigo-700 animate-gradient-x">
+      <div className="container mx-auto px-4 py-8">
+        <div className="w-full max-w-4xl mx-auto bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg overflow-hidden">
+          <div className="flex flex-col md:flex-row">
+            <div className="w-full md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">TrackMaster</h1>
+              <p className="text-lg mb-6">¡Bienvenido!<br/>Ingrese ahora mismo a su cuenta</p>
               <button
-                type="submit"
-                className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out"
-              >
-                REGISTRAR
+                type="button"
+                onClick={() => navigate('/login')}
+                className="bg-transparent border border-white text-white px-6 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:text-black">
+                ENTRAR
+              </button>
+              <button
+                onClick={() => navigate('/forgot-password')}
+                className="mt-6 text-center underline hover:text-purple-200 transition duration-300 ease-in-out">
+                ¿Olvidaste tu contraseña?
               </button>
             </div>
-            {errors.api && <p className="text-red-500 text-center mt-4">{errors.api}</p>}
-          </form>
+
+            <div className="w-full md:w-1/2 bg-white p-8 rounded-r-lg">
+              <h2 className="text-center text-3xl font-semibold text-purple-900 mb-4">Crea tu cuenta</h2>
+              <p className="text-center text-purple-700 mb-6">Rellena el formulario</p>
+
+              <form className="space-y-4" onSubmit={handleRegisterClick}>
+                <div className="flex flex-col space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Nombres"
+                    className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                    onChange={(e) => debouncedSetName(e.target.value)}
+                    maxLength={15}
+                    required
+                  />
+                  {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+                  <input
+                    type="text"
+                    placeholder="Apellidos"
+                    className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                    onChange={(e) => debouncedSetLastName(e.target.value)}
+                    maxLength={15}
+                    required
+                  />
+                  {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                    onChange={(e) => debouncedSetEmail(e.target.value)}
+                    required
+                  />
+                  {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Contraseña"
+                      className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                      onChange={(e) => debouncedSetPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirmar contraseña"
+                      className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                      onChange={(e) => debouncedSetConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+                  <select
+                    className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccione su rol</option>
+                    <option value="student">Estudiante</option>
+                    <option value="teacher">Docente</option>
+                  </select>
+                  {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+                  <button
+                    type="submit"
+                    className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out"
+                  >
+                    REGISTRAR
+                  </button>
+                </div>
+                {errors.api && <p className="text-red-500 text-center mt-4">{errors.api}</p>}
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
