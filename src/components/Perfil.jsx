@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getData, putData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
-import { Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 export default function Perfil() {
   const [userData, setUserData] = useState({
@@ -38,6 +38,17 @@ export default function Perfil() {
     fetchUserData();
   }, []);
 
+  useEffect(() => {
+    if (message || Object.keys(error).length > 0) {
+      const timer = setTimeout(() => {
+        setMessage('');
+        setError({});
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [message, error]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData(prev => ({ ...prev, [name]: value }));
@@ -66,9 +77,17 @@ export default function Perfil() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-[500px]">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        <span className="ml-2 text-lg font-medium text-purple-600">Cargando...</span>
+      <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-full animate-pulse"></div>
+        <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-2 animate-pulse"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto mb-1 animate-pulse"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto mb-6 animate-pulse"></div>
+        <div className="space-y-4">
+          <div className="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
+          <div className="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
+          <div className="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
+          <div className="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
+        </div>
       </div>
     );
   }
@@ -86,9 +105,33 @@ export default function Perfil() {
         </p>
       )}
       <p className="text-center mb-6">{userData.email}</p>
-      {message && <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">{message}</div>}
-      {error.general && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">{error.general}</div>}
-      {error.email && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">{error.email[0]}</div>}
+
+      {/* Notification area */}
+      <div className="mb-4">
+        {message && (
+          <div className="bg-green-500 text-white p-3 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center">
+              <CheckCircle className="mr-2" size={20} />
+              <span>{message}</span>
+            </div>
+            <button onClick={() => setMessage('')} className="text-white">
+              <XCircle size={20} />
+            </button>
+          </div>
+        )}
+        {(error.general || error.email) && (
+          <div className="bg-red-500 text-white p-3 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center">
+              <AlertCircle className="mr-2" size={20} />
+              <span>{error.general || error.email}</span>
+            </div>
+            <button onClick={() => setError({})} className="text-white">
+              <XCircle size={20} />
+            </button>
+          </div>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
