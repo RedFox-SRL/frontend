@@ -43,7 +43,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-indigo-700 animate-gradient-x p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x p-4">
       <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden">
         <div className="md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">TrackMaster</h1>

@@ -22,7 +22,7 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-indigo-700 animate-gradient-x">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x">
       <div className="w-full max-w-md bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg p-8">
         <h2 className="text-center text-3xl font-semibold text-purple-900 mb-4">Recuperar Contraseña</h2>
         <p className="text-center text-purple-700 mb-6">Ingresa tu email para recuperar tu contraseña</p>
