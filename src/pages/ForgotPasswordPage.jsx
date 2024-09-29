@@ -1,8 +1,8 @@
-import React, {useState, useCallback} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {postData} from '../api/apiService';
+import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { postData } from '../api/apiService';
 import Particles from "react-particles";
-import {loadSlim} from "tsparticles-slim";
+import { loadFull } from "tsparticles";
 
 const ForgotPasswordPage = () => {
     const navigate = useNavigate();
@@ -14,7 +14,7 @@ const ForgotPasswordPage = () => {
         e.preventDefault();
 
         try {
-            await postData('/password/email', {email});
+            await postData('/password/email', { email });
             setSuccess('Correo de recuperación enviado exitosamente');
             setError(null);
         } catch (error) {
@@ -24,7 +24,7 @@ const ForgotPasswordPage = () => {
     };
 
     const particlesInit = useCallback(async (engine) => {
-        await loadSlim(engine);
+        await loadFull(engine);
     }, []);
 
     const particlesOptions = {
@@ -131,16 +131,14 @@ const ForgotPasswordPage = () => {
     };
 
     return (
-        <div
-            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x">
             <Particles
                 id="tsparticles"
                 init={particlesInit}
                 options={particlesOptions}
                 className="absolute inset-0"
             />
-            <div
-                className="w-full max-w-md bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg p-8">
+            <div className="w-full max-w-md bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg p-8 relative z-10">
                 <h2 className="text-center text-3xl font-semibold text-purple-900 mb-4">Recuperar Contraseña</h2>
                 <p className="text-center text-purple-700 mb-6">Ingresa tu email para recuperar tu contraseña</p>
 

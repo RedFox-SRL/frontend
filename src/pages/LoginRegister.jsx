@@ -1,9 +1,9 @@
-import React, {useState, useEffect, useCallback} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {postData} from '../api/apiService';
-import {Eye, EyeOff} from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { postData } from '../api/apiService';
+import { Eye, EyeOff } from 'lucide-react';
 import Particles from "react-particles";
-import {loadSlim} from "tsparticles-slim";
+import { loadFull } from "tsparticles";
 
 const LoginRegister = () => {
     const navigate = useNavigate();
@@ -15,7 +15,8 @@ const LoginRegister = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [role, setRole] = useState('');
     const [errors, setErrors] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword, setShowPassword] =
+useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
@@ -102,13 +103,13 @@ const LoginRegister = () => {
             if (error.response && error.response.status === 422) {
                 setErrors(error.response.data.data);
             } else {
-                setErrors({api: 'Hubo un error en el registro'});
+                setErrors({ api: 'Hubo un error en el registro' });
             }
         }
     };
 
     const particlesInit = useCallback(async (engine) => {
-        await loadSlim(engine);
+        await loadFull(engine);
     }, []);
 
     const particlesOptions = {
@@ -215,19 +216,17 @@ const LoginRegister = () => {
     };
 
     return (
-        <div
-            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x p-4 overflow-auto">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x p-4 overflow-auto relative">
             <Particles
                 id="tsparticles"
                 init={particlesInit}
                 options={particlesOptions}
                 className="absolute inset-0"
             />
-            <div
-                className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden">
+            <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden relative z-10">
                 <div className="md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">TrackMaster</h1>
-                    <p className="text-lg mb-6">¡Bienvenido!<br/>Ingrese ahora mismo a su cuenta</p>
+                    <p className="text-lg mb-6">¡Bienvenido!<br />Ingrese ahora mismo a su cuenta</p>
                     <button
                         type="button"
                         onClick={() => navigate('/login')}
@@ -290,7 +289,7 @@ const LoginRegister = () => {
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
                                 >
-                                    {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
                             {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
@@ -308,7 +307,7 @@ const LoginRegister = () => {
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
                                 >
-                                    {showConfirmPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
                             {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
