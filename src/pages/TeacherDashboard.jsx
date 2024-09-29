@@ -4,6 +4,7 @@ import LayoutTeacher from '../components/LayoutTeacher';
 import DashboardTeacher from '../components/DashboardTeacher';
 import Perfil from '../components/Perfil';
 import TeamsTable from "@/components/TeamsTable";
+import { UserProvider } from '../context/UserContext'
 
 export default function TeacherDashboard() {
     const [currentView, setCurrentView] = useState('inicio');
@@ -24,8 +25,11 @@ export default function TeacherDashboard() {
     };
 
     return (
-        <LayoutTeacher setCurrentView={setCurrentView}>
-            {renderContent()}
-        </LayoutTeacher>
+        <UserProvider>
+            <LayoutTeacher setCurrentView={setCurrentView}>
+                {renderContent()}
+            </LayoutTeacher>
+        </UserProvider>
+
     );
 }
