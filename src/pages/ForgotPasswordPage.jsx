@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { postData } from '../api/apiService';
 import Particles from "react-particles";
-import { particlesInit, particlesOptions } from '../components/particlesConfig';
+import { particlesInit, particlesOptions } from '../components/ParticlesConfig';
 
 const ForgotPasswordPage = () => {
     const navigate = useNavigate();

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { postData } from '../api/apiService';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 import Particles from "react-particles";
-import { particlesInit, particlesOptions } from '../components/particlesConfig';
+import { particlesInit, particlesOptions } from '../components/ParticlesConfig';
 
 const LoginRegister = () => {
     const navigate = useNavigate();
@@ -15,9 +15,9 @@ const LoginRegister = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [role, setRole] = useState('');
     const [errors, setErrors] = useState({});
-    const [showPassword, setShowPassword] =
-useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showNotification, setShowNotification] = useState(false);
 
     useEffect(() => {
         document.body.classList.remove('overflow-hidden');
@@ -94,8 +94,11 @@ useState(false);
             });
 
             if (response.success) {
-                alert('Registro exitoso');
-                navigate('/login');
+                setShowNotification(true);
+                setTimeout(() => {
+                    setShowNotification(false);
+                    navigate('/login');
+                }, 3000);
             } else {
                 setErrors(response.data);
             }
@@ -116,6 +119,12 @@ useState(false);
                 options={particlesOptions}
                 className="absolute inset-0"
             />
+            {showNotification && (
+                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center">
+                    <CheckCircle className="mr-2" size={20} />
+                    <span>Registro exitoso. Redirigiendo...</span>
+                </div>
+            )}
             <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden relative z-10">
                 <div className="md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">TrackMaster</h1>

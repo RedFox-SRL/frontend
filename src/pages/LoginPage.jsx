@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { postData } from '../api/apiService';
 import useAuth from '../hooks/useAuth';
 import Particles from "react-particles";
-import { particlesInit, particlesOptions } from '../components/particlesConfig';
+import { particlesInit, particlesOptions } from '../components/ParticlesConfig';
 
 const LoginPage = () => {
   const { login } = useAuth();
