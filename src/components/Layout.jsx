@@ -4,12 +4,13 @@ import { getData, postData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Skeleton } from '../components/ui/skeleton';
 import AuthContext from '../context/AuthContext';
+import { useUser } from '../context/UserContext';
 
 export default function Layout({ children, setCurrentView }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { logout } = useContext(AuthContext);
+  const { user, setUser } = useUser();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -28,8 +29,12 @@ export default function Layout({ children, setCurrentView }) {
       }
     };
 
-    fetchUserData();
-  }, []);
+    if (!user) {
+      fetchUserData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [setUser, user]);
 
   const handleLogout = async () => {
     try {

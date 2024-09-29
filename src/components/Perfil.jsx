@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { getData, putData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 export default function Perfil() {
+  const { user, updateUser } = useUser();
   const [userData, setUserData] = useState({
     nombre: '',
     apellido: '',
@@ -18,27 +20,40 @@ export default function Perfil() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getData('/me');
-        const { name, last_name, email, profilePicture, role } = response.data.item;
+      if (!user) {
+        setIsLoading(true);
+        try {
+          const response = await getData('/me');
+          const { name, last_name, email, profilePicture, role } = response.data.item;
+          const newUserData = {
+            nombre: name,
+            apellido: last_name,
+            email: email,
+            profilePicture: profilePicture,
+            role: role
+          };
+          setUserData(newUserData);
+          updateUser(newUserData);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          setError({ general: 'Error al cargar los datos del usuario.' });
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
         setUserData({
-          nombre: name,
-          apellido: last_name,
-          email: email,
-          profilePicture: profilePicture,
-          role: role
+          nombre: user.name,
+          apellido: user.last_name,
+          email: user.email,
+          profilePicture: user.profilePicture,
+          role: user.role
         });
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        setError({ general: 'Error al cargar los datos del usuario.' });
-      } finally {
         setIsLoading(false);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [user, updateUser]);
 
   useEffect(() => {
     if (message || Object.keys(error).length > 0) {
@@ -108,6 +123,7 @@ export default function Perfil() {
       const response = await putData('/profile', updatedData);
       setMessage(response.message);
       setError({});
+      updateUser({...user, ...updatedData});
     } catch (error) {
       if (error.response && error.response.status === 422) {
         setError(error.response.data.data);
