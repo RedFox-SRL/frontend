@@ -8,7 +8,6 @@ import { Loader2, Calendar, Users, LayoutDashboard, Mail, Phone, Hash } from "lu
 import CalendarioEventos from './CalendarioEventos';
 import SprintKanbanBoard from './SprintKanbanBoard.jsx';
 import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
 
 export default function GruposYPlanificacion() {
     const [isLoading, setIsLoading] = useState(true);
@@ -233,7 +232,6 @@ export default function GruposYPlanificacion() {
                         </CardContent>
                     </Card>
                 </div>
-                <Toaster />
             </div>
         );
     }
@@ -313,7 +311,6 @@ export default function GruposYPlanificacion() {
                     </CardContent>
                 </Card>
             )}
-            <Toaster />
         </div>
     );
 }

@@ -1,281 +1,192 @@
 import React, { useState, useEffect } from 'react';
 import { getData, postData } from '../api/apiService';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Users, Mail, Phone, X, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import CourseInfo from './CourseInfo';
+import GroupList from './GroupList';
+import ParticipantList from './ParticipantList';
+import GroupDetail from './GroupDetail';
 
 export default function Dashboard() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInGroup, setIsInGroup] = useState(false);
-  const [groupCode, setGroupCode] = useState('');
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [isError, setIsError] = useState(false);
-  const [managementDetails, setManagementDetails] = useState(null);
-  const [groups, setGroups] = useState([]);
-  const [participants, setParticipants] = useState({teacher: null, students: []});
-  const [selectedGroup, setSelectedGroup] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isInGroup, setIsInGroup] = useState(false);
+    const [groupCode, setGroupCode] = useState('');
+    const [managementDetails, setManagementDetails] = useState(null);
+    const [groups, setGroups] = useState([]);
+    const [participants, setParticipants] = useState({teacher: null, students: []});
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const { toast } = useToast();
 
-  useEffect(() => {
+    useEffect(() => {
+        checkManagement();
+    }, []);
+
     const checkManagement = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getData('/student/management');
-        if (response && response.success && response.data && response.data.management) {
-          setManagementDetails(response.data.management);
-          setIsInGroup(true);
-          await fetchGroupsAndParticipants(response.data.management.id);
-        } else {
-          setIsInGroup(false);
+        setIsLoading(true);
+        try {
+            const response = await getData('/student/management');
+            if (response && response.success && response.data && response.data.management) {
+                setManagementDetails(response.data.management);
+                setIsInGroup(true);
+                await Promise.all([
+                    fetchGroups(response.data.management.id),
+                    fetchParticipants(response.data.management.id)
+                ]);
+            } else {
+                setIsInGroup(false);
+            }
+        } catch (error) {
+            console.error('Error al verificar la gestión:', error);
+            setIsInGroup(false);
+        } finally {
+            setIsLoading(false);
         }
-      } catch (error) {
-        console.error('Error checking management:', error);
-        setIsInGroup(false);
-      } finally {
-        setIsLoading(false);
-      }
     };
 
-    checkManagement();
-  }, []);
+    const fetchGroups = async (managementId) => {
+        try {
+            const groupsResponse = await getData(`/managements/${managementId}/groups`);
+            if (groupsResponse && groupsResponse.success && groupsResponse.data && groupsResponse.data.groups) {
+                setGroups(groupsResponse.data.groups);
+            } else {
+                setGroups([]);
+            }
+        } catch (error) {
+            console.error('Error al obtener los grupos:', error);
+            setGroups([]);
+        }
+    };
 
-  const fetchGroupsAndParticipants = async (managementId) => {
-    try {
-      const groupsResponse = await getData(`/managements/${managementId}/groups`);
-      if (groupsResponse && groupsResponse.success && groupsResponse.data && groupsResponse.data.groups) {
-        setGroups(groupsResponse.data.groups);
-      }
+    const fetchParticipants = async (managementId) => {
+        try {
+            const participantsResponse = await getData(`/managements/${managementId}/students`);
+            if (participantsResponse && participantsResponse.teacher && participantsResponse.students) {
+                setParticipants({
+                    teacher: participantsResponse.teacher,
+                    students: participantsResponse.students
+                });
+            } else {
+                setParticipants({teacher: null, students: []});
+            }
+        } catch (error) {
+            console.error('Error al obtener los participantes:', error);
+            setParticipants({teacher: null, students: []});
+        }
+    };
 
-      const participantsResponse = await getData(`/managements/${managementId}/students`);
-      if (participantsResponse && participantsResponse.teacher && participantsResponse.students) {
-        setParticipants({
-          teacher: participantsResponse.teacher,
-          students: participantsResponse.students
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching groups and participants:', error);
-    }
-  };
+    const handleJoinGroup = async () => {
+        try {
+            const response = await postData('/managements/join', {management_code: groupCode});
 
-  const handleJoinGroup = async () => {
-    try {
-      const response = await postData('/managements/join', { management_code: groupCode });
-      if (response && response.success && response.data && response.data.management) {
-        setAlertMessage('Te has unido al grupo exitosamente.');
-        setIsError(false);
-        setIsInGroup(true);
-        setManagementDetails(response.data.management);
-        await fetchGroupsAndParticipants(response.data.management.id);
-      } else {
-        setAlertMessage('Error al unirse al grupo.');
-        setIsError(true);
-      }
-    } catch (error) {
-      setAlertMessage('Error al unirse al grupo.');
-      setIsError(true);
-    } finally {
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 3000);
-    }
-  };
+            if (response.success) {
+                toast({
+                    title: "Éxito",
+                    description: response.message || "Te has unido al grupo exitosamente.",
+                    duration: 3000,
+                });
+                await checkManagement();
+            } else {
+                let errorMessage = response.message || "Error al unirse al grupo.";
 
-  const getInitials = (name, lastName) => {
-    return `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
+                if (response.code === 252) {
+                    errorMessage = response.data?.management_code?.[0] || "Código de gestión inválido.";
+                } else if (response.code === 264) {
+                    errorMessage = "El código de gestión aún no está activo. No puedes unirte en este momento.";
+                }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        <span className="ml-2 text-lg font-medium text-purple-600">Cargando...</span>
-      </div>
-    );
-  }
+                toast({
+                    title: "Error",
+                    description: errorMessage,
+                    duration: 3000,
+                    variant: "destructive",
+                });
+            }
+        } catch (error) {
+            console.error('Error al unirse al grupo:', error);
+            let errorMessage = "Ocurrió un error al intentar unirse al grupo. Por favor, inténtalo de nuevo.";
 
-  if (isInGroup && managementDetails) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-2xl text-purple-700">Información del Curso</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <p className="font-semibold">Fecha de Inicio</p>
-                <p>{managementDetails.start_date}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Fecha de Fin</p>
-                <p>{managementDetails.end_date}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Límite por Grupo</p>
-                <p>{managementDetails.group_limit}</p>
-              </div>
+            if (error.response) {
+                const {data, status} = error.response;
+                if (status === 422 && data.code === 252) {
+                    errorMessage = data.data?.management_code?.[0] || "Código de gestión inválido.";
+                } else if (data.code === 252) {
+                    errorMessage = data.data?.management_code?.[0] || "Código de gestión inválido.";
+                } else if (data.code === 264) {
+                    errorMessage = "El código de gestión aún no está activo. No puedes unirte en este momento.";
+                } else {
+                    errorMessage = data.message || errorMessage;
+                }
+            }
+
+            toast({
+                title: "Error",
+                description: errorMessage,
+                duration: 3000,
+                variant: "destructive",
+            });
+        } finally {
+            setGroupCode('');
+        }
+    };
+
+    const getInitials = (name, lastName) => {
+        return `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
+                <span className="ml-2 text-lg font-medium text-purple-600">Cargando...</span>
             </div>
-          </CardContent>
-        </Card>
+        );
+    }
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          {groups.map((group, index) => (
-            <Card key={index} className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative h-40">
-                  <img
-                    src={group.logo || '/placeholder.svg?height=160&width=320'}
-                    alt=""
-                    className="w-full h-40 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <Avatar className="w-20 h-20 border-4 border-white">
-                      <AvatarFallback className="text-3xl">{getInitials(group.short_name, group.long_name)}</AvatarFallback>
-                    </Avatar>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-xl font-bold mb-2">{group.short_name}</h3>
-                  <p className="flex items-center mb-1">
-                    <Mail className="mr-2 h-4 w-4" />
-                    {group.contact_email}
-                  </p>
-                  <p className="flex items-center mb-1">
-                    <Phone className="mr-2 h-4 w-4" />
-                    {group.contact_phone}
-                  </p>
-                  <p className="flex items-center mb-4">
-                    <Users className="mr-2 h-4 w-4" />
-                    {Object.keys(group.members).length} integrantes
-                  </p>
-                  <Button
-                    className="w-full bg-purple-600 hover:bg-purple-700"
-                    onClick={() => setSelectedGroup(group)}
-                  >
-                    Ver Detalles
-                  </Button>
-                </div>
-              </CardContent>
+    if (isInGroup && managementDetails) {
+        return (
+            <div className="p-6 max-w-7xl mx-auto">
+                <CourseInfo managementDetails={managementDetails} />
+                {groups.length > 0 && (
+                    <GroupList
+                        groups={groups}
+                        onSelectGroup={setSelectedGroup}
+                        getInitials={getInitials}
+                    />
+                )}
+                <ParticipantList participants={participants} getInitials={getInitials} />
+                {selectedGroup && (
+                    <GroupDetail
+                        selectedGroup={selectedGroup}
+                        onClose={() => setSelectedGroup(null)}
+                        getInitials={getInitials}
+                    />
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4 p-6 max-w-md mx-auto">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-center text-2xl text-purple-700">No estás inscrito en un curso</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Input
+                        type="text"
+                        placeholder="Ingrese el código de la clase"
+                        value={groupCode}
+                        onChange={(e) => setGroupCode(e.target.value)}
+                        className="mb-4"
+                    />
+                    <Button onClick={handleJoinGroup} className="w-full bg-purple-600 hover:bg-purple-700">
+                        Unirse a Clase
+                    </Button>
+                </CardContent>
             </Card>
-          ))}
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl text-purple-700">Participantes del Curso</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px]">
-              <div className="space-y-4">
-                {participants.teacher && (
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-2">Profesor</h3>
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarFallback>{getInitials(participants.teacher.name, participants.teacher.last_name)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{`${participants.teacher.name} ${participants.teacher.last_name}`}</p>
-                        <p className="text-sm text-gray-500">{participants.teacher.email}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {participants.students && participants.students.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Estudiantes</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {participants.students.map((student) => (
-                        <div key={student.id} className="flex items-center space-x-4">
-                          <Avatar>
-                            <AvatarFallback>{getInitials(student.name, student.last_name)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{`${student.name} ${student.last_name}`}</p>
-                            <p className="text-sm text-gray-500">{student.email}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-
-        {selectedGroup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-50">
-            <div className="bg-white w-full max-w-md h-full overflow-y-auto p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">{selectedGroup.short_name}</h3>
-                <Button variant="ghost" onClick={() => setSelectedGroup(null)}>
-                  <X className="h-6 w-6" />
-                </Button>
-              </div>
-              <div className="relative h-40 mb-4">
-                <img
-                  src={selectedGroup.logo || '/placeholder.svg?height=160&width=320'}
-                  alt=""
-                  className="w-full h-40 object-cover"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <Avatar className="w-20 h-20 border-4 border-white">
-                    <AvatarFallback className="text-3xl">
-                      {getInitials(selectedGroup.short_name, selectedGroup.long_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-              </div>
-              <p className="mb-2"><strong>Email:</strong> {selectedGroup.contact_email}</p>
-              <p className="mb-2"><strong>Teléfono:</strong> {selectedGroup.contact_phone}</p>
-              <p className="mb-4"><strong>Integrantes:</strong></p>
-              <div className="space-y-2">
-                {Object.values(selectedGroup.members).map((member) => (
-                  <div key={member.id} className="flex items-center space-x-2">
-                    <Avatar>
-                      <AvatarFallback>{getInitials(member.name, member.last_name)}</AvatarFallback>
-                    </Avatar>
-                    <p>{`${member.name} ${member.last_name}`}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
     );
-  }
-
-  return (
-    <div className="space-y-4 p-6 max-w-md mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-center text-2xl text-purple-700">No estás inscrito en un curso</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Input
-            type="text"
-            placeholder="Ingrese el código de la clase"
-            value={groupCode}
-            onChange={(e) => setGroupCode(e.target.value)}
-            className="mb-4"
-          />
-          <Button onClick={handleJoinGroup} className="w-full bg-purple-600 hover:bg-purple-700">
-            Unirse a Clase
-          </Button>
-        </CardContent>
-      </Card>
-      {showAlert && (
-        <Alert variant={isError ? "destructive" : "default"}>
-          <AlertTitle>{isError ? "Error" : "Éxito"}</AlertTitle>
-          <AlertDescription>{alertMessage}</AlertDescription>
-        </Alert>
-      )}
-    </div>
-  );
 }

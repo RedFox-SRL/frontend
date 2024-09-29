@@ -5,6 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Skeleton } from '../components/ui/skeleton';
 import AuthContext from '../context/AuthContext';
 import { useUser } from '../context/UserContext';
+import { Toaster } from "@/components/ui/toaster"
 
 export default function Layout({ children, setCurrentView }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -126,6 +127,7 @@ export default function Layout({ children, setCurrentView }) {
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
           {children}
         </main>
+        <Toaster />
       </div>
     </div>
   );
