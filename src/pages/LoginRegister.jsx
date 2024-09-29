@@ -115,7 +115,7 @@ const LoginRegister = () => {
                 setShowNotification(true);
                 setTimeout(() => {
                     setShowNotification(false);
-                    navigate('/login');
+                    navigate('/');
                 }, 3000);
             } else {
                 setErrors(response.data);
@@ -157,7 +157,7 @@ const LoginRegister = () => {
                     <p className="text-lg mb-6">¡Bienvenido!<br />Ingrese ahora mismo a su cuenta</p>
                     <button
                         type="button"
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate('/')}
                         className="bg-transparent border border-white text-white px-6 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:text-black">
                         ENTRAR
                     </button>

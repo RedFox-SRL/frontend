@@ -41,7 +41,7 @@ const LoginPage = () => {
   };
 
   const handleRegisterClick = () => {
-    navigate('/');
+    navigate('/register');
   };
 
   return (

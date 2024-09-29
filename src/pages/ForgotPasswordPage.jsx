@@ -59,7 +59,7 @@ const ForgotPasswordPage = () => {
                 <div className="text-center mt-6">
                     <button
                         className="text-purple-600 hover:underline"
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate('/')}
                     >
                         Volver al inicio de sesión
                     </button>

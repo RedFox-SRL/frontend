@@ -43,7 +43,6 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('role');
     setUser(null);
-    navigate('/login');
   };
 
   return (
