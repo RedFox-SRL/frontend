@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { postData } from '../api/apiService';
-import { Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle, AlertCircle, Check } from 'lucide-react';
 import Particles from "react-particles";
 import { particlesInit, particlesOptions } from '../components/ParticlesConfig';
 
@@ -15,9 +15,11 @@ const LoginRegister = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [role, setRole] = useState('');
     const [errors, setErrors] = useState({});
+    const [touched, setTouched] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showNotification, setShowNotification] = useState(false);
+    const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
     useEffect(() => {
         document.body.classList.remove('overflow-hidden');
@@ -33,10 +35,13 @@ const LoginRegister = () => {
         };
     }, []);
 
-    const isPasswordSecure = (password) => {
-        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,15}$/;
-        return regex.test(password);
-    };
+    const passwordRequirements = [
+        { regex: /.{8,15}/, text: "Entre 8 y 15 caracteres" },
+        { regex: /[A-Z]/, text: "Al menos una letra mayúscula" },
+        { regex: /[a-z]/, text: "Al menos una letra minúscula" },
+        { regex: /[0-9]/, text: "Al menos un número" },
+        { regex: /[!@#$%^&*]/, text: "Al menos un carácter especial (!@#$%^&*)" }
+    ];
 
     const validateForm = () => {
         let formErrors = {};
@@ -60,8 +65,8 @@ const LoginRegister = () => {
 
         if (!password) {
             formErrors.password = 'Este campo es obligatorio';
-        } else if (!isPasswordSecure(password)) {
-            formErrors.password = 'La contraseña debe tener entre 8 y 15 caracteres, con al menos una letra mayúscula, una letra minúscula, un número y un carácter especial.';
+        } else if (!passwordRequirements.every(req => req.regex.test(password))) {
+            formErrors.password = 'La contraseña no cumple con todos los requisitos';
         }
 
         if (password !== confirmPassword) {
@@ -75,12 +80,25 @@ const LoginRegister = () => {
         return formErrors;
     };
 
+    const handleBlur = (field) => {
+        setTouched(prev => ({ ...prev, [field]: true }));
+        setErrors(validateForm());
+    };
+
     const handleRegisterClick = async (e) => {
         e.preventDefault();
         const formErrors = validateForm();
 
         if (Object.keys(formErrors).length > 0) {
             setErrors(formErrors);
+            setTouched({
+                name: true,
+                lastName: true,
+                email: true,
+                password: true,
+                confirmPassword: true,
+                role: true
+            });
             return;
         }
 
@@ -109,6 +127,14 @@ const LoginRegister = () => {
                 setErrors({ api: 'Hubo un error en el registro' });
             }
         }
+    };
+
+    const getInputClassName = (field) => {
+        let baseClass = "w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 placeholder-purple-500 transition-colors duration-200";
+        if (touched[field] && errors[field]) {
+            return `${baseClass} border-2 border-red-500 focus:ring-red-400`;
+        }
+        return `${baseClass} focus:ring-purple-400`;
     };
 
     return (
@@ -146,44 +172,76 @@ const LoginRegister = () => {
                     <h2 className="text-center text-3xl font-semibold text-purple-900 mb-4">Crea tu cuenta</h2>
                     <p className="text-center text-purple-700 mb-6">Rellena el formulario</p>
 
-                    <form className="space-y-4" onSubmit={handleRegisterClick}>
+                    <form className="space-y-4" onSubmit={handleRegisterClick} noValidate>
                         <div className="flex flex-col space-y-4">
-                            <input
-                                type="text"
-                                placeholder="Nombres"
-                                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                maxLength={15}
-                                required
-                            />
-                            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-                            <input
-                                type="text"
-                                placeholder="Apellidos"
-                                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                maxLength={15}
-                                required
-                            />
-                            {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Nombres"
+                                    className={getInputClassName('name')}
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    onBlur={() => handleBlur('name')}
+                                    maxLength={15}
+                                    required
+                                />
+                                {touched.name && errors.name && (
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    </div>
+                                )}
+                            </div>
+                            {touched.name && errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
+
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Apellidos"
+                                    className={getInputClassName('lastName')}
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    onBlur={() => handleBlur('lastName')}
+                                    maxLength={15}
+                                    required
+                                />
+                                {touched.lastName && errors.lastName && (
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    </div>
+                                )}
+                            </div>
+                            {touched.lastName && errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+
+                            <div className="relative">
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    className={getInputClassName('email')}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    onBlur={() => handleBlur('email')}
+                                    required
+                                />
+                                {touched.email && errors.email && (
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    </div>
+                                )}
+                            </div>
+                            {touched.email && errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Contraseña"
-                                    className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                                    className={getInputClassName('password')}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
+                                    onFocus={() => setShowPasswordRequirements(true)}
+                                    onBlur={() => {
+                                        handleBlur('password');
+                                        setShowPasswordRequirements(false);
+                                    }}
                                     required
                                 />
                                 <button
@@ -193,15 +251,38 @@ const LoginRegister = () => {
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
+                                {touched.password && errors.password && (
+                                    <div className="absolute inset-y-0 right-8 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    </div>
+                                )}
                             </div>
-                            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                            {showPasswordRequirements && (
+                                <div className="bg-white border border-gray-200 p-3 rounded-lg shadow-lg">
+                                    {passwordRequirements.map((req, index) => (
+                                        <div key={index} className="flex items-center space-x-2">
+                                            {req.regex.test(password) ? (
+                                                <Check className="text-green-500" size={16} />
+                                            ) : (
+                                                <AlertCircle className="text-red-500" size={16} />
+                                            )}
+                                            <span className={req.regex.test(password) ? "text-green-500" : "text-red-500"}>
+                                                {req.text}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {touched.password && errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+
                             <div className="relative">
                                 <input
                                     type={showConfirmPassword ? "text" : "password"}
                                     placeholder="Confirmar contraseña"
-                                    className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-purple-500"
+                                    className={getInputClassName('confirmPassword')}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
+                                    onBlur={() => handleBlur('confirmPassword')}
                                     required
                                 />
                                 <button
@@ -211,19 +292,27 @@ const LoginRegister = () => {
                                 >
                                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
+                                {touched.confirmPassword && errors.confirmPassword && (
+                                    <div className="absolute inset-y-0 right-8 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    </div>
+                                )}
                             </div>
-                            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+                            {touched.confirmPassword && errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+
                             <select
-                                className="w-full px-4 py-2 bg-purple-100 text-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                className={getInputClassName('role')}
                                 value={role}
                                 onChange={(e) => setRole(e.target.value)}
+                                onBlur={() => handleBlur('role')}
                                 required
                             >
                                 <option value="">Seleccione su rol</option>
                                 <option value="student">Estudiante</option>
                                 <option value="teacher">Docente</option>
                             </select>
-                            {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+                            {touched.role && errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
+
                             <button
                                 type="submit"
                                 className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out"
