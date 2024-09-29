@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Bell, Menu, Home, User, Users, Building2, LogOut } from 'lucide-react';
+import { Bell, Menu, Home, User, Users, Building2, LogOut, History } from 'lucide-react';
 import { getData, postData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 import { Skeleton } from '../components/ui/skeleton';
@@ -98,7 +98,7 @@ export default function Layout({ children, setCurrentView }) {
                         onClick={() => setCurrentView('grupo')}
                         className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
                     >
-                        <Users className="mr-2 h-5 w-5" /> Gestiones
+                        <History className="mr-2 h-5 w-5" /> Gestiones
                     </button>
                     <button
                         onClick={() => setCurrentView('empresas')}
