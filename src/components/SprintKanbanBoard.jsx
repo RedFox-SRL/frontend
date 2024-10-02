@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getData, postData, putData } from '../api/apiService';
+import { getData, postData, putData, deleteData } from '../api/apiService';
 import { Loader2 } from "lucide-react";
 import SprintHeader from './SprintHeader';
 import KanbanBoard from './KanbanBoard';
 import NewSprintDialog from './NewSprintDialog';
 import NewTaskDialog from './NewTaskDialog';
+import { useToast } from "@/hooks/use-toast";
 
 const initialColumns = [
     { id: 'todo', title: 'Por Hacer', tasks: [] },
@@ -23,6 +24,7 @@ export default function SprintKanbanBoard({ groupId }) {
     const [groupDetails, setGroupDetails] = useState(null);
     const [teamMembers, setTeamMembers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -45,6 +47,11 @@ export default function SprintKanbanBoard({ groupId }) {
                 }
             } catch (error) {
                 console.error("Error fetching initial data:", error);
+                toast({
+                    title: "Error",
+                    description: "No se pudo cargar la información inicial. Por favor, intente de nuevo.",
+                    variant: "destructive",
+                });
             } finally {
                 setIsLoading(false);
             }
@@ -81,17 +88,37 @@ export default function SprintKanbanBoard({ groupId }) {
             setColumns(updatedColumns);
             updateSprintColumns(updatedColumns);
 
-            await putData(`/tasks/${removedTask.id}`, {
-                title: removedTask.title,
-                description: removedTask.description,
-                assigned_to: removedTask.assigned_to,
-                status: destColumn.id
-            });
+            try {
+                await putData(`/tasks/${removedTask.id}`, {
+                    title: removedTask.title,
+                    description: removedTask.description,
+                    assigned_to: removedTask.assigned_to,
+                    status: destColumn.id
+                });
+                toast({
+                    title: "Tarea actualizada",
+                    description: "La tarea se ha movido exitosamente.",
+                });
+            } catch (error) {
+                console.error("Error updating task:", error);
+                toast({
+                    title: "Error",
+                    description: "No se pudo actualizar la tarea. Por favor, intente de nuevo.",
+                    variant: "destructive",
+                });
+            }
         }
     };
 
     const addNewTask = async () => {
-        if (!newTask.title || !newTask.description || !newTask.assignee) return;
+        if (!newTask.title || !newTask.description || !newTask.assignee) {
+            toast({
+                title: "Error",
+                description: "Por favor, complete todos los campos de la tarea.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         const newTaskObj = {
             sprint_id: currentSprint.id,
@@ -101,23 +128,43 @@ export default function SprintKanbanBoard({ groupId }) {
             status: 'todo',
         };
 
-        const createdTask = await postData('/tasks', newTaskObj);
+        try {
+            const createdTask = await postData('/tasks', newTaskObj);
 
-        const newColumns = columns.map(col => {
-            if (col.id === 'todo') {
-                return { ...col, tasks: [...col.tasks, createdTask] };
-            }
-            return col;
-        });
+            const newColumns = columns.map(col => {
+                if (col.id === 'todo') {
+                    return { ...col, tasks: [...col.tasks, createdTask] };
+                }
+                return col;
+            });
 
-        setColumns(newColumns);
-        updateSprintColumns(newColumns);
-        setNewTask({});
-        setIsTaskDialogOpen(false);
+            setColumns(newColumns);
+            updateSprintColumns(newColumns);
+            setNewTask({});
+            setIsTaskDialogOpen(false);
+            toast({
+                title: "Tarea creada",
+                description: "La nueva tarea se ha añadido exitosamente.",
+            });
+        } catch (error) {
+            console.error("Error creating task:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo crear la tarea. Por favor, intente de nuevo.",
+                variant: "destructive",
+            });
+        }
     };
 
     const addNewSprint = async () => {
-        if (!newSprint.name || !newSprint.startDate || !newSprint.endDate) return;
+        if (!newSprint.name || !newSprint.startDate || !newSprint.endDate) {
+            toast({
+                title: "Error",
+                description: "Por favor, complete todos los campos del sprint.",
+                variant: "destructive",
+            });
+            return;
+        }
 
         const newSprintObj = {
             group_id: groupId,
@@ -126,15 +173,28 @@ export default function SprintKanbanBoard({ groupId }) {
             end_date: newSprint.endDate,
         };
 
-        const createdSprint = await postData('/sprints', newSprintObj);
+        try {
+            const createdSprint = await postData('/sprints', newSprintObj);
 
-        setSprints([...sprints, createdSprint]);
-        setNewSprint({ name: '', startDate: '', endDate: '' });
-        setIsSprintDialogOpen(false);
+            setSprints([...sprints, createdSprint]);
+            setNewSprint({ name: '', startDate: '', endDate: '' });
+            setIsSprintDialogOpen(false);
 
-        if (!currentSprint) {
-            setCurrentSprint(createdSprint);
-            setColumns(initialColumns);
+            if (!currentSprint) {
+                setCurrentSprint(createdSprint);
+                setColumns(initialColumns);
+            }
+            toast({
+                title: "Sprint creado",
+                description: "El nuevo sprint se ha creado exitosamente.",
+            });
+        } catch (error) {
+            console.error("Error creating sprint:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo crear el sprint. Por favor, intente de nuevo.",
+                variant: "destructive",
+            });
         }
     };
 
@@ -162,9 +222,60 @@ export default function SprintKanbanBoard({ groupId }) {
                 setColumns(updatedColumns);
             } catch (error) {
                 console.error("Error fetching tasks:", error);
+                toast({
+                    title: "Error",
+                    description: "No se pudieron cargar las tareas. Por favor, intente de nuevo.",
+                    variant: "destructive",
+                });
             } finally {
                 setIsLoading(false);
             }
+        }
+    };
+
+    const handleDeleteTask = async (taskId) => {
+        try {
+            await deleteData(`/tasks/${taskId}`);
+            const updatedColumns = columns.map(col => ({
+                ...col,
+                tasks: col.tasks.filter(task => task.id !== taskId)
+            }));
+            setColumns(updatedColumns);
+            updateSprintColumns(updatedColumns);
+            toast({
+                title: "Tarea eliminada",
+                description: "La tarea se ha eliminado exitosamente.",
+            });
+        } catch (error) {
+            console.error("Error deleting task:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo eliminar la tarea. Por favor, intente de nuevo.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleEditTask = async (taskId, updatedTask) => {
+        try {
+            const editedTask = await putData(`/tasks/${taskId}`, updatedTask);
+            const updatedColumns = columns.map(col => ({
+                ...col,
+                tasks: col.tasks.map(task => task.id === taskId ? editedTask : task)
+            }));
+            setColumns(updatedColumns);
+            updateSprintColumns(updatedColumns);
+            toast({
+                title: "Tarea actualizada",
+                description: "La tarea se ha actualizado exitosamente.",
+            });
+        } catch (error) {
+            console.error("Error editing task:", error);
+            toast({
+                title: "Error",
+                description: "No se pudo actualizar la tarea. Por favor, intente de nuevo.",
+                variant: "destructive",
+            });
         }
     };
 
@@ -193,6 +304,8 @@ export default function SprintKanbanBoard({ groupId }) {
                         columns={columns}
                         onDragEnd={onDragEnd}
                         teamMembers={teamMembers}
+                        onDeleteTask={handleDeleteTask}
+                        onEditTask={handleEditTask}
                     />
                 ) : (
                     <div className="text-center py-12">
