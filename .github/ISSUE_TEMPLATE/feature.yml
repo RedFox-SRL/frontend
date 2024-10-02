@@ -1,0 +1,28 @@
+name: User Story
+description: Por favor, use el formato INVEST.
+title: "[User Story]: "
+labels: [ "enhancement" ]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: Proporcione una descripción detallada de la historia de usuario.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Criterios de Aceptación
+      description: Lista de criterios de aceptación, uno por línea.
+      placeholder: |
+        - Criterio 1
+        - Criterio 2
+        - Criterio 3
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Capturas de Pantalla
+      description: Adjunte capturas de pantalla relevantes, si las hay.

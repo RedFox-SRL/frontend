@@ -1,0 +1,136 @@
+name: Bug Report con formato
+description: Por favor, proporcione tantos detalles como sea posible para transmitir el historial de su problema.
+title: "[Bug]: "
+labels: [ "bug" ]
+body:
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severidad
+      multiple: false
+      options:
+        - Cosmetica
+        - Menor
+        - Mayor
+        - Crítica
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      multiple: false
+      options:
+        - Baja
+        - Media
+        - Alta
+        - Inmediata
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+    validations:
+      required: true
+
+  - type: textarea
+    id: preconditions
+    attributes:
+      label: Pre-condiciones
+      description: Lista de pre-condiciones
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device-type
+    attributes:
+      label: Tipo de dispositivo
+      multiple: true
+      options:
+        - Computadora
+        - Teléfono
+
+  - type: input
+    id: model-phone
+    attributes:
+      label: Modelo de teléfono si aplica
+    validations:
+      required: false
+
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: ¿En qué navegadores encuentras el problema?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+        - Opera
+        - Todos los navegadores
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: Versión del navegador
+      description: Versión del navegador en el cuál encuentras el problema
+      placeholder: Chrome v124.0.6367.92 ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ossystems
+    attributes:
+      label: Sistema operativo en el cuál encuentras el problema
+      multiple: true
+      options:
+        - Windows
+        - MacOs
+        - Ios
+        - Android
+        - Linux
+        - Todos los sistemas operativos
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos
+      description: Por favor, complete los pasos en la tabla de abajo
+      value: |
+        | Paso | Descripción | Input Data |
+        |------|-------------|------------|
+        | 1    |             |            |
+        | 2    |             |            |
+        | 3    |             |            |
+        | 4    |             |            |
+        | 5    |             |            |
+
+  - type: input
+    id: expected-result
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+
+  - type: input
+    id: actual-result
+    attributes:
+      label: Resultado actual
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidencias
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "# Información adicional"
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Información adicional
