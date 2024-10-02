@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Bell, Menu, Home, User, Users, Building2, LogOut } from 'lucide-react';
 import { getData, postData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
@@ -10,12 +10,23 @@ import { Toaster } from "@/components/ui/toaster"
 export default function Layout({ children, setCurrentView }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const { logout } = useContext(AuthContext);
   const { user, setUser } = useUser();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const handleResize = useCallback(() => {
+    setIsMobile(window.innerWidth < 1024);
+  }, []);
+
+  useEffect(() => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,6 +55,13 @@ export default function Layout({ children, setCurrentView }) {
       console.error('Error en la solicitud de logout:', error);
     } finally {
       logout();
+    }
+  };
+
+  const handleMenuItemClick = (view) => {
+    setCurrentView(view);
+    if (isMobile) {
+      setIsSidebarOpen(false);
     }
   };
 
@@ -84,31 +102,34 @@ export default function Layout({ children, setCurrentView }) {
         )}
         <nav className="space-y-2">
           <button
-            onClick={() => setCurrentView('inicio')}
+            onClick={() => handleMenuItemClick('inicio')}
             className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
           >
             <Home className="mr-2 h-5 w-5" /> Inicio
           </button>
           <button
-            onClick={() => setCurrentView('perfil')}
+            onClick={() => handleMenuItemClick('perfil')}
             className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
           >
             <User className="mr-2 h-5 w-5" /> Perfil
           </button>
           <button
-            onClick={() => setCurrentView('grupo')}
+            onClick={() => handleMenuItemClick('grupo')}
             className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
           >
             <Users className="mr-2 h-5 w-5" /> Grupo
           </button>
           <button
-            onClick={() => setCurrentView('empresas')}
+            onClick={() => handleMenuItemClick('empresas')}
             className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
           >
             <Building2 className="mr-2 h-5 w-5" /> FundEmpresa
           </button>
           <button
-            onClick={handleLogout}
+            onClick={() => {
+              handleLogout();
+              if (isMobile) setIsSidebarOpen(false);
+            }}
             className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
           >
             <LogOut className="mr-2 h-5 w-5" /> Cerrar Sesión
