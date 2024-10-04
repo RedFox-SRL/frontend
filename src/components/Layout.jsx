@@ -73,6 +73,10 @@ export default function Layout({ children, setCurrentView }) {
     </div>
   );
 
+  const getAvatarUrl = (name, lastName) => {
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + ' ' + lastName)}&backgroundColor=F3E8FF&textColor=6B21A8`;
+  };
+
   return (
     <div className="flex h-screen bg-purple-100">
       <div
@@ -92,36 +96,40 @@ export default function Layout({ children, setCurrentView }) {
           <UserSkeleton />
         ) : user && (
           <div className="mb-8">
-            <Avatar className="w-20 h-20 mx-auto mb-2">
-              <AvatarImage src={user.profilePicture} alt={`${user.name} ${user.last_name}`} />
-              <AvatarFallback>{user.name.charAt(0)}{user.last_name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <p className="text-center">{user.name} {user.last_name}</p>
+            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
+              <Avatar className="w-full h-full border-2 border-white rounded-full">
+                <AvatarImage src={user.profilePicture || getAvatarUrl(user.name, user.last_name)} alt={`${user.name} ${user.last_name}`} />
+                <AvatarFallback className="bg-purple-200 text-purple-800 text-xl font-bold">
+                  {user.name.charAt(0)}{user.last_name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <p className="text-center font-semibold text-lg">{user.name} {user.last_name}</p>
             <p className="text-center text-sm text-purple-300">{user.role}</p>
           </div>
         )}
         <nav className="space-y-2">
           <button
             onClick={() => handleMenuItemClick('inicio')}
-            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
           >
             <Home className="mr-2 h-5 w-5" /> Inicio
           </button>
           <button
             onClick={() => handleMenuItemClick('perfil')}
-            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
           >
             <User className="mr-2 h-5 w-5" /> Perfil
           </button>
           <button
             onClick={() => handleMenuItemClick('grupo')}
-            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
           >
             <Users className="mr-2 h-5 w-5" /> Grupo
           </button>
           <button
             onClick={() => handleMenuItemClick('empresas')}
-            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
           >
             <Building2 className="mr-2 h-5 w-5" /> FundEmpresa
           </button>
@@ -130,7 +138,7 @@ export default function Layout({ children, setCurrentView }) {
               handleLogout();
               if (isMobile) setIsSidebarOpen(false);
             }}
-            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+            className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
           >
             <LogOut className="mr-2 h-5 w-5" /> Cerrar Sesión
           </button>

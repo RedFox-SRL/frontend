@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Bell, Menu, Home, User, Users, Building2, LogOut, History } from 'lucide-react';
-import { getData, postData } from '../api/apiService';
-import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
-import { Skeleton } from '../components/ui/skeleton';
+import React, {useState, useEffect, useContext, useCallback} from 'react';
+import {Bell, Menu, Home, User, Users, Building2, LogOut, History} from 'lucide-react';
+import {getData, postData} from '../api/apiService';
+import {Avatar, AvatarImage, AvatarFallback} from '../components/ui/avatar';
+import {Skeleton} from '../components/ui/skeleton';
 import AuthContext from '../context/AuthContext';
-import { useUser } from '../context/UserContext';
+import {useUser} from '../context/UserContext';
 
-export default function Layout({ children, setCurrentView }) {
+export default function Layout({children, setCurrentView}) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
-    const { logout } = useContext(AuthContext);
-    const { user, setUser } = useUser();
+    const {logout} = useContext(AuthContext);
+    const {user, setUser} = useUser();
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -66,11 +66,15 @@ export default function Layout({ children, setCurrentView }) {
 
     const UserSkeleton = () => (
         <div className="mb-8">
-            <Skeleton className="w-20 h-20 rounded-full mx-auto mb-2" />
-            <Skeleton className="h-4 w-3/4 mx-auto mb-2" />
-            <Skeleton className="h-3 w-1/2 mx-auto" />
+            <Skeleton className="w-20 h-20 rounded-full mx-auto mb-2"/>
+            <Skeleton className="h-4 w-3/4 mx-auto mb-2"/>
+            <Skeleton className="h-3 w-1/2 mx-auto"/>
         </div>
     );
+
+    const getAvatarUrl = (name, lastName) => {
+        return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + ' ' + lastName)}&backgroundColor=F3E8FF&textColor=6B21A8`;
+    };
 
     return (
         <div className="flex h-screen bg-purple-100">
@@ -88,50 +92,56 @@ export default function Layout({ children, setCurrentView }) {
             >
                 <h1 className="text-2xl font-bold mb-10">TRACKMASTER</h1>
                 {isLoading ? (
-                    <UserSkeleton />
+                    <UserSkeleton/>
                 ) : user && (
                     <div className="mb-8">
-                        <Avatar className="w-20 h-20 mx-auto mb-2">
-                            <AvatarImage src={user.profilePicture} alt={`${user.name} ${user.last_name}`} />
-                            <AvatarFallback>{user.name.charAt(0)}{user.last_name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <p className="text-center">{user.name} {user.last_name}</p>
+                        <div
+                            className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
+                            <Avatar className="w-full h-full border-2 border-white rounded-full">
+                                <AvatarImage src={user.profilePicture || getAvatarUrl(user.name, user.last_name)}
+                                             alt={`${user.name} ${user.last_name}`}/>
+                                <AvatarFallback className="bg-purple-200 text-purple-800 text-xl font-bold">
+                                    {user.name.charAt(0)}{user.last_name.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                        </div>
+                        <p className="text-center font-semibold text-lg">{user.name} {user.last_name}</p>
                         <p className="text-center text-sm text-purple-300">{user.role}</p>
                     </div>
                 )}
                 <nav className="space-y-2">
                     <button
                         onClick={() => handleMenuItemClick('inicio')}
-                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
                     >
-                        <Home className="mr-2 h-5 w-5" /> Inicio
+                        <Home className="mr-2 h-5 w-5"/> Inicio
                     </button>
                     <button
                         onClick={() => handleMenuItemClick('perfil')}
-                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
                     >
-                        <User className="mr-2 h-5 w-5" /> Perfil
+                        <User className="mr-2 h-5 w-5"/> Perfil
                     </button>
                     <button
                         onClick={() => handleMenuItemClick('grupo')}
-                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
                     >
-                        <History className="mr-2 h-5 w-5" /> Gestiones
+                        <History className="mr-2 h-5 w-5"/> Gestiones
                     </button>
                     <button
                         onClick={() => handleMenuItemClick('empresas')}
-                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
                     >
-                        <Building2 className="mr-2 h-5 w-5" /> FundEmpresa
+                        <Building2 className="mr-2 h-5 w-5"/> FundEmpresa
                     </button>
                     <button
                         onClick={() => {
                             handleLogout();
                             if (isMobile) setIsSidebarOpen(false);
                         }}
-                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left"
+                        className="flex items-center py-2 px-4 hover:bg-purple-700 rounded w-full text-left transition duration-150 ease-in-out"
                     >
-                        <LogOut className="mr-2 h-5 w-5" /> Cerrar Sesión
+                        <LogOut className="mr-2 h-5 w-5"/> Cerrar Sesión
                     </button>
                 </nav>
             </aside>
@@ -139,10 +149,10 @@ export default function Layout({ children, setCurrentView }) {
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white shadow-md p-4 flex justify-between items-center">
                     <button className="lg:hidden" onClick={toggleSidebar}>
-                        <Menu className="text-purple-800" />
+                        <Menu className="text-purple-800"/>
                     </button>
                     <h2 className="text-xl font-bold text-purple-800">Taller De Ingeniería en Software</h2>
-                    <Bell className="text-purple-800" />
+                    <Bell className="text-purple-800"/>
                 </header>
                 <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
                     {children}

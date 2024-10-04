@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getData, putData } from '../api/apiService';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
-import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Camera } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
 export default function Perfil() {
@@ -17,6 +17,10 @@ export default function Perfil() {
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [touched, setTouched] = useState({});
+
+  const getAvatarUrl = (name, lastName) => {
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + ' ' + lastName)}&backgroundColor=F3E8FF&textColor=6B21A8`;
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -160,91 +164,85 @@ export default function Perfil() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative">
+    <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-center text-2xl font-bold mb-6">Editar Perfil</h2>
+      <div className="mb-6">
+        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
+          <Avatar className="w-full h-full border-2 border-white rounded-full">
+            <AvatarImage src={userData.profilePicture || getAvatarUrl(userData.nombre, userData.apellido)} alt={`${userData.nombre} ${userData.apellido}`} />
+            <AvatarFallback className="bg-purple-200 text-purple-800 text-xl font-bold">
+              {userData.nombre.charAt(0)}{userData.apellido.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        <h3 className="text-center text-xl font-semibold">{userData.nombre} {userData.apellido}</h3>
+        <p className="text-center text-gray-600">{userData.role === 'student' ? 'Estudiante' : userData.role === 'teacher' ? 'Docente' : userData.role}</p>
+        <p className="text-center text-gray-600">{userData.email}</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">Nombres</label>
+          <input
+            id="nombre"
+            type="text"
+            name="nombre"
+            value={userData.nombre}
+            onChange={handleInputChange}
+            onBlur={() => handleBlur('nombre')}
+            className={getInputClassName('nombre')}
+            maxLength={15}
+          />
+          {touched.nombre && error.nombre && <p className="text-red-500 text-sm mt-1">{error.nombre}</p>}
+        </div>
+        <div>
+          <label htmlFor="apellido" className="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
+          <input
+            id="apellido"
+            type="text"
+            name="apellido"
+            value={userData.apellido}
+            onChange={handleInputChange}
+            onBlur={() => handleBlur('apellido')}
+            className={getInputClassName('apellido')}
+            maxLength={15}
+          />
+          {touched.apellido && error.apellido && <p className="text-red-500 text-sm mt-1">{error.apellido}</p>}
+        </div>
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            value={userData.email}
+            onChange={handleInputChange}
+            onBlur={() => handleBlur('email')}
+            className={getInputClassName('email')}
+          />
+          {touched.email && error.email && <p className="text-red-500 text-sm mt-1">{error.email}</p>}
+        </div>
+        <button type="submit" className="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700 transition duration-300 ease-in-out">
+          Guardar Cambios
+        </button>
+      </form>
+
       {(message || Object.keys(error).length > 0) && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-full max-w-sm">
+        <div className="mt-4">
           {message && (
-            <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center justify-between">
-              <div className="flex items-center">
-                <CheckCircle className="mr-2" size={20} />
-                <span>{message}</span>
-              </div>
-              <button onClick={() => setMessage('')} className="text-white">
-                <XCircle size={20} />
-              </button>
+            <div className="bg-green-500 text-white px-4 py-2 rounded-lg">
+              <CheckCircle className="inline-block mr-2" size={20} />
+              <span>{message}</span>
             </div>
           )}
           {(error.general || error.email) && (
-            <div className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center justify-between">
-              <div className="flex items-center">
-                <AlertCircle className="mr-2" size={20} />
-                <span>{error.general || error.email}</span>
-              </div>
-              <button onClick={() => setError({})} className="text-white">
-                <XCircle size={20} />
-              </button>
+            <div className="bg-red-500 text-white px-4 py-2 rounded-lg">
+              <AlertCircle className="inline-block mr-2" size={20} />
+              <span>{error.general || error.email}</span>
             </div>
           )}
         </div>
       )}
-
-      <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <Avatar className="w-24 h-24 mx-auto mb-4">
-          <AvatarImage src={userData.profilePicture} alt={`${userData.nombre} ${userData.apellido}`} />
-          <AvatarFallback>{userData.nombre.charAt(0)}{userData.apellido.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <h2 className="text-center text-2xl font-bold mb-2">{userData.nombre} {userData.apellido}</h2>
-        {userData.role && (
-          <p className="text-center text-gray-500 mb-1">
-            {userData.role === 'student' ? 'Estudiante' : userData.role === 'teacher' ? 'Docente' : userData.role}
-          </p>
-        )}
-        <p className="text-center mb-6">{userData.email}</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              type="text"
-              name="nombre"
-              placeholder="Nombre"
-              value={userData.nombre}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('nombre')}
-              className={getInputClassName('nombre')}
-              maxLength={15}
-            />
-            {touched.nombre && error.nombre && <p className="text-red-500 text-sm mt-1">{error.nombre}</p>}
-          </div>
-          <div>
-            <input
-              type="text"
-              name="apellido"
-              placeholder="Apellido"
-              value={userData.apellido}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('apellido')}
-              className={getInputClassName('apellido')}
-              maxLength={15}
-            />
-            {touched.apellido && error.apellido && <p className="text-red-500 text-sm mt-1">{error.apellido}</p>}
-          </div>
-          <div>
-            <input
-              type="email"
-              name="email"
-              placeholder="Correo Electrónico"
-              value={userData.email}
-              onChange={handleInputChange}
-              onBlur={() => handleBlur('email')}
-              className={getInputClassName('email')}
-            />
-            {touched.email && error.email && <p className="text-red-500 text-sm mt-1">{error.email}</p>}
-          </div>
-          <button type="submit" className="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700 transition duration-300 ease-in-out">
-            Guardar Cambios
-          </button>
-        </form>
-      </div>
     </div>
   );
 }
