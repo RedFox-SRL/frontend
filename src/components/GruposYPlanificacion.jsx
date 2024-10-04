@@ -72,7 +72,7 @@ export default function GruposYPlanificacion() {
         }
     };
 
-    const checkGroup = async (managementId) => {
+    const checkGroup = async () => {
         try {
             const groupResponse = await getData('/groups/details');
             if (groupResponse && groupResponse.success && groupResponse.data && groupResponse.data.group) {
@@ -80,47 +80,12 @@ export default function GruposYPlanificacion() {
                 setSelectedGroup(groupResponse.data.group);
                 setCalendarId(groupResponse.data.group.calendar_id);
                 setGroupId(groupResponse.data.group.id);
-                await Promise.all([
-                    fetchGroups(managementId),
-                    fetchParticipants(managementId)
-                ]);
             } else {
                 setIsInGroup(false);
             }
         } catch (error) {
             console.error('Error al verificar el grupo:', error);
             setIsInGroup(false);
-        }
-    };
-
-    const fetchGroups = async (managementId) => {
-        try {
-            const groupsResponse = await getData(`/managements/${managementId}/groups`);
-            if (groupsResponse && groupsResponse.success && groupsResponse.data && groupsResponse.data.groups) {
-                setGroups(groupsResponse.data.groups);
-            } else {
-                setGroups([]);
-            }
-        } catch (error) {
-            console.error('Error al obtener los grupos:', error);
-            setGroups([]);
-        }
-    };
-
-    const fetchParticipants = async (managementId) => {
-        try {
-            const participantsResponse = await getData(`/managements/${managementId}/students`);
-            if (participantsResponse && participantsResponse.teacher && participantsResponse.students) {
-                setParticipants({
-                    teacher: participantsResponse.teacher,
-                    students: participantsResponse.students
-                });
-            } else {
-                setParticipants({teacher: null, students: []});
-            }
-        } catch (error) {
-            console.error('Error al obtener los participantes:', error);
-            setParticipants({teacher: null, students: []});
         }
     };
 
