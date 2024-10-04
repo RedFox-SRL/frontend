@@ -8,6 +8,8 @@ import { Loader2, Calendar, Users, LayoutDashboard, Mail, Phone, Hash, Upload } 
 import { useToast } from "@/hooks/use-toast"
 import CalendarioEventos from './CalendarioEventos';
 import SprintKanbanBoard from './SprintKanbanBoard';
+import GroupMemberListCreator from './GroupMemberListCreator';
+import GroupMemberListMember from './GroupMemberListMember';
 
 export default function GruposYPlanificacion() {
     const [isLoading, setIsLoading] = useState(true);
@@ -16,8 +18,6 @@ export default function GruposYPlanificacion() {
     const [managementCode, setManagementCode] = useState('');
     const [groupCode, setGroupCode] = useState('');
     const [managementDetails, setManagementDetails] = useState(null);
-    const [groups, setGroups] = useState([]);
-    const [participants, setParticipants] = useState({teacher: null, students: []});
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [view, setView] = useState('join');
     const [groupData, setGroupData] = useState({
@@ -32,6 +32,8 @@ export default function GruposYPlanificacion() {
     const [calendarId, setCalendarId] = useState(null);
     const [groupId, setGroupId] = useState(null);
     const [activeCard, setActiveCard] = useState(null);
+    const [isCreator, setIsCreator] = useState(false);
+    const [userId, setUserId] = useState(null);
     const { toast } = useToast();
     const calendarRef = useRef(null);
     const kanbanRef = useRef(null);
@@ -40,6 +42,12 @@ export default function GruposYPlanificacion() {
     useEffect(() => {
         checkManagementAndGroup();
     }, []);
+
+    useEffect(() => {
+        if (userId !== null && selectedGroup !== null) {
+            setIsCreator(selectedGroup.representative.id === userId);
+        }
+    }, [userId, selectedGroup]);
 
     useEffect(() => {
         if (activeCard === 'planificacion' && calendarRef.current) {
@@ -54,11 +62,17 @@ export default function GruposYPlanificacion() {
     const checkManagementAndGroup = async () => {
         setIsLoading(true);
         try {
+            const userResponse = await getData('/me');
+            if (userResponse && userResponse.success) {
+                const studentId = userResponse.data.item.student_id;
+                setUserId(studentId);
+            }
+
             const response = await getData('/student/management');
             if (response && response.success && response.data && response.data.management) {
                 setManagementDetails(response.data.management);
                 setIsInManagement(true);
-                await checkGroup(response.data.management.id);
+                await checkGroup();
             } else {
                 setIsInManagement(false);
                 setIsInGroup(false);
@@ -201,10 +215,6 @@ export default function GruposYPlanificacion() {
         });
     };
 
-    const getInitials = (name, lastName) => {
-        return `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    };
-
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -323,7 +333,7 @@ export default function GruposYPlanificacion() {
                                         onChange={(e) => setGroupData({...groupData, contact_email: e.target.value})}
                                         className={errors.contact_email ? "border-red-500" : ""}
                                     />
-                                    {errors.contact_email && <p className="text-re d-500 text-sm mt-1">{errors.contact_email}</p>}
+                                    {errors.contact_email && <p className="text-red-500 text-sm mt-1">{errors.contact_email}</p>}
                                 </div>
                                 <div>
                                     <Input
@@ -454,13 +464,15 @@ export default function GruposYPlanificacion() {
                     <SprintKanbanBoard groupId={groupId} />
                 </div>
                 <div ref={equipoRef} className={activeCard === 'equipo' ? '' : 'hidden'}>
-                    <Card>
-                        <CardContent>
-                            <p>Contenido del Equipo (en desarrollo)</p>
-                        </CardContent>
-                    </Card>
+                    {isCreator ? (
+                        <GroupMemberListCreator groupId={groupId} members={selectedGroup.members} />
+                    ) : (
+                        <GroupMemberListMember groupId={groupId} members={selectedGroup.members} />
+                    )}
                 </div>
             </div>
         );
     }
+
+    return null;
 }
