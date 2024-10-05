@@ -13,6 +13,8 @@ body:
         - Menor
         - Mayor
         - Crítica
+    validations:
+      required: true
 
   - type: dropdown
     id: priority
@@ -24,6 +26,8 @@ body:
         - Media
         - Alta
         - Inmediata
+    validations:
+      required: true
 
   - type: textarea
     id: description
@@ -48,6 +52,8 @@ body:
       options:
         - Computadora
         - Teléfono
+    validations:
+      required: true
 
   - type: input
     id: model-phone
@@ -68,6 +74,8 @@ body:
         - Microsoft Edge
         - Opera
         - Todos los navegadores
+    validations:
+      required: true
 
   - type: input
     id: browser-version
@@ -90,6 +98,8 @@ body:
         - Android
         - Linux
         - Todos los sistemas operativos
+    validations:
+      required: true
 
   - type: textarea
     id: steps
@@ -104,6 +114,8 @@ body:
         | 3    |             |            |
         | 4    |             |            |
         | 5    |             |            |
+    validations:
+      required: true
 
   - type: input
     id: expected-result
