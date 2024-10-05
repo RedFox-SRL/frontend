@@ -161,8 +161,8 @@ export default function GroupMemberListCreator({ groupId, members, userId }) {
 
   return (
     <Card className="w-full bg-white rounded-lg shadow-lg overflow-hidden">
-      <CardHeader className="bg-purple-100">
-        <CardTitle className="text-xl md:text-2xl font-bold text-purple-800">Miembros del Equipo</CardTitle>
+      <CardHeader className="bg-purple-600 py-4 px-6">
+        <CardTitle className="text-xl font-bold text-white">Miembros del Equipo</CardTitle>
       </CardHeader>
       <CardContent className="p-4 md:p-6">
         {isLoading ? (
