@@ -465,7 +465,7 @@ export default function GruposYPlanificacion() {
                 </div>
                 <div ref={equipoRef} className={activeCard === 'equipo' ? '' : 'hidden'}>
                     {isCreator ? (
-                        <GroupMemberListCreator groupId={groupId} members={selectedGroup.members} />
+                        <GroupMemberListCreator groupId={groupId} members={selectedGroup.members} userId={userId} />
                     ) : (
                         <GroupMemberListMember groupId={groupId} members={selectedGroup.members} />
                     )}
