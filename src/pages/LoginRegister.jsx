@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { postData } from '../api/apiService';
-import { Eye, EyeOff, CheckCircle, AlertCircle, Check } from 'lucide-react';
+import React, {useState, useEffect, useRef} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {postData} from '../api/apiService';
+import {Eye, EyeOff, CheckCircle, AlertCircle, Check} from 'lucide-react';
 import Particles from "react-particles";
-import { particlesInit, particlesOptions } from '../components/ParticlesConfig';
+import {particlesInit, particlesOptions} from '../components/ParticlesConfig';
+import ReCAPTCHA from "react-google-recaptcha";
 
 const LoginRegister = () => {
     const navigate = useNavigate();
+    const recaptchaRef = useRef();
 
     const [name, setName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -36,11 +38,11 @@ const LoginRegister = () => {
     }, []);
 
     const passwordRequirements = [
-        { regex: /.{8,15}/, text: "Entre 8 y 15 caracteres" },
-        { regex: /[A-Z]/, text: "Al menos una letra mayúscula" },
-        { regex: /[a-z]/, text: "Al menos una letra minúscula" },
-        { regex: /[0-9]/, text: "Al menos un número" },
-        { regex: /[!@#$%^&*]/, text: "Al menos un carácter especial (!@#$%^&*)" }
+        {regex: /.{8,15}/, text: "Entre 8 y 15 caracteres"},
+        {regex: /[A-Z]/, text: "Al menos una letra mayúscula"},
+        {regex: /[a-z]/, text: "Al menos una letra minúscula"},
+        {regex: /[0-9]/, text: "Al menos un número"},
+        {regex: /[!@#$%^&*]/, text: "Al menos un carácter especial (!@#$%^&*)"}
     ];
 
     const validateForm = () => {
@@ -81,7 +83,7 @@ const LoginRegister = () => {
     };
 
     const handleBlur = (field) => {
-        setTouched(prev => ({ ...prev, [field]: true }));
+        setTouched(prev => ({...prev, [field]: true}));
         setErrors(validateForm());
     };
 
@@ -103,12 +105,14 @@ const LoginRegister = () => {
         }
 
         try {
+            const recaptchaToken = await recaptchaRef.current.executeAsync();
             const response = await postData('/register', {
                 name,
                 last_name: lastName,
                 email,
                 password,
                 role,
+                recaptchaToken
             });
 
             if (response.success) {
@@ -124,7 +128,7 @@ const LoginRegister = () => {
             if (error.response && error.response.status === 422) {
                 setErrors(error.response.data.data);
             } else {
-                setErrors({ api: 'Hubo un error en el registro' });
+                setErrors({api: 'Hubo un error en el registro'});
             }
         }
     };
@@ -138,7 +142,8 @@ const LoginRegister = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x p-4 overflow-auto relative">
+        <div
+            className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-950 to-purple-950 animate-gradient-x p-4 overflow-auto relative">
             <Particles
                 id="tsparticles"
                 init={particlesInit}
@@ -146,15 +151,17 @@ const LoginRegister = () => {
                 className="absolute inset-0"
             />
             {showNotification && (
-                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center">
-                    <CheckCircle className="mr-2" size={20} />
+                <div
+                    className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center">
+                    <CheckCircle className="mr-2" size={20}/>
                     <span>Registro exitoso. Redirigiendo...</span>
                 </div>
             )}
-            <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden relative z-10">
+            <div
+                className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-lg flex flex-col md:flex-row overflow-hidden relative z-10">
                 <div className="md:w-1/2 bg-black text-white p-8 flex flex-col justify-center">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">TrackMaster</h1>
-                    <p className="text-lg mb-6">¡Bienvenido!<br />Ingrese ahora mismo a su cuenta</p>
+                    <p className="text-lg mb-6">¡Bienvenido!<br/>Ingrese ahora mismo a su cuenta</p>
                     <button
                         type="button"
                         onClick={() => navigate('/')}
@@ -186,8 +193,9 @@ const LoginRegister = () => {
                                     required
                                 />
                                 {touched.name && errors.name && (
-                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    <div
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500"/>
                                     </div>
                                 )}
                             </div>
@@ -205,12 +213,14 @@ const LoginRegister = () => {
                                     required
                                 />
                                 {touched.lastName && errors.lastName && (
-                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    <div
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500"/>
                                     </div>
                                 )}
                             </div>
-                            {touched.lastName && errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+                            {touched.lastName && errors.lastName &&
+                                <p className="text-red-500 text-sm">{errors.lastName}</p>}
 
                             <div className="relative">
                                 <input
@@ -223,8 +233,9 @@ const LoginRegister = () => {
                                     required
                                 />
                                 {touched.email && errors.email && (
-                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    <div
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500"/>
                                     </div>
                                 )}
                             </div>
@@ -249,11 +260,12 @@ const LoginRegister = () => {
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
                                 >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
                                 </button>
                                 {touched.password && errors.password && (
-                                    <div className="absolute inset-y-0 right-8 pr-3 flex items-center pointer-events-none">
-                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    <div
+                                        className="absolute inset-y-0 right-8 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500"/>
                                     </div>
                                 )}
                             </div>
@@ -262,18 +274,20 @@ const LoginRegister = () => {
                                     {passwordRequirements.map((req, index) => (
                                         <div key={index} className="flex items-center space-x-2">
                                             {req.regex.test(password) ? (
-                                                <Check className="text-green-500" size={16} />
+                                                <Check className="text-green-500" size={16}/>
                                             ) : (
-                                                <AlertCircle className="text-red-500" size={16} />
+                                                <AlertCircle className="text-red-500" size={16}/>
                                             )}
-                                            <span className={req.regex.test(password) ? "text-green-500" : "text-red-500"}>
+                                            <span
+                                                className={req.regex.test(password) ? "text-green-500" : "text-red-500"}>
                                                 {req.text}
                                             </span>
                                         </div>
                                     ))}
                                 </div>
                             )}
-                            {touched.password && errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                            {touched.password && errors.password &&
+                                <p className="text-red-500 text-sm">{errors.password}</p>}
 
                             <div className="relative">
                                 <input
@@ -290,15 +304,17 @@ const LoginRegister = () => {
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-purple-700"
                                 >
-                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    {showConfirmPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
                                 </button>
                                 {touched.confirmPassword && errors.confirmPassword && (
-                                    <div className="absolute inset-y-0 right-8 pr-3 flex items-center pointer-events-none">
-                                        <AlertCircle className="h-5 w-5 text-red-500" />
+                                    <div
+                                        className="absolute inset-y-0 right-8 pr-3 flex items-center pointer-events-none">
+                                        <AlertCircle className="h-5 w-5 text-red-500"/>
                                     </div>
                                 )}
                             </div>
-                            {touched.confirmPassword && errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+                            {touched.confirmPassword && errors.confirmPassword &&
+                                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
 
                             <select
                                 className={getInputClassName('role')}
@@ -322,6 +338,13 @@ const LoginRegister = () => {
                         </div>
                         {errors.api && <p className="text-red-500 text-center mt-4">{errors.api}</p>}
                     </form>
+                    <div className="absolute bottom-0 right-0 transform scale-50 origin-bottom-right">
+                        <ReCAPTCHA
+                            ref={recaptchaRef}
+                            size="invisible"
+                            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
