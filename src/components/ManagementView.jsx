@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { getData, postData, putData } from "../api/apiService";
+import { getData, putData } from "../api/apiService";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Users, Clipboard, X } from "lucide-react";
 import { Switch } from "@headlessui/react";
+import EvaluationView from "./EvaluationView"; // Importar la nueva vista de evaluación
 
 export default function ManagementView({ management, onBack }) {
     const [groups, setGroups] = useState([]);
@@ -11,6 +12,9 @@ export default function ManagementView({ management, onBack }) {
     const [newGroupLimit, setNewGroupLimit] = useState(management.group_limit);
     const [isEditingLimit, setIsEditingLimit] = useState(false);
     const [isCodeActive, setIsCodeActive] = useState(management.is_code_active);
+    const [isEvaluating, setIsEvaluating] = useState(false); // Estado para manejar la evaluación
+    const [selectedSprint, setSelectedSprint] = useState(null); // Estado para el sprint seleccionado
+    const [selectedGroupId, setSelectedGroupId] = useState(null); // Agregar esta línea para definir el estado
 
     // Estado para los recursos
     const [isResourcesOpen, setIsResourcesOpen] = useState(false); // Desplegable
@@ -96,6 +100,13 @@ export default function ManagementView({ management, onBack }) {
         }
     };
 
+    // Función para manejar el clic en el botón de Evaluar
+    const handleEvaluateClick = (groupId) => {
+        setSelectedSprint(null); // Resetear el sprint seleccionado si fuera necesario
+        setIsEvaluating(true);
+        setSelectedGroupId(groupId); // Guardar el ID del grupo seleccionado
+    };
+
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <Button onClick={onBack} className="flex items-center mb-4 bg-gray-400 hover:bg-gray-500">
@@ -103,130 +114,139 @@ export default function ManagementView({ management, onBack }) {
                 Volver al Listado
             </Button>
 
-            <div className="bg-white shadow-md p-6 rounded-lg mb-8">
-                <h1 className="text-3xl font-bold mb-4 text-purple-700">
-                    Gestión {management.semester === "first" ? "1" : "2"}/{new Date(management.start_date).getFullYear()}
-                </h1>
+            {isEvaluating ? (
+                <EvaluationView groupId={selectedGroupId} onBack={() => setIsEvaluating(false)} />
+            ) : (
+                <>
+                    <div className="bg-white shadow-md p-6 rounded-lg mb-8">
+                        <h1 className="text-3xl font-bold mb-4 text-purple-700">
+                            Gestión {management.semester === "first" ? "1" : "2"}/{new Date(management.start_date).getFullYear()}
+                        </h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-center">
-                        <Calendar className="h-6 w-6 text-purple-600 mr-3" />
-                        <div>
-                            <p className="font-semibold">Fecha de inicio:</p>
-                            <p>{management.start_date}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center">
-                        <Calendar className="h-6 w-6 text-purple-600 mr-3" />
-                        <div>
-                            <p className="font-semibold">Fecha de fin:</p>
-                            <p>{management.end_date}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center">
-                        <Users className="h-6 w-6 text-purple-600 mr-3" />
-                        <div>
-                            <p className="font-semibold">Límite de grupos:</p>
-                            <div className="flex items-center space-x-2">
-                                {isEditingLimit ? (
-                                    <>
-                                        <input
-                                            type="number"
-                                            value={newGroupLimit}
-                                            onChange={handleGroupLimitChange}
-                                            className="border rounded p-1"
-                                            style={{ width: '60px' }}
-                                        />
-                                        <Button onClick={saveGroupLimit} className="w-20 bg-purple-600 hover:bg-purple-700">
-                                            Guardar
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p>{newGroupLimit}</p>
-                                        <Button onClick={() => setIsEditingLimit(true)} className="w-20 bg-purple-600 hover:bg-purple-700">
-                                            Editar
-                                        </Button>
-                                    </>
-                                )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex items-center">
+                                <Calendar className="h-6 w-6 text-purple-600 mr-3" />
+                                <div>
+                                    <p className="font-semibold">Fecha de inicio:</p>
+                                    <p>{management.start_date}</p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div className="flex items-center">
-                        <Clipboard className="h-6 w-6 text-purple-600 mr-3" />
-                        <div>
-                            <p className="font-semibold">Código de la gestión:</p>
-                            <p className="font-bold text-lg">{management.code}</p>
-                            <Switch
-                                checked={isCodeActive}
-                                onChange={toggleCodeStatus}
-                                className={`${isCodeActive ? 'bg-purple-600' : 'bg-gray-400'} relative inline-flex items-center h-6 rounded-full w-11`}
-                            >
-                                <span className="sr-only">Toggle code</span>
-                                <span className={`${isCodeActive ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
-                            </Switch>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Sección de recursos */}
-            <div className="bg-white shadow-md p-6 rounded-lg mb-8">
-                <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-purple-700">Recursos</h2>
-                    <button onClick={() => setIsResourcesOpen(!isResourcesOpen)} className="text-purple-600">
-                        {isResourcesOpen ? "▲" : "▼"}
-                    </button>
-                </div>
-
-                {isResourcesOpen && (
-                    <div className="mt-4 relative">
-                        <p className="text-gray-600">Aún no hay recursos publicados.</p>
-                        <Button
-                            onClick={() => setIsModalOpen(true)}
-                            className="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-6 shadow-lg hover:shadow-xl transition-transform duration-300 transform hover:scale-110 z-50"
-                        >
-                            +
-                        </Button>
-                    </div>
-                )}
-            </div>
-
-            {/* Lista de grupos */}
-            <div className="bg-white shadow-md p-6 rounded-lg">
-                <h2 className="text-2xl font-bold mb-4 text-purple-700">Grupos Registrados</h2>
-                {errorMessage ? (
-                    <p className="mt-4 text-red-500">{errorMessage}</p>
-                ) : groups.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {groups.map((group) => (
-                            <div key={group.short_name} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
-                                <div className="flex items-center space-x-4">
-                                    <div className="flex-shrink-0">
-                                        {group.logo ? (
-                                            <img src={group.logo} alt={group.short_name} className="h-14 w-14 rounded-full object-cover shadow-md" />
+                            <div className="flex items-center">
+                                <Calendar className="h-6 w-6 text-purple-600 mr-3" />
+                                <div>
+                                    <p className="font-semibold">Fecha de fin:</p>
+                                    <p>{management.end_date}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center">
+                                <Users className="h-6 w-6 text-purple-600 mr-3" />
+                                <div>
+                                    <p className="font-semibold">Límite de grupos:</p>
+                                    <div className="flex items-center space-x-2">
+                                        {isEditingLimit ? (
+                                            <>
+                                                <input
+                                                    type="number"
+                                                    value={newGroupLimit}
+                                                    onChange={handleGroupLimitChange}
+                                                    className="border rounded p-1"
+                                                    style={{ width: '60px' }}
+                                                />
+                                                <Button onClick={saveGroupLimit} className="w-20 bg-purple-600 hover:bg-purple-700">
+                                                    Guardar
+                                                </Button>
+                                            </>
                                         ) : (
-                                            <div className="h-14 w-14 rounded-full bg-purple-700 flex items-center justify-center text-lg font-bold text-white shadow-md">
-                                                {group.short_name[0]}
-                                            </div>
+                                            <>
+                                                <p>{newGroupLimit}</p>
+                                                <Button onClick={() => setIsEditingLimit(true)} className="w-20 bg-purple-600 hover:bg-purple-700">
+                                                    Editar
+                                                </Button>
+                                            </>
                                         )}
                                     </div>
-                                    <div>
-                                        <p className="font-semibold text-lg">{group.long_name || group.short_name}</p>
-                                        <p className="text-sm text-gray-600">Representante: {group.representative.name} {group.representative.last_name}</p>
-                                        <p className="text-sm text-gray-600">Integrantes: {group.members.length}</p>
-                                    </div>
                                 </div>
-                                <Button className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition-all duration-300">
-                                    Evaluar
+                            </div>
+                            <div className="flex items-center">
+                                <Clipboard className="h-6 w-6 text-purple-600 mr-3" />
+                                <div>
+                                    <p className="font-semibold">Código de la gestión:</p>
+                                    <p className="font-bold text-lg">{management.code}</p>
+                                    <Switch
+                                        checked={isCodeActive}
+                                        onChange={toggleCodeStatus}
+                                        className={`${isCodeActive ? 'bg-purple-600' : 'bg-gray-400'} relative inline-flex items-center h-6 rounded-full w-11`}
+                                    >
+                                        <span className="sr-only">Toggle code</span>
+                                        <span className={`${isCodeActive ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
+                                    </Switch>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sección de recursos */}
+                    <div className="bg-white shadow-md p-6 rounded-lg mb-8">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-2xl font-bold text-purple-700">Recursos</h2>
+                            <button onClick={() => setIsResourcesOpen(!isResourcesOpen)} className="text-purple-600">
+                                {isResourcesOpen ? "▲" : "▼"}
+                            </button>
+                        </div>
+
+                        {isResourcesOpen && (
+                            <div className="mt-4 relative">
+                                <p className="text-gray-600">Aún no hay recursos publicados.</p>
+                                <Button
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-6 shadow-lg hover:shadow-xl transition-transform duration-300 transform hover:scale-110 z-50"
+                                >
+                                    +
                                 </Button>
                             </div>
-                        ))}
+                        )}
                     </div>
-                ) : (
-                    <p>No hay grupos registrados en esta gestión.</p>
-                )}
-            </div>
+
+                    {/* Lista de grupos */}
+                    <div className="bg-white shadow-md p-6 rounded-lg">
+                        <h2 className="text-2xl font-bold mb-4 text-purple-700">Grupos Registrados</h2>
+                        {errorMessage ? (
+                            <p className="mt-4 text-red-500">{errorMessage}</p>
+                        ) : groups.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {groups.map((group) => (
+                                    <div key={group.short_name} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="flex-shrink-0">
+                                                {group.logo ? (
+                                                    <img src={group.logo} alt={group.short_name} className="h-14 w-14 rounded-full object-cover shadow-md" />
+                                                ) : (
+                                                    <div className="h-14 w-14 rounded-full bg-purple-700 flex items-center justify-center text-lg font-bold text-white shadow-md">
+                                                        {group.short_name[0]}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-lg">{group.long_name || group.short_name}</p>
+                                                <p className="text-sm text-gray-600">Representante: {group.representative.name} {group.representative.last_name}</p>
+                                                <p className="text-sm text-gray-600">Integrantes: {group.members.length}</p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition-all duration-300"
+                                            onClick={() => handleEvaluateClick(group.id)}
+                                        >
+                                            Evaluar
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p>No hay grupos registrados en esta gestión.</p>
+                        )}
+                    </div>
+                </>
+            )}
 
             {/* Modal para añadir recursos/anuncios */}
             {isModalOpen && (
@@ -318,7 +338,6 @@ export default function ManagementView({ management, onBack }) {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
