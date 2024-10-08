@@ -6,9 +6,11 @@ import { Switch } from "@headlessui/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import EvaluationView from "./EvaluationView"; // Importar la nueva vista de evaluación
+import ParticipantList from "./ParticipantList"; // Importar el nuevo componente
 
 export default function ManagementView({ management, onBack }) {
     const [groups, setGroups] = useState([]);
+    const [participants, setParticipants] = useState(null); // Estado para los participantes
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [newGroupLimit, setNewGroupLimit] = useState(management.group_limit);
@@ -59,9 +61,21 @@ export default function ManagementView({ management, onBack }) {
         }
     };
 
+    const fetchParticipants = async () => {
+        try {
+            const response = await getData(`/managements/${management.id}/students`);
+            if (response && response.teacher && response.students) {
+                setParticipants(response);
+            }
+        } catch (error) {
+            console.error("Error al cargar los participantes:", error);
+        }
+    };
+
     useEffect(() => {
         if (management) {
             fetchGroups();
+            fetchParticipants(); // Cargar participantes
         }
     }, [management]);
 
@@ -103,17 +117,8 @@ export default function ManagementView({ management, onBack }) {
         setSelectedGroupId(groupId);
     };
 
-    const getInitials = (shortName, longName) => {
-        if (longName) {
-            return longName
-                .split(" ")
-                .map((n) => n[0])
-                .join("");
-        }
-        return shortName
-            .split(" ")
-            .map((n) => n[0])
-            .join("");
+    const getInitials = (firstName, lastName) => {
+        return `${firstName[0]}${lastName[0]}`;
     };
 
     return (
@@ -217,7 +222,8 @@ export default function ManagementView({ management, onBack }) {
                         )}
                     </div>
 
-                    <div className="bg-white shadow-md p-6 rounded-lg">
+                    {/* Lista de grupos */}
+                    <div className="bg-white shadow-md p-6 rounded-lg mb-8"> {/* Añadimos mb-8 aquí */}
                         <h2 className="text-2xl font-bold mb-4 text-purple-700">Grupos Registrados</h2>
                         {errorMessage ? (
                             <p className="mt-4 text-red-500">{errorMessage}</p>
@@ -269,6 +275,11 @@ export default function ManagementView({ management, onBack }) {
                             <p>No hay grupos registrados en esta gestión.</p>
                         )}
                     </div>
+
+                    {/* Mostrar el nuevo componente de participantes */}
+                    {participants && (
+                        <ParticipantList participants={participants} getInitials={getInitials} />
+                    )}
                 </>
             )}
 
