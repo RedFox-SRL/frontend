@@ -71,6 +71,7 @@ export default function EvaluationView({ groupId, onBack }) {
     };
 
     // Enviar evaluación individual
+// Enviar evaluación individual
     const handleSubmitEvaluation = async (taskId) => {
         setIsSubmitting((prev) => ({
             ...prev,
@@ -96,10 +97,22 @@ export default function EvaluationView({ groupId, onBack }) {
                 },
             };
 
-            console.log("Enviando evaluación: ", payload); // Verificar los datos antes de enviar
+            console.log("Enviando evaluación: ", payload);
 
+            // Enviar la evaluación
             await postData(`/sprints/${selectedSprintId}/submit-evaluation`, payload);
+
+            // Mostrar mensaje de éxito
             setToast({ message: 'La evaluación se ha guardado correctamente.', type: 'success' });
+
+            // Eliminar la tarea evaluada del listado
+            setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+
+            // Limpiar la evaluación local para esta tarea
+            setEvaluations((prev) => {
+                const { [taskId]: removed, ...rest } = prev;
+                return rest;
+            });
         } catch (error) {
             console.error("Error al enviar la evaluación:", error);
             setToast({ message: 'No se pudo guardar la evaluación. Intente de nuevo.', type: 'error' });
@@ -110,6 +123,7 @@ export default function EvaluationView({ groupId, onBack }) {
             }));
         }
     };
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-100 p-6">

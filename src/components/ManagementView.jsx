@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getData, putData } from "../api/apiService";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Users, Clipboard, X } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Clipboard, X, Mail, Phone } from "lucide-react";
 import { Switch } from "@headlessui/react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import EvaluationView from "./EvaluationView"; // Importar la nueva vista de evaluación
 
 export default function ManagementView({ management, onBack }) {
@@ -12,11 +14,9 @@ export default function ManagementView({ management, onBack }) {
     const [newGroupLimit, setNewGroupLimit] = useState(management.group_limit);
     const [isEditingLimit, setIsEditingLimit] = useState(false);
     const [isCodeActive, setIsCodeActive] = useState(management.is_code_active);
-    const [isEvaluating, setIsEvaluating] = useState(false); // Estado para manejar la evaluación
-    const [selectedSprint, setSelectedSprint] = useState(null); // Estado para el sprint seleccionado
-    const [selectedGroupId, setSelectedGroupId] = useState(null); // Agregar esta línea para definir el estado
-
-    // Estado para los recursos
+    const [isEvaluating, setIsEvaluating] = useState(false);
+    const [selectedSprint, setSelectedSprint] = useState(null);
+    const [selectedGroupId, setSelectedGroupId] = useState(null);
     const [isResourcesOpen, setIsResourcesOpen] = useState(false); // Desplegable
     const [isModalOpen, setIsModalOpen] = useState(false); // Modal
     const [resourceType, setResourceType] = useState("Recurso"); // Tipo de recurso o anuncio
@@ -65,12 +65,10 @@ export default function ManagementView({ management, onBack }) {
         }
     }, [management]);
 
-    // Manejar el cambio del límite de grupo
     const handleGroupLimitChange = (e) => {
         setNewGroupLimit(e.target.value);
     };
 
-    // Guardar el nuevo límite de grupo
     const saveGroupLimit = async () => {
         try {
             const response = await putData(`/managements/${management.id}/update-group-limit`, {
@@ -86,7 +84,6 @@ export default function ManagementView({ management, onBack }) {
         }
     };
 
-    // Toggle para activar o desactivar el código de la gestión
     const toggleCodeStatus = async () => {
         try {
             const response = await putData(`/managements/${management.id}/toggle-code`);
@@ -100,19 +97,33 @@ export default function ManagementView({ management, onBack }) {
         }
     };
 
-    // Función para manejar el clic en el botón de Evaluar
     const handleEvaluateClick = (groupId) => {
-        setSelectedSprint(null); // Resetear el sprint seleccionado si fuera necesario
+        setSelectedSprint(null);
         setIsEvaluating(true);
-        setSelectedGroupId(groupId); // Guardar el ID del grupo seleccionado
+        setSelectedGroupId(groupId);
+    };
+
+    const getInitials = (shortName, longName) => {
+        if (longName) {
+            return longName
+                .split(" ")
+                .map((n) => n[0])
+                .join("");
+        }
+        return shortName
+            .split(" ")
+            .map((n) => n[0])
+            .join("");
     };
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            <Button onClick={onBack} className="flex items-center mb-4 bg-gray-400 hover:bg-gray-500">
-                <ArrowLeft className="mr-2" />
-                Volver al Listado
-            </Button>
+            {!isEvaluating && (
+                <Button onClick={onBack} className="flex items-center mb-4 bg-gray-400 hover:bg-gray-500">
+                    <ArrowLeft className="mr-2" />
+                    Volver al Listado
+                </Button>
+            )}
 
             {isEvaluating ? (
                 <EvaluationView groupId={selectedGroupId} onBack={() => setIsEvaluating(false)} />
@@ -185,7 +196,6 @@ export default function ManagementView({ management, onBack }) {
                         </div>
                     </div>
 
-                    {/* Sección de recursos */}
                     <div className="bg-white shadow-md p-6 rounded-lg mb-8">
                         <div className="flex justify-between items-center">
                             <h2 className="text-2xl font-bold text-purple-700">Recursos</h2>
@@ -207,7 +217,6 @@ export default function ManagementView({ management, onBack }) {
                         )}
                     </div>
 
-                    {/* Lista de grupos */}
                     <div className="bg-white shadow-md p-6 rounded-lg">
                         <h2 className="text-2xl font-bold mb-4 text-purple-700">Grupos Registrados</h2>
                         {errorMessage ? (
@@ -215,30 +224,45 @@ export default function ManagementView({ management, onBack }) {
                         ) : groups.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 {groups.map((group) => (
-                                    <div key={group.short_name} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="flex-shrink-0">
-                                                {group.logo ? (
-                                                    <img src={group.logo} alt={group.short_name} className="h-14 w-14 rounded-full object-cover shadow-md" />
-                                                ) : (
-                                                    <div className="h-14 w-14 rounded-full bg-purple-700 flex items-center justify-center text-lg font-bold text-white shadow-md">
-                                                        {group.short_name[0]}
-                                                    </div>
-                                                )}
+                                    <Card key={group.short_name} className="overflow-hidden">
+                                        <CardContent className="p-0">
+                                            <div className="relative h-40">
+                                                <img
+                                                    src={group.logo || '/placeholder.svg?height=160&width=320'}
+                                                    alt="Logo del grupo"
+                                                    className="w-full h-40 object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                                    <Avatar className="w-20 h-20 border-4 border-white">
+                                                        <AvatarFallback className="text-3xl">
+                                                            {getInitials(group.short_name, group.long_name)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-semibold text-lg">{group.long_name || group.short_name}</p>
-                                                <p className="text-sm text-gray-600">Representante: {group.representative.name} {group.representative.last_name}</p>
-                                                <p className="text-sm text-gray-600">Integrantes: {group.members.length}</p>
+                                            <div className="p-4">
+                                                <h3 className="text-xl font-bold mb-2">{group.short_name}</h3>
+                                                <p className="flex items-center mb-1">
+                                                    <Mail className="mr-2 h-4 w-4" />
+                                                    {group.contact_email || "No disponible"}
+                                                </p>
+                                                <p className="flex items-center mb-1">
+                                                    <Phone className="mr-2 h-4 w-4" />
+                                                    {group.contact_phone || "No disponible"}
+                                                </p>
+                                                <p className="flex items-center mb-4">
+                                                    <Users className="mr-2 h-4 w-4" />
+                                                    {group.members.length} integrantes
+                                                </p>
+                                                <Button
+                                                    className="w-full bg-purple-600 hover:bg-purple-700"
+                                                    onClick={() => handleEvaluateClick(group.id)}
+                                                >
+                                                    Evaluar
+                                                </Button>
                                             </div>
-                                        </div>
-                                        <Button
-                                            className="mt-4 w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition-all duration-300"
-                                            onClick={() => handleEvaluateClick(group.id)}
-                                        >
-                                            Evaluar
-                                        </Button>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
                                 ))}
                             </div>
                         ) : (
@@ -248,11 +272,9 @@ export default function ManagementView({ management, onBack }) {
                 </>
             )}
 
-            {/* Modal para añadir recursos/anuncios */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-8 rounded-xl shadow-xl relative w-96 transition-transform transform scale-100 animate-fade-in">
-                        {/* Botón de cierre en la esquina superior derecha */}
                         <button
                             className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
                             onClick={closeModal}
@@ -265,7 +287,6 @@ export default function ManagementView({ management, onBack }) {
                         </h2>
 
                         <form className="space-y-4">
-                            {/* Tipo */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Tipo</label>
                                 <select
@@ -278,7 +299,6 @@ export default function ManagementView({ management, onBack }) {
                                 </select>
                             </div>
 
-                            {/* Título */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Título</label>
                                 <input
@@ -290,7 +310,6 @@ export default function ManagementView({ management, onBack }) {
                                 />
                             </div>
 
-                            {/* Fecha */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Fecha</label>
                                 <input
@@ -302,7 +321,6 @@ export default function ManagementView({ management, onBack }) {
                                 />
                             </div>
 
-                            {/* Archivo o Descripción según el tipo seleccionado */}
                             {resourceType === "Recurso" ? (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Subir archivo</label>
@@ -325,7 +343,6 @@ export default function ManagementView({ management, onBack }) {
                                 </div>
                             )}
 
-                            {/* Botón de enviar */}
                             <Button
                                 className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
                                 onClick={() => {
