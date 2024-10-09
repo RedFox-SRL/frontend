@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 import CourseInfo from './CourseInfo';
 import GroupList from './GroupList';
 import ParticipantList from './ParticipantList';
-import GroupDetail from './GroupDetail';
+import GroupDetailCreator from './GroupDetailCreator.jsx';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
@@ -158,7 +158,7 @@ export default function Dashboard() {
                 )}
                 <ParticipantList participants={participants} getInitials={getInitials} />
                 {selectedGroup && (
-                    <GroupDetail
+                    <GroupDetailCreator
                         selectedGroup={selectedGroup}
                         onClose={() => setSelectedGroup(null)}
                         getInitials={getInitials}

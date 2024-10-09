@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getData, postData } from '../api/apiService';
+import { getData, postData, putData } from '../api/apiService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Loader2, Calendar, Users, LayoutDashboard, Mail, Phone, Hash, Upload } from "lucide-react"
+import { Loader2, Calendar, Users, LayoutDashboard, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import CalendarioEventos from './CalendarioEventos';
 import SprintKanbanBoard from './SprintKanbanBoard';
 import GroupMemberListCreator from './GroupMemberListCreator';
 import GroupMemberListMember from './GroupMemberListMember';
+import GroupDetailCreator from './GroupDetailCreator';
+import GroupDetailMember from './GroupDetailMember';
 
 export default function GruposYPlanificacion() {
     const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +95,7 @@ export default function GruposYPlanificacion() {
                 setSelectedGroup(groupResponse.data.group);
                 setCalendarId(groupResponse.data.group.calendar_id);
                 setGroupId(groupResponse.data.group.id);
+                setIsCreator(groupResponse.data.group.representative.id === userId);
             } else {
                 setIsInGroup(false);
             }
@@ -124,7 +126,6 @@ export default function GruposYPlanificacion() {
     const handleJoinManagement = async () => {
         try {
             const response = await postData('/managements/join', {management_code: managementCode});
-
             if (response.success) {
                 toast({
                     title: "Éxito",
@@ -146,7 +147,6 @@ export default function GruposYPlanificacion() {
     const handleJoinGroup = async () => {
         try {
             const response = await postData('/groups/join', {group_code: groupCode});
-
             if (response.success) {
                 toast({
                     title: "Éxito",
@@ -179,7 +179,6 @@ export default function GruposYPlanificacion() {
             });
 
             const response = await postData('/groups', formData);
-
             if (response.success) {
                 toast({
                     title: "Éxito",
@@ -229,6 +228,10 @@ export default function GruposYPlanificacion() {
 
     const handleCardClick = (card) => {
         setActiveCard(activeCard === card ? null : card);
+    };
+
+    const handleUpdateGroup = async () => {
+        await checkGroup();
     };
 
     if (isLoading) {
@@ -344,6 +347,7 @@ export default function GruposYPlanificacion() {
                                         className={errors.contact_phone ? "border-red-500" : ""}
                                     />
                                     {errors.contact_phone && <p className="text-red-500 text-sm mt-1">{errors.contact_phone}</p>}
+
                                 </div>
                                 <div className="flex items-center justify-center w-full">
                                     <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden">
@@ -378,59 +382,14 @@ export default function GruposYPlanificacion() {
     if (isInGroup && selectedGroup) {
         return (
             <div className="space-y-6">
-                <Card className="bg-gradient-to-r from-purple-600 to-purple-800 text-white shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="text-3xl font-bold">Detalles del Grupo</CardTitle>
-                        <CardDescription className="text-purple-200">Información y gestión de tu grupo de trabajo</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-4">
-                                <Avatar className="h-20 w-20 border-2 border-white">
-                                    <AvatarImage src={selectedGroup.logo} alt={selectedGroup.short_name} />
-                                    <AvatarFallback className="bg-purple-300 text-purple-800 text-2xl font-bold">
-                                        {selectedGroup.short_name.charAt(0)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <h2 className="text-2xl font-bold">{selectedGroup.short_name}</h2>
-                                    <p className="text-lg text-purple-200">{selectedGroup.long_name}</p>
-                                </div>
-                            </div>
-                            <div className="bg-white/10 rounded-lg p-4 space-y-2">
-                                <div className="flex items-center space-x-2">
-                                    <Mail className="h-5 w-5 text-purple-300" />
-                                    <p>{selectedGroup.contact_email}</p>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Phone className="h-5 w-5 text-purple-300" />
-                                    <p>{selectedGroup.contact_phone}</p>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Hash className="h-5 w-5 text-purple-300" />
-                                    <p>{selectedGroup.code}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col justify-center">
-                            <h3 className="text-xl font-semibold mb-4">Acciones Rápidas</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Button variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
-                                    Editar Grupo
-                                </Button>
-                                <Button variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
-                                    Invitar Miembros
-                                </Button>
-                                <Button variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
-                                    Configuración
-                                </Button>
-                                <Button variant="secondary" className="bg-white/20 hover:bg-white/30 text-white">
-                                    Reportes
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                {isCreator ? (
+                    <GroupDetailCreator
+                        selectedGroup={selectedGroup}
+                        onUpdateGroup={handleUpdateGroup}
+                    />
+                ) : (
+                    <GroupDetailMember selectedGroup={selectedGroup} />
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Card
                         className={`cursor-pointer transition-all duration-200 ${activeCard === 'planificacion' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
