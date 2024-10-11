@@ -261,21 +261,22 @@ export default function GruposYPlanificacion() {
 
     if (!isInManagement) {
         return (
-            <div className="space-y-4 p-6 max-w-xl mx-auto">
+            <div className="space-y-4 p-6 max-w-md mx-auto">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-center text-2xl text-purple-700">No estás inscrito en un curso</CardTitle>
+                        <CardTitle className="text-center text-2xl text-purple-700">No estás inscrito en un
+                            curso</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Input
                             type="text"
-                            placeholder="Ingrese el código del curso"
+                            placeholder="Ingrese el código de la clase"
                             value={managementCode}
                             onChange={(e) => setManagementCode(e.target.value)}
                             className="mb-4"
                         />
                         <Button onClick={handleJoinManagement} className="w-full bg-purple-600 hover:bg-purple-700">
-                            Unirse al Curso
+                            Unirse a Clase
                         </Button>
                     </CardContent>
                 </Card>
