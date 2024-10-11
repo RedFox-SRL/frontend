@@ -117,8 +117,8 @@ export default function ManagementView({ management, onBack }) {
         setSelectedGroupId(groupId);
     };
 
-    const getInitials = (firstName, lastName) => {
-        return `${firstName[0]}${lastName[0]}`;
+    const getInitials = (name, lastName) => {
+        return `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     };
 
     return (
