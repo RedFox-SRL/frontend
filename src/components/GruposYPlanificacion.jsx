@@ -45,7 +45,7 @@ export default function GruposYPlanificacion() {
     }, []);
 
     useEffect(() => {
-        if (userId !== null && selectedGroup !== null) {
+        if (userId !== null && selectedGroup !== null && selectedGroup.representative) {
             setIsCreator(selectedGroup.representative.id === userId);
         }
     }, [userId, selectedGroup]);
@@ -95,13 +95,23 @@ export default function GruposYPlanificacion() {
                 setSelectedGroup(groupResponse.data.group);
                 setCalendarId(groupResponse.data.group.calendar_id);
                 setGroupId(groupResponse.data.group.id);
-                setIsCreator(groupResponse.data.group.representative.id === userId);
+                if (groupResponse.data.group.representative && userId) {
+                    setIsCreator(groupResponse.data.group.representative.id === userId);
+                }
             } else {
                 setIsInGroup(false);
+                setSelectedGroup(null);
+                setCalendarId(null);
+                setGroupId(null);
+                setIsCreator(false);
             }
         } catch (error) {
             console.error('Error al verificar el grupo:', error);
             setIsInGroup(false);
+            setSelectedGroup(null);
+            setCalendarId(null);
+            setGroupId(null);
+            setIsCreator(false);
         }
     };
 
@@ -170,6 +180,7 @@ export default function GruposYPlanificacion() {
             return;
         }
 
+        setIsLoading(true);
         try {
             const formData = new FormData();
             Object.keys(groupData).forEach(key => {
@@ -179,7 +190,7 @@ export default function GruposYPlanificacion() {
             });
 
             const response = await postData('/groups', formData);
-            if (response.success) {
+            if (response.success && response.data && response.data.group) {
                 toast({
                     title: "Éxito",
                     description: "Grupo creado exitosamente.",
@@ -189,13 +200,18 @@ export default function GruposYPlanificacion() {
                 setCalendarId(response.data.group.calendar_id);
                 setGroupId(response.data.group.id);
                 setIsInGroup(true);
+                if (response.data.group.representative && userId) {
+                    setIsCreator(response.data.group.representative.id === userId);
+                }
                 await checkManagementAndGroup();
             } else {
                 handleError(response);
             }
         } catch (error) {
             console.error('Error al crear el grupo:', error);
-            handleError(error.response?.data);
+            handleError(error.response?.data || { message: "Error desconocido al crear el grupo" });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -347,9 +363,8 @@ export default function GruposYPlanificacion() {
                                         className={errors.contact_phone ? "border-red-500" : ""}
                                     />
                                     {errors.contact_phone && <p className="text-red-500 text-sm mt-1">{errors.contact_phone}</p>}
-
                                 </div>
-                                <div className="flex items-center justify-center w-full">
+                                <div  className="flex items-center justify-center w-full">
                                     <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden">
                                         {previewImage ? (
                                             <>
