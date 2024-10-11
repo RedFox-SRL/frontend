@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getData, postData, putData } from '../api/apiService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,8 @@ import GroupMemberListCreator from './GroupMemberListCreator';
 import GroupMemberListMember from './GroupMemberListMember';
 import GroupDetailCreator from './GroupDetailCreator';
 import GroupDetailMember from './GroupDetailMember';
+import { useDropzone } from 'react-dropzone';
+import Cropper from 'react-easy-crop';
 
 export default function GruposYPlanificacion() {
     const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +41,11 @@ export default function GruposYPlanificacion() {
     const calendarRef = useRef(null);
     const kanbanRef = useRef(null);
     const equipoRef = useRef(null);
+
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const [isCropping, setIsCropping] = useState(false);
 
     useEffect(() => {
         checkManagementAndGroup();
@@ -128,6 +135,9 @@ export default function GruposYPlanificacion() {
         }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupData.contact_email)) {
             newErrors.contact_email = "Ingrese un correo electrónico válido";
+        }
+        if (!groupData.logo) {
+            newErrors.logo = "Debe subir una imagen para el logo del grupo";
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -230,24 +240,96 @@ export default function GruposYPlanificacion() {
         });
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setGroupData({...groupData, logo: file});
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewImage(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const handleCardClick = (card) => {
         setActiveCard(activeCard === card ? null : card);
     };
 
     const handleUpdateGroup = async () => {
         await checkGroup();
+    };
+
+    const onDrop = useCallback((acceptedFiles) => {
+        const file = acceptedFiles[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                setErrors(prev => ({ ...prev, logo: "El archivo no debe superar los 10MB" }));
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setPreviewImage(e.target.result);
+                setIsCropping(true);
+            };
+            reader.readAsDataURL(file);
+        }
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: 'image/*',
+        multiple: false
+    });
+
+    const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
+
+    const createImage = (url) =>
+        new Promise((resolve, reject) => {
+            const image = new Image();
+            image.addEventListener('load', () => resolve(image));
+            image.addEventListener('error', (error) => reject(error));
+            image.setAttribute('crossOrigin', 'anonymous');
+            image.src = url;
+        });
+
+    const getCroppedImg = async (imageSrc, pixelCrop) => {
+        const image = await createImage(imageSrc);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const maxSize = Math.max(image.width, image.height);
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const scale = maxSize / Math.min(image.width, image.height);
+        ctx.drawImage(
+            image,
+            (maxSize - image.width * scale) / 2,
+            (maxSize - image.height * scale) / 2,
+            image.width * scale,
+            image.height * scale
+        );
+
+        const data = ctx.getImageData(
+            pixelCrop.x,
+            pixelCrop.y,
+            pixelCrop.width,
+            pixelCrop.height
+        );
+
+        canvas.width = pixelCrop.width;
+        canvas.height = pixelCrop.height;
+        ctx.putImageData(data, 0, 0);
+
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => {
+                resolve(blob);
+            }, 'image/jpeg');
+        });
+    };
+
+    const handleCropSave = async () => {
+        if (croppedAreaPixels) {
+            const croppedImage = await getCroppedImg(previewImage, croppedAreaPixels);
+            setGroupData(prev => ({ ...prev, logo: croppedImage }));
+            setPreviewImage(URL.createObjectURL(croppedImage));
+            setIsCropping(false);
+        }
     };
 
     if (isLoading) {
@@ -299,6 +381,7 @@ export default function GruposYPlanificacion() {
                         Crear grupo
                     </Button>
                 </div>
+
                 {view === 'join' && (
                     <Card>
                         <CardHeader>
@@ -365,25 +448,48 @@ export default function GruposYPlanificacion() {
                                     />
                                     {errors.contact_phone && <p className="text-red-500 text-sm mt-1">{errors.contact_phone}</p>}
                                 </div>
-                                <div  className="flex items-center justify-center w-full">
-                                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden">
-                                        {previewImage ? (
-                                            <>
-                                                <img src={previewImage} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                    <p className="text-white text-sm">Click para cambiar la imagen</p>
+                                <div className="flex items-center justify-center w-full">
+                                    {isCropping ? (
+                                        <div className="w-full h-64 relative">
+                                            <Cropper
+                                                image={previewImage}
+                                                crop={crop}
+                                                zoom={zoom}
+                                                aspect={1}
+                                                onCropChange={setCrop}
+                                                onZoomChange={setZoom}
+                                                onCropComplete={onCropComplete}
+                                            />
+                                            <Button onClick={handleCropSave} className="mt-2">
+                                                Guardar recorte
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            {...getRootProps()}
+                                            className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden"
+                                        >
+                                            <input {...getInputProps()} />
+                                            {previewImage ? (
+                                                <>
+                                                    <img src={previewImage} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                                        <p className="text-white text-sm">Click o arrastra para cambiar la imagen</p>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <Upload className="w-8 h-8 mb-4 text-gray-500" />
+                                                    <p className="mb-2 text-sm text-gray-500">
+                                                        <span className="font-semibold">Click para subir</span> o arrastra y suelta
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">PNG, JPG o GIF (MAX. 10MB, aspecto 1:1)</p>
                                                 </div>
-                                            </>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                <Upload className="w-8 h-8 mb-4 text-gray-500" />
-                                                <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click para subir</span> o arrastra y suelta</p>
-                                                <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-                                            </div>
-                                        )}
-                                        <input id="dropzone-file" type="file" className="hidden" onChange={handleImageChange} />
-                                    </label>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
+                                {errors.logo && <p className="text-red-500 text-sm mt-1">{errors.logo}</p>}
                                 <Button onClick={handleCreateGroup} className="w-full bg-purple-600 hover:bg-purple-700">
                                     Crear Grupo
                                 </Button>
