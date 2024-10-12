@@ -202,7 +202,11 @@ export default function GruposYPlanificacion() {
             const formData = new FormData();
             Object.keys(groupData).forEach(key => {
                 if (groupData[key] !== null) {
-                    formData.append(key, groupData[key]);
+                    if (key === 'logo' && groupData[key] instanceof Blob) {
+                        formData.append(key, groupData[key], 'group_logo.jpg');
+                    } else {
+                        formData.append(key, groupData[key]);
+                    }
                 }
             });
 
@@ -259,19 +263,24 @@ export default function GruposYPlanificacion() {
         const file = acceptedFiles[0];
         if (file) {
             if (file.size > 10 * 1024 * 1024) {
-                setErrors(prev => ({ ...prev, logo: "El archivo no debe superar los 10MB" }));
+                toast({
+                    title: "Error",
+                    description: "El archivo no debe superar los 10MB",
+                    variant: "destructive",
+                });
                 return;
             }
+
+            handleRemoveImage(); // Clear existing image data
 
             const reader = new FileReader();
             reader.onload = (e) => {
                 setPreviewImage(e.target.result);
-                setCroppedPreview(null);
                 setIsCropping(true);
             };
             reader.readAsDataURL(file);
         }
-    }, []);
+    }, [toast]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -297,45 +306,48 @@ export default function GruposYPlanificacion() {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        const maxSize = Math.max(image.width, image.height);
+        const maxSize = Math.max(pixelCrop.width, pixelCrop.height);
         canvas.width = maxSize;
         canvas.height = maxSize;
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const scale = maxSize / Math.min(image.width, image.height);
+        const offsetX = (maxSize - pixelCrop.width) / 2;
+        const offsetY = (maxSize - pixelCrop.height) / 2;
+
         ctx.drawImage(
             image,
-            (maxSize - image.width * scale) / 2,
-            (maxSize - image.height * scale) / 2,
-            image.width * scale,
-            image.height * scale
-        );
-
-        const data = ctx.getImageData(
             pixelCrop.x,
             pixelCrop.y,
+            pixelCrop.width,
+            pixelCrop.height,
+            offsetX,
+            offsetY,
             pixelCrop.width,
             pixelCrop.height
         );
 
-        canvas.width = pixelCrop.width;
-        canvas.height = pixelCrop.height;
-        ctx.putImageData(data, 0, 0);
+        // Create circular clipping path
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.beginPath();
+        ctx.arc(maxSize / 2, maxSize / 2, maxSize / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
 
         return new Promise((resolve) => {
             canvas.toBlob((blob) => {
-                resolve(URL.createObjectURL(blob));
-            }, 'image/jpeg');
+                resolve(blob);
+            }, 'image/png');
         });
     };
 
     const handleCropSave = async () => {
         if (croppedAreaPixels) {
-            const croppedImageUrl = await getCroppedImg(previewImage, croppedAreaPixels);
+            const croppedImageBlob = await getCroppedImg(previewImage, croppedAreaPixels);
+            const croppedImageUrl = URL.createObjectURL(croppedImageBlob);
             setCroppedPreview(croppedImageUrl);
-            setGroupData(prev => ({ ...prev, logo: croppedImageUrl }));
+            setGroupData(prev => ({ ...prev, logo: croppedImageBlob }));
             setIsCropping(false);
         }
     };
@@ -347,11 +359,21 @@ export default function GruposYPlanificacion() {
         setGroupData(prev => ({ ...prev, logo: null }));
     };
 
+    const handleRemoveImage = (e) => {
+        if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        setPreviewImage(null);
+        setCroppedPreview(null);
+        setGroupData(prev => ({ ...prev, logo: null }));
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
-                <span className="ml-2 text-lg font-medium text-purple-600">Cargando...</span>
+                <span className="ml-2 text-lg font-medium  text-purple-600">Cargando...</span>
             </div>
         );
     }
@@ -361,8 +383,7 @@ export default function GruposYPlanificacion() {
             <div className="space-y-4 p-6 max-w-md mx-auto">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-center text-2xl text-purple-700">No estás inscrito en un
-                            curso</CardTitle>
+                        <CardTitle className="text-center text-2xl text-purple-700">No estás inscrito en un curso</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Input
@@ -372,7 +393,7 @@ export default function GruposYPlanificacion() {
                             onChange={(e) => setManagementCode(e.target.value)}
                             className="mb-4"
                         />
-                        <Button  onClick={handleJoinManagement} className="w-full bg-purple-600 hover:bg-purple-700">
+                        <Button onClick={handleJoinManagement} className="w-full bg-purple-600 hover:bg-purple-700">
                             Unirse a Clase
                         </Button>
                     </CardContent>
@@ -468,23 +489,26 @@ export default function GruposYPlanificacion() {
                                 <div className="flex items-center justify-center w-full">
                                     <div
                                         {...getRootProps()}
-                                        className="flex flex-col items-center justify-center w-full h-0 pb-[100%] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden"
+                                        className="flex flex-col items-center justify-center w-40 h-40 border-2 border-gray-300 border-dashed rounded-full cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-visible group"
                                     >
                                         <input {...getInputProps()} />
                                         {croppedPreview ? (
                                             <>
-                                                <img src={croppedPreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                    <p className="text-white text-sm">Click o arrastra para cambiar la imagen</p>
+                                                <img src={croppedPreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover rounded-full" />
+                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                                                    <p className="text-white text-sm">Click para cambiar</p>
                                                 </div>
+                                                <Button
+                                                    className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full opacity-100 transition-opacity"
+                                                    onClick={handleRemoveImage}
+                                                >
+                                                    <X className="h-5 w-5" />
+                                                </Button>
                                             </>
                                         ) : (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <Upload className="w-8 h-8 mb-4 text-gray-500" />
-                                                <p className="mb-2 text-sm text-gray-500">
-                                                    <span className="font-semibold">Click para subir</span> o arrastra y suelta
-                                                </p>
-                                                <p className="text-xs text-gray-500">PNG, JPG o GIF (MAX. 10MB, aspecto 1:1)</p>
+                                            <div className="flex flex-col items-center justify-center">
+                                                <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                                                <p className="text-xs text-gray-500">Click para subir</p>
                                             </div>
                                         )}
                                     </div>
@@ -503,18 +527,18 @@ export default function GruposYPlanificacion() {
                         <DialogHeader>
                             <DialogTitle>Recortar imagen</DialogTitle>
                         </DialogHeader>
-                        <div className="w-full h-0 pb-[100%] relative">
-                            <div className="absolute inset-0">
-                                <Cropper
-                                    image={previewImage}
-                                    crop={crop}
-                                    zoom={zoom}
-                                    aspect={1}
-                                    onCropChange={setCrop}
-                                    onZoomChange={setZoom}
-                                    onCropComplete={onCropComplete}
-                                />
-                            </div>
+                        <div className="w-full h-64 relative">
+                            <Cropper
+                                image={previewImage}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1}
+                                onCropChange={setCrop}
+                                onZoomChange={setZoom}
+                                onCropComplete={onCropComplete}
+                                cropShape="round"
+                                showGrid={false}
+                            />
                         </div>
                         <div className="mt-4">
                             <label htmlFor="zoom" className="block text-sm font-medium text-gray-700">
