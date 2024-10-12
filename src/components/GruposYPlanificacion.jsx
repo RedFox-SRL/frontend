@@ -3,7 +3,7 @@ import { getData, postData, putData } from '../api/apiService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, Calendar, Users, LayoutDashboard, Upload } from "lucide-react"
+import { Loader2, Calendar, Users, LayoutDashboard, Upload, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import CalendarioEventos from './CalendarioEventos';
 import SprintKanbanBoard from './SprintKanbanBoard';
@@ -13,6 +13,8 @@ import GroupDetailCreator from './GroupDetailCreator';
 import GroupDetailMember from './GroupDetailMember';
 import { useDropzone } from 'react-dropzone';
 import Cropper from 'react-easy-crop';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Slider } from "@/components/ui/slider"
 
 export default function GruposYPlanificacion() {
     const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +33,7 @@ export default function GruposYPlanificacion() {
         logo: null
     });
     const [previewImage, setPreviewImage] = useState(null);
+    const [croppedPreview, setCroppedPreview] = useState(null);
     const [errors, setErrors] = useState({});
     const [calendarId, setCalendarId] = useState(null);
     const [groupId, setGroupId] = useState(null);
@@ -124,10 +127,14 @@ export default function GruposYPlanificacion() {
 
     const validateForm = () => {
         const newErrors = {};
-        if (groupData.short_name.length > 20) {
+        if (!groupData.short_name.trim()) {
+            newErrors.short_name = "El nombre corto es obligatorio";
+        } else if (groupData.short_name.length > 20) {
             newErrors.short_name = "El nombre corto no puede tener más de 20 caracteres";
         }
-        if (groupData.long_name.length > 20) {
+        if (!groupData.long_name.trim()) {
+            newErrors.long_name = "El nombre largo es obligatorio";
+        } else if (groupData.long_name.length > 20) {
             newErrors.long_name = "El nombre largo no puede tener más de 20 caracteres";
         }
         if (!/^[67]\d{7}$/.test(groupData.contact_phone)) {
@@ -327,9 +334,17 @@ export default function GruposYPlanificacion() {
         if (croppedAreaPixels) {
             const croppedImage = await getCroppedImg(previewImage, croppedAreaPixels);
             setGroupData(prev => ({ ...prev, logo: croppedImage }));
-            setPreviewImage(URL.createObjectURL(croppedImage));
+            const croppedPreviewUrl = URL.createObjectURL(croppedImage);
+            setCroppedPreview(croppedPreviewUrl);
             setIsCropping(false);
         }
+    };
+
+    const handleCropCancel = () => {
+        setIsCropping(false);
+        setPreviewImage(null);
+        setCroppedPreview(null);
+        setGroupData(prev => ({ ...prev, logo: null }));
     };
 
     if (isLoading) {
@@ -368,6 +383,7 @@ export default function GruposYPlanificacion() {
 
     if (isInManagement && !isInGroup) {
         return (
+
             <div className="space-y-4 p-6 max-w-2xl mx-auto">
                 <div className="flex space-x-4 mb-4">
                     <Button
@@ -415,6 +431,7 @@ export default function GruposYPlanificacion() {
                                         value={groupData.short_name}
                                         onChange={(e) => setGroupData({...groupData, short_name: e.target.value})}
                                         className={errors.short_name ? "border-red-500" : ""}
+                                        required
                                     />
                                     {errors.short_name && <p className="text-red-500 text-sm mt-1">{errors.short_name}</p>}
                                 </div>
@@ -425,6 +442,7 @@ export default function GruposYPlanificacion() {
                                         value={groupData.long_name}
                                         onChange={(e) => setGroupData({...groupData, long_name: e.target.value})}
                                         className={errors.long_name ? "border-red-500" : ""}
+                                        required
                                     />
                                     {errors.long_name && <p className="text-red-500 text-sm mt-1">{errors.long_name}</p>}
                                 </div>
@@ -449,45 +467,28 @@ export default function GruposYPlanificacion() {
                                     {errors.contact_phone && <p className="text-red-500 text-sm mt-1">{errors.contact_phone}</p>}
                                 </div>
                                 <div className="flex items-center justify-center w-full">
-                                    {isCropping ? (
-                                        <div className="w-full h-64 relative">
-                                            <Cropper
-                                                image={previewImage}
-                                                crop={crop}
-                                                zoom={zoom}
-                                                aspect={1}
-                                                onCropChange={setCrop}
-                                                onZoomChange={setZoom}
-                                                onCropComplete={onCropComplete}
-                                            />
-                                            <Button onClick={handleCropSave} className="mt-2">
-                                                Guardar recorte
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <div
-                                            {...getRootProps()}
-                                            className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden"
-                                        >
-                                            <input {...getInputProps()} />
-                                            {previewImage ? (
-                                                <>
-                                                    <img src={previewImage} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
-                                                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                        <p className="text-white text-sm">Click o arrastra para cambiar la imagen</p>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                    <Upload className="w-8 h-8 mb-4 text-gray-500" />
-                                                    <p className="mb-2 text-sm text-gray-500">
-                                                        <span className="font-semibold">Click para subir</span> o arrastra y suelta
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">PNG, JPG o GIF (MAX. 10MB, aspecto 1:1)</p>
+                                    <div
+                                        {...getRootProps()}
+                                        className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden"
+                                    >
+                                        <input {...getInputProps()} />
+                                        {croppedPreview ? (
+                                            <>
+                                                <img src={croppedPreview} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                                    <p className="text-white text-sm">Click o arrastra para cambiar la imagen</p>
                                                 </div>
-                                            )}
-                                        </div>
-                                    )}
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <Upload className="w-8 h-8 mb-4 text-gray-500" />
+                                                <p className="mb-2 text-sm text-gray-500">
+                                                    <span className="font-semibold">Click para subir</span> o arrastra y suelta
+                                                </p>
+                                                <p className="text-xs text-gray-500">PNG, JPG o GIF (MAX. 10MB, aspecto 1:1)</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 {errors.logo && <p className="text-red-500 text-sm mt-1">{errors.logo}</p>}
                                 <Button onClick={handleCreateGroup} className="w-full bg-purple-600 hover:bg-purple-700">
@@ -497,6 +498,46 @@ export default function GruposYPlanificacion() {
                         </CardContent>
                     </Card>
                 )}
+
+                <Dialog open={isCropping} onOpenChange={setIsCropping}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Recortar imagen</DialogTitle>
+                        </DialogHeader>
+                        <div className="w-full h-64 relative">
+                            <Cropper
+                                image={previewImage}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1}
+                                onCropChange={setCrop}
+                                onZoomChange={setZoom}
+                                onCropComplete={onCropComplete}
+                            />
+                        </div>
+                        <div className="mt-4">
+                            <label htmlFor="zoom" className="block text-sm font-medium text-gray-700">
+                                Zoom
+                            </label>
+                            <Slider
+                                id="zoom"
+                                min={1}
+                                max={3}
+                                step={0.1}
+                                value={[zoom]}
+                                onValueChange={(value) => setZoom(value[0])}
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button onClick={handleCropCancel} variant="outline">
+                                Cancelar
+                            </Button>
+                            <Button onClick={handleCropSave} className="bg-purple-600 hover:bg-purple-700">
+                                Guardar recorte
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         );
     }
