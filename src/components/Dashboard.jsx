@@ -135,6 +135,18 @@ export default function Dashboard() {
         return `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     };
 
+    const handleSelectGroup = (group) => {
+        setSelectedGroup(group);
+        // You might want to navigate to a new page or open a modal here
+        console.log("Selected group:", group);
+        // For now, we'll just show a toast notification
+        toast({
+            title: "Grupo seleccionado",
+            description: `Has seleccionado el grupo: ${group.short_name}`,
+            duration: 3000,
+        });
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -146,12 +158,12 @@ export default function Dashboard() {
 
     if (isInGroup && managementDetails) {
         return (
-            <div className="p-6 max-w-7xl mx-auto">
+            <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
                 <CourseInfo managementDetails={managementDetails} />
                 {groups.length > 0 && (
                     <GroupList
                         groups={groups}
-                        onSelectGroup={setSelectedGroup}
+                        onSelectGroup={handleSelectGroup}
                         getInitials={getInitials}
                     />
                 )}
@@ -161,10 +173,10 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="space-y-4 p-6 max-w-md mx-auto">
+        <div className="space-y-4 p-4 sm:p-6 max-w-md mx-auto">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-center text-2xl text-purple-700">No estás inscrito en un curso</CardTitle>
+                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">No estás inscrito en un curso</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Input

@@ -7,10 +7,10 @@ export default function ParticipantList({ participants, getInitials }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl text-purple-700">Participantes del Curso</CardTitle>
+        <CardTitle className="text-xl sm:text-2xl text-purple-700">Participantes del Curso</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[300px] sm:h-[400px]">
           <div className="space-y-4">
             {participants.teacher && (
               <div className="mb-4">
@@ -29,7 +29,7 @@ export default function ParticipantList({ participants, getInitials }) {
             {participants.students && participants.students.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-2">Estudiantes</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {participants.students.map((student) => (
                     <div key={student.id} className="flex items-center space-x-4">
                       <Avatar>
