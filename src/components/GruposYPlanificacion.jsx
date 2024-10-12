@@ -266,6 +266,7 @@ export default function GruposYPlanificacion() {
             const reader = new FileReader();
             reader.onload = (e) => {
                 setPreviewImage(e.target.result);
+                setCroppedPreview(null);
                 setIsCropping(true);
             };
             reader.readAsDataURL(file);
@@ -325,17 +326,16 @@ export default function GruposYPlanificacion() {
 
         return new Promise((resolve) => {
             canvas.toBlob((blob) => {
-                resolve(blob);
+                resolve(URL.createObjectURL(blob));
             }, 'image/jpeg');
         });
     };
 
     const handleCropSave = async () => {
         if (croppedAreaPixels) {
-            const croppedImage = await getCroppedImg(previewImage, croppedAreaPixels);
-            setGroupData(prev => ({ ...prev, logo: croppedImage }));
-            const croppedPreviewUrl = URL.createObjectURL(croppedImage);
-            setCroppedPreview(croppedPreviewUrl);
+            const croppedImageUrl = await getCroppedImg(previewImage, croppedAreaPixels);
+            setCroppedPreview(croppedImageUrl);
+            setGroupData(prev => ({ ...prev, logo: croppedImageUrl }));
             setIsCropping(false);
         }
     };
@@ -372,7 +372,7 @@ export default function GruposYPlanificacion() {
                             onChange={(e) => setManagementCode(e.target.value)}
                             className="mb-4"
                         />
-                        <Button onClick={handleJoinManagement} className="w-full bg-purple-600 hover:bg-purple-700">
+                        <Button  onClick={handleJoinManagement} className="w-full bg-purple-600 hover:bg-purple-700">
                             Unirse a Clase
                         </Button>
                     </CardContent>
@@ -383,7 +383,6 @@ export default function GruposYPlanificacion() {
 
     if (isInManagement && !isInGroup) {
         return (
-
             <div className="space-y-4 p-6 max-w-2xl mx-auto">
                 <div className="flex space-x-4 mb-4">
                     <Button
@@ -469,7 +468,7 @@ export default function GruposYPlanificacion() {
                                 <div className="flex items-center justify-center w-full">
                                     <div
                                         {...getRootProps()}
-                                        className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden"
+                                        className="flex flex-col items-center justify-center w-full h-0 pb-[100%] border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden"
                                     >
                                         <input {...getInputProps()} />
                                         {croppedPreview ? (
@@ -480,7 +479,7 @@ export default function GruposYPlanificacion() {
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
                                                 <Upload className="w-8 h-8 mb-4 text-gray-500" />
                                                 <p className="mb-2 text-sm text-gray-500">
                                                     <span className="font-semibold">Click para subir</span> o arrastra y suelta
@@ -504,16 +503,18 @@ export default function GruposYPlanificacion() {
                         <DialogHeader>
                             <DialogTitle>Recortar imagen</DialogTitle>
                         </DialogHeader>
-                        <div className="w-full h-64 relative">
-                            <Cropper
-                                image={previewImage}
-                                crop={crop}
-                                zoom={zoom}
-                                aspect={1}
-                                onCropChange={setCrop}
-                                onZoomChange={setZoom}
-                                onCropComplete={onCropComplete}
-                            />
+                        <div className="w-full h-0 pb-[100%] relative">
+                            <div className="absolute inset-0">
+                                <Cropper
+                                    image={previewImage}
+                                    crop={crop}
+                                    zoom={zoom}
+                                    aspect={1}
+                                    onCropChange={setCrop}
+                                    onZoomChange={setZoom}
+                                    onCropComplete={onCropComplete}
+                                />
+                            </div>
                         </div>
                         <div className="mt-4">
                             <label htmlFor="zoom" className="block text-sm font-medium text-gray-700">
