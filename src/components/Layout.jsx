@@ -69,9 +69,9 @@ export default function Layout({ children, setCurrentView }) {
 
   const UserSkeleton = () => (
     <div className="mb-8">
-      <Skeleton className="w-20 h-20 rounded-full mx-auto mb-2" />
-      <Skeleton className="h-4 w-3/4 mx-auto mb-2" />
-      <Skeleton className="h-3 w-1/2 mx-auto" />
+      <Skeleton className="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4" />
+      <Skeleton className="h-6 w-3/4 mx-auto mb-2" />
+      <Skeleton className="h-4 w-1/2 mx-auto" />
     </div>
   );
 
@@ -138,14 +138,15 @@ export default function Layout({ children, setCurrentView }) {
         ) : user && (
           <motion.div
             className="mb-8"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <motion.div
               className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
             >
               <Avatar className="w-full h-full border-4 border-white rounded-full">
                 <AvatarImage src={user.profilePicture || getAvatarUrl(user.name, user.last_name)} alt={`${user.name} ${user.last_name}`} />
@@ -154,12 +155,26 @@ export default function Layout({ children, setCurrentView }) {
                 </AvatarFallback>
               </Avatar>
             </motion.div>
-            <p className="text-center font-semibold text-xl text-purple-100">{user.name} {user.last_name}</p>
-            <p className="text-center text-sm text-purple-300 mt-1">{user.role}</p>
+            <motion.p
+              className="text-center font-semibold text-xl text-purple-100"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              {user.name} {user.last_name}
+            </motion.p>
+            <motion.p
+              className="text-center text-sm text-purple-300 mt-1"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              {user.role}
+            </motion.p>
           </motion.div>
         )}
         <nav className="space-y-2">
-          {menuItems.map(({ icon: Icon, label, view }) => (
+          {menuItems.map(({ icon: Icon, label, view }, index) => (
             <motion.button
               key={view}
               onClick={() => handleMenuItemClick(view)}
@@ -170,6 +185,9 @@ export default function Layout({ children, setCurrentView }) {
               }`}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.7 + index * 0.1 }}
             >
               <Icon className="mr-3 h-5 w-5" />
               {label}
@@ -183,6 +201,9 @@ export default function Layout({ children, setCurrentView }) {
             className="flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 text-purple-200 hover:bg-purple-700/50 mt-8"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 1.1 }}
           >
             <LogOut className="mr-3 h-5 w-5" /> Cerrar Sesión
           </motion.button>
@@ -190,18 +211,25 @@ export default function Layout({ children, setCurrentView }) {
       </motion.aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-md p-3 lg:p-4 flex justify-between items-center">
+        <header className="bg-white shadow-md p-4 flex justify-between items-center">
           <motion.button
-            className="lg:hidden text-purple-800 hover:text-purple-600 transition-colors p-1"
+            className="lg:hidden text-purple-800 hover:text-purple-600 transition-colors"
             onClick={toggleSidebar}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             <Menu className="h-6 w-6" />
           </motion.button>
-          <h2 className="text-lg lg:text-xl font-bold text-purple-800 truncate">Taller De Ingeniería en Software</h2>
+          <motion.h2
+            className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Taller De Ingeniería en Software
+          </motion.h2>
           <motion.button
-            className="text-purple-800 hover:text-purple-600 transition-colors p-1"
+            className="text-purple-800 hover:text-purple-600 transition-colors"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
