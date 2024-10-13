@@ -52,6 +52,7 @@ export default function NotificationButton() {
     ]);
 
     const notificationDrawerRef = useRef(null);
+    const buttonRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => {
@@ -64,7 +65,11 @@ export default function NotificationButton() {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (notificationDrawerRef.current && !notificationDrawerRef.current.contains(event.target)) {
+            if (
+                notificationDrawerRef.current &&
+                !notificationDrawerRef.current.contains(event.target) &&
+                !buttonRef.current.contains(event.target)
+            ) {
                 setIsNotificationsOpen(false);
             }
         };
@@ -75,7 +80,7 @@ export default function NotificationButton() {
     }, []);
 
     const toggleNotifications = useCallback(() => {
-        setIsNotificationsOpen(prev => !prev);
+        setIsNotificationsOpen(prevState => !prevState);
     }, []);
 
     const deleteNotification = useCallback((id) => {
@@ -87,6 +92,7 @@ export default function NotificationButton() {
     return (
         <div className="relative z-50">
             <motion.button
+                ref={buttonRef}
                 className="text-purple-800 hover:text-purple-600 transition-colors relative"
                 onClick={toggleNotifications}
                 whileHover={{scale: 1.1}}
