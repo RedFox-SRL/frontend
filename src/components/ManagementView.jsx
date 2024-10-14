@@ -4,9 +4,16 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Users, Clipboard, X, Mail, Phone } from "lucide-react";
 import { Switch } from "@headlessui/react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EvaluationView from "./EvaluationView"; // Importar la nueva vista de evaluación
 import ParticipantList from "./ParticipantList"; // Importar el nuevo componente
+
+const colorSchemes = [
+    { bg: "bg-gradient-to-br from-blue-500 to-blue-700", text: "text-white", hover: "hover:from-blue-600 hover:to-blue-800" },
+    { bg: "bg-gradient-to-br from-green-500 to-green-700", text: "text-white", hover: "hover:from-green-600 hover:to-green-800" },
+    { bg: "bg-gradient-to-br from-purple-500 to-purple-700", text: "text-white", hover: "hover:from-purple-600 hover:to-purple-800" },
+    { bg: "bg-gradient-to-br from-red-500 to-red-700", text: "text-white", hover: "hover:from-red-600 hover:to-red-800" },
+];
 
 export default function ManagementView({ management, onBack }) {
     const [groups, setGroups] = useState([]);
@@ -222,54 +229,56 @@ export default function ManagementView({ management, onBack }) {
                         )}
                     </div>
 
-                    {/* Lista de grupos */}
-                    <div className="bg-white shadow-md p-6 rounded-lg mb-8"> {/* Añadimos mb-8 aquí */}
+                    {/* Lista de grupos con nuevo diseño */}
+                    <div className="bg-white shadow-md p-6 rounded-lg mb-8">
                         <h2 className="text-2xl font-bold mb-4 text-purple-700">Grupos Registrados</h2>
                         {errorMessage ? (
                             <p className="mt-4 text-red-500">{errorMessage}</p>
                         ) : groups.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {groups.map((group) => (
-                                    <Card key={group.short_name} className="overflow-hidden">
-                                        <CardContent className="p-0">
-                                            <div className="relative h-40">
-                                                <img
-                                                    src={group.logo || '/placeholder.svg?height=160&width=320'}
-                                                    alt="Logo del grupo"
-                                                    className="w-full h-40 object-cover"
-                                                />
-                                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                                                    <Avatar className="w-20 h-20 border-4 border-white">
-                                                        <AvatarFallback className="text-3xl">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {groups.map((group, index) => {
+                                    const colorScheme = colorSchemes[index % colorSchemes.length];
+                                    return (
+                                        <Card key={group.short_name} className="overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
+                                            <CardContent className="p-0">
+                                                <div className={`${colorScheme.bg} p-4 flex items-center space-x-4`}>
+                                                    <Avatar className="w-16 h-16 border-2 border-white shadow-md">
+                                                        <AvatarImage src={group.logo || '/placeholder.svg?height=64&width=64'} alt={group.short_name} />
+                                                        <AvatarFallback className="text-xl bg-white text-gray-800 font-semibold">
                                                             {getInitials(group.short_name, group.long_name)}
                                                         </AvatarFallback>
                                                     </Avatar>
+                                                    <div>
+                                                        <h3 className={`text-xl font-bold ${colorScheme.text}`}>{group.short_name}</h3>
+                                                        <p className={`text-sm ${colorScheme.text} opacity-90`}>{group.long_name}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="p-4">
-                                                <h3 className="text-xl font-bold mb-2">{group.short_name}</h3>
-                                                <p className="flex items-center mb-1">
-                                                    <Mail className="mr-2 h-4 w-4" />
-                                                    {group.contact_email || "No disponible"}
-                                                </p>
-                                                <p className="flex items-center mb-1">
-                                                    <Phone className="mr-2 h-4 w-4" />
-                                                    {group.contact_phone || "No disponible"}
-                                                </p>
-                                                <p className="flex items-center mb-4">
-                                                    <Users className="mr-2 h-4 w-4" />
-                                                    {group.members.length} integrantes
-                                                </p>
-                                                <Button
-                                                    className="w-full bg-purple-600 hover:bg-purple-700"
-                                                    onClick={() => handleEvaluateClick(group.id)}
-                                                >
-                                                    Evaluar
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                                <div className="p-4 bg-white">
+                                                    <div className="space-y-2 mb-4">
+                                                        <p className="flex items-center text-sm text-gray-600">
+                                                            <Mail className="mr-2 h-4 w-4 text-gray-400" />
+                                                            {group.contact_email || "No disponible"}
+                                                        </p>
+                                                        <p className="flex items-center text-sm text-gray-600">
+                                                            <Phone className="mr-2 h-4 w-4 text-gray-400" />
+                                                            {group.contact_phone || "No disponible"}
+                                                        </p>
+                                                        <p className="flex items-center text-sm text-gray-600">
+                                                            <Users className="mr-2 h-4 w-4 text-gray-400" />
+                                                            {group.members.length} integrantes
+                                                        </p>
+                                                    </div>
+                                                    <Button
+                                                        className={`w-full ${colorScheme.bg} ${colorScheme.text} ${colorScheme.hover} transition-colors duration-300`}
+                                                        onClick={() => handleEvaluateClick(group.id)}
+                                                    >
+                                                        Evaluar
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <p>No hay grupos registrados en esta gestión.</p>

@@ -13,7 +13,6 @@ export default function EvaluationView({ groupId, onBack }) {
     const [error, setError] = useState('');
     const [membersFilter, setMembersFilter] = useState('Todos');
 
-    // Obtener los sprints usando el groupId dinámicamente
     const fetchSprints = async () => {
         setIsLoading(true);
         try {
@@ -37,7 +36,6 @@ export default function EvaluationView({ groupId, onBack }) {
         fetchSprints();
     }, [groupId]);
 
-    // Obtener la plantilla de evaluación del sprint seleccionado
     const fetchEvaluationTemplate = async (sprintId) => {
         setIsLoading(true);
         try {
@@ -74,7 +72,6 @@ export default function EvaluationView({ groupId, onBack }) {
         }));
     };
 
-    // Enviar evaluación individual
     const handleSubmitEvaluation = async (taskId) => {
         setIsSubmitting((prev) => ({
             ...prev,
@@ -100,19 +97,13 @@ export default function EvaluationView({ groupId, onBack }) {
                 },
             };
 
-            console.log("Enviando evaluación: ", payload);
-
-            // Enviar la evaluación
             await postData(`/sprints/${selectedSprintId}/submit-evaluation`, payload);
 
-            // Mostrar mensaje de éxito
             setToast({ message: 'La evaluación se ha guardado correctamente.', type: 'success' });
 
-            // Eliminar la tarea evaluada del listado
             setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
             setFilteredTasks((prevFilteredTasks) => prevFilteredTasks.filter((task) => task.id !== taskId));
 
-            // Limpiar la evaluación local para esta tarea
             setEvaluations((prev) => {
                 const { [taskId]: removed, ...rest } = prev;
                 return rest;
@@ -155,10 +146,8 @@ export default function EvaluationView({ groupId, onBack }) {
 
                 <h1 className="text-3xl font-bold text-purple-800 mb-8 text-center">Plantilla de Evaluación</h1>
 
-                {/* Contenedor principal con flex para alinear el filtro y la selección */}
-                <div className="flex items-start space-x-6">
-                    {/* Filtro por Miembro */}
-                    <div className="w-1/4 bg-white shadow-lg rounded-lg p-6 transition-all duration-300 ease-in-out">
+                <div className="flex flex-col lg:flex-row items-start space-y-6 lg:space-y-0 lg:space-x-6">
+                    <div className="lg:w-1/4 w-full bg-white shadow-lg rounded-lg p-6 transition-all duration-300 ease-in-out">
                         <h2 className="text-xl font-semibold text-purple-700 mb-4">Filtrar por Miembro</h2>
                         <ul>
                             <li className={`cursor-pointer mb-2 ${membersFilter === 'Todos' ? 'font-bold text-purple-700' : 'text-gray-600'}`}
@@ -174,8 +163,7 @@ export default function EvaluationView({ groupId, onBack }) {
                         </ul>
                     </div>
 
-                    {/* Contenedor de selección de sprint */}
-                    <div className="w-3/4">
+                    <div className="lg:w-3/4 w-full">
                         <div className="bg-white shadow-lg rounded-lg p-6 mb-8 transition-all duration-300 ease-in-out transform hover:shadow-xl">
                             <h2 className="text-xl font-semibold text-purple-700 mb-4">Seleccionar Sprint</h2>
                             <select
