@@ -124,7 +124,7 @@ export default function CourseInfo({managementDetails}) {
                             />
                             <InfoItem
                                 icon={Users}
-                                title="Límite por Grupo"
+                                title="Max. integrantes por grupo"
                                 value={managementDetails.group_limit}
                             />
                             <InfoItem
@@ -170,7 +170,7 @@ export default function CourseInfo({managementDetails}) {
                     />
                     <DesktopInfoCard
                         icon={Users}
-                        title="Límite por Grupo"
+                        title="Max. integrantes por grupo"
                         value={managementDetails.group_limit}
                     />
                     <DesktopInfoCard
