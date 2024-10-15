@@ -1,85 +1,107 @@
-import React from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import React, { useState } from 'react'
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
-import { Mail, Phone, Users, Link } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Mail, Phone, Users } from "lucide-react"
 
 export default function GroupDetails({ group, onClose, getInitials }) {
   if (!group) return null
 
   return (
     <Dialog open={!!group} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center mb-4">
-            Detalles del Grupo
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-6 py-4">
-          <div className="flex flex-col sm:flex-row items-center gap-6 bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg">
-            <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-white shadow-lg">
-              <AvatarImage src={group.logo || '/placeholder.svg?height=128&width=128'} alt={group.short_name} />
-              <AvatarFallback className="text-3xl bg-purple-200 text-purple-700">{getInitials(group.short_name, group.long_name)}</AvatarFallback>
-            </Avatar>
-            <div className="text-center sm:text-left space-y-2">
-              <h3 className="text-2xl font-semibold text-purple-800">{group.short_name}</h3>
-              <p className="text-lg text-purple-600">{group.long_name}</p>
-              <p className="text-sm text-purple-500">ID: {group.id}</p>
-            </div>
+      <DialogContent className="sm:max-w-[425px] max-h-[600px] p-0 overflow-hidden rounded-lg">
+        <Tabs defaultValue="info" className="w-full h-full flex flex-col">
+          <div className="bg-gray-100 p-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-800">Detalles del Grupo</h2>
+            <TabsList className="grid w-[160px] grid-cols-2 bg-gray-200">
+              <TabsTrigger value="info" className="text-sm">Info</TabsTrigger>
+              <TabsTrigger value="members" className="text-sm">Miembros</TabsTrigger>
+            </TabsList>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center gap-3 bg-white p-3 rounded-md shadow-sm">
-              <Mail className="h-5 w-5 text-purple-600" />
-              <p className="text-sm overflow-hidden overflow-ellipsis">{group.contact_email}</p>
-            </div>
-            <div className="flex items-center gap-3 bg-white p-3 rounded-md shadow-sm">
-              <Phone className="h-5 w-5 text-purple-600" />
-              <p className="text-sm">{group.contact_phone}</p>
-            </div>
-            <div className="flex items-center gap-3 bg-white p-3 rounded-md shadow-sm sm:col-span-2">
-              <Link className="h-5 w-5 text-purple-600" />
-              <p className="text-sm overflow-hidden overflow-ellipsis">
-                {`https://example.com/group/${group.id}`}
-              </p>
-              <Button variant="outline" size="sm" className="ml-auto">
-                Copiar
-              </Button>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-purple-700">
-              <Users className="h-5 w-5" />
-              Participantes ({Object.keys(group.members).length})
-            </h4>
-            <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-              <div className="grid gap-4">
-                {Object.values(group.members).map((member) => (
-                  <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 transition-colors">
-                    <Avatar>
-                      <AvatarFallback className="bg-purple-200 text-purple-700">
-                        {getInitials(member.name, member.last_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-purple-900">{`${member.name} ${member.last_name}`}</p>
-                      <Badge variant={member.role === 'representative' ? "default" : "secondary"} className="mt-1">
-                        {member.role === 'representative' ? 'Representante' : 'Miembro'}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
+          <ScrollArea className="flex-grow">
+            <TabsContent value="info" className="p-4 focus:outline-none">
+              <GroupInfo group={group} getInitials={getInitials} />
+            </TabsContent>
+            <TabsContent value="members" className="p-4 focus:outline-none">
+              <GroupMembers members={group.members} getInitials={getInitials} />
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function GroupInfo({ group, getInitials }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <Avatar className="w-16 h-16 border-2 border-gray-200">
+          <AvatarImage src={group.logo || '/placeholder.svg?height=64&width=64'} alt={group.short_name} />
+          <AvatarFallback className="text-lg bg-gray-200 text-gray-700">
+            {getInitials(group.short_name, group.long_name)}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800">{group.short_name}</h3>
+          <p className="text-sm text-gray-600">{group.long_name}</p>
+        </div>
+      </div>
+      <InfoItem icon={Mail} label="Email" value={group.contact_email} />
+      <InfoItem icon={Phone} label="Teléfono" value={group.contact_phone} />
+    </div>
+  )
+}
+
+function GroupMembers({ members, getInitials }) {
+  const representative = Object.values(members).find(m => m.role === 'representative')
+  const regularMembers = Object.values(members).filter(m => m.role !== 'representative')
+
+  return (
+    <div className="space-y-4">
+      {representative && (
+        <div>
+          <h4 className="text-sm font-semibold mb-2 text-gray-600">Representante</h4>
+          <MemberItem member={representative} getInitials={getInitials} />
+        </div>
+      )}
+      <div>
+        <h4 className="text-sm font-semibold mb-2 text-gray-600">Miembros ({regularMembers.length})</h4>
+        <div className="space-y-2">
+          {regularMembers.map((member) => (
+            <MemberItem key={member.id} member={member} getInitials={getInitials} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function InfoItem({ icon: Icon, label, value }) {
+  return (
+    <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-md">
+      <Icon className="h-5 w-5 text-gray-500" />
+      <div>
+        <p className="text-xs text-gray-500">{label}</p>
+        <p className="text-sm text-gray-700">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function MemberItem({ member, getInitials }) {
+  return (
+    <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-md">
+      <Avatar className="w-10 h-10">
+        <AvatarFallback className="bg-gray-200 text-gray-700 text-sm">
+          {getInitials(member.name, member.last_name)}
+        </AvatarFallback>
+      </Avatar>
+      <div>
+        <p className="text-sm font-medium text-gray-800">{`${member.name} ${member.last_name}`}</p>
+        <p className="text-xs text-gray-600">{member.role === 'representative' ? 'Representante' : 'Miembro'}</p>
+      </div>
+    </div>
   )
 }
