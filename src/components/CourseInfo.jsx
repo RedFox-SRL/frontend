@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
-import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion"
-import {CalendarDays, Users, Clock, TrendingUp} from "lucide-react"
-import {format, differenceInDays, isPast} from 'date-fns'
-import {es} from 'date-fns/locale'
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { CalendarDays, Users, Clock, TrendingUp } from "lucide-react"
+import { format, differenceInDays, isPast } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 const InfoItem = ({icon: Icon, title, value}) => (
     <div className="flex items-center justify-between py-2">
@@ -39,6 +39,29 @@ const AnimatedProgressBar = ({value}) => (
     </div>
 );
 
+const AnimatedPercentage = ({ value }) => {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        const animationDuration = 1000; // 1 second
+        const startTime = Date.now();
+
+        const animateValue = () => {
+            const now = Date.now();
+            const progress = Math.min((now - startTime) / animationDuration, 1);
+            setDisplayValue(Math.round(progress * value));
+
+            if (progress < 1) {
+                requestAnimationFrame(animateValue);
+            }
+        };
+
+        requestAnimationFrame(animateValue);
+    }, [value]);
+
+    return <span>{displayValue}</span>;
+};
+
 export default function CourseInfo({managementDetails}) {
     const [isDesktop, setIsDesktop] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -54,29 +77,29 @@ export default function CourseInfo({managementDetails}) {
     const endDate = new Date(managementDetails.end_date);
     const today = new Date();
 
-    const formatDate = (date) => format(date, 'd MMM yyyy', {locale: es});
+    const formatDate = useCallback((date) => format(date, 'd MMM yyyy', {locale: es}), []);
 
-    const getRemainingTime = () => {
+    const getRemainingTime = useCallback(() => {
         if (isPast(endDate)) {
             return "Curso finalizado";
         }
         const daysRemaining = differenceInDays(endDate, today);
         return `${daysRemaining} días restantes`;
-    };
+    }, [endDate, today]);
 
-    const getProgressPercentage = () => {
+    const getProgressPercentage = useCallback(() => {
         const totalDays = differenceInDays(endDate, startDate);
         const daysPassed = differenceInDays(today, startDate);
         const progress = Math.min(Math.max((daysPassed / totalDays) * 100, 0), 100);
         return Math.round(progress);
-    };
+    }, [startDate, endDate, today]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setProgress(getProgressPercentage());
         }, 500);
         return () => clearTimeout(timer);
-    }, []);
+    }, [getProgressPercentage]);
 
     const MobileView = () => (
         <Card className="mb-4">
@@ -115,14 +138,9 @@ export default function CourseInfo({managementDetails}) {
                                         <TrendingUp className="w-5 h-5 text-purple-500 mr-2"/>
                                         <span className="text-sm font-medium text-purple-700">Progreso del curso</span>
                                     </div>
-                                    <motion.span
-                                        className="text-sm font-semibold text-purple-900"
-                                        initial={{opacity: 0}}
-                                        animate={{opacity: 1}}
-                                        transition={{duration: 1}}
-                                    >
-                                        {progress}%
-                                    </motion.span>
+                                    <span className="text-sm font-semibold text-purple-900">
+                                        <AnimatedPercentage value={progress} />%
+                                    </span>
                                 </div>
                                 <AnimatedProgressBar value={progress}/>
                             </div>
@@ -167,14 +185,9 @@ export default function CourseInfo({managementDetails}) {
                             <TrendingUp className="w-5 h-5 text-purple-500 mr-2"/>
                             <span className="text-sm font-medium text-purple-700">Progreso del curso</span>
                         </div>
-                        <motion.span
-                            className="text-sm font-semibold text-purple-900"
-                            initial={{opacity: 0}}
-                            animate={{opacity: 1}}
-                            transition={{duration: 1}}
-                        >
-                            {progress}%
-                        </motion.span>
+                        <span className="text-sm font-semibold text-purple-900">
+                            <AnimatedPercentage value={progress} />%
+                        </span>
                     </div>
                     <AnimatedProgressBar value={progress}/>
                 </div>

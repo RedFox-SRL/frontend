@@ -1,11 +1,11 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {motion} from 'framer-motion';
 import {getData, postData} from '../api/apiService';
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
-import {Loader2, Bell, Users, Layers, Calendar, Megaphone, GraduationCap} from "lucide-react"
+import {Loader2, Megaphone, Users, GraduationCap} from "lucide-react"
 import {useToast} from "@/hooks/use-toast"
 import CourseInfo from './CourseInfo';
 import GroupList from './GroupList';
@@ -160,6 +160,11 @@ export default function Dashboard() {
         setSelectedGroup(group);
     };
 
+    // Memoize the CourseInfo component
+    const memoizedCourseInfo = useMemo(() => {
+        return managementDetails ? <CourseInfo managementDetails={managementDetails}/> : null;
+    }, [managementDetails]);
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -177,7 +182,7 @@ export default function Dashboard() {
                 transition={{duration: 0.5}}
                 className="sm:p-4 space-y-2 sm:space-y-4"
             >
-                <CourseInfo managementDetails={managementDetails}/>
+                {memoizedCourseInfo}
                 <Card className="w-full shadow-sm">
                     <CardHeader className="p-2 sm:p-4">
                         <CardTitle className="text-lg sm:text-xl text-purple-700">Dashboard del Curso</CardTitle>
@@ -244,8 +249,9 @@ export default function Dashboard() {
         >
             <Card className="w-full max-w-xs sm:max-w-sm shadow-sm">
                 <CardHeader className="p-3 sm:p-4">
-                    <CardTitle className="text-center text-base sm:text-lg text-purple-700">No estás inscrito en un
-                        curso</CardTitle>
+                    <CardTitle className="text-center text-base sm:text-lg text-purple-700">
+                        No estás inscrito en un curso
+                    </CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 sm:p-4">
                     <Input
