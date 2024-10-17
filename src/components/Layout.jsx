@@ -26,6 +26,72 @@ const useTypingAnimation = (text, speed = 100) => {
     return {displayedText, isTypingComplete};
 };
 
+const MatrixRain = ({onComplete}) => {
+    useEffect(() => {
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.zIndex = '9999';
+        canvas.style.pointerEvents = 'none';
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+
+        const drops = [];
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        const colors = ['#8A2BE2', '#9370DB'];
+
+        let frameCount = 0;
+        const maxFrames = 300;
+
+        const draw = () => {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                ctx.fillStyle = color;
+                ctx.font = `${fontSize}px monospace`;
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+
+            frameCount++;
+            if (frameCount < maxFrames) {
+                requestAnimationFrame(draw);
+            } else {
+                document.body.removeChild(canvas);
+                onComplete();
+            }
+        };
+
+        requestAnimationFrame(draw);
+
+        return () => {
+            if (document.body.contains(canvas)) {
+                document.body.removeChild(canvas);
+            }
+        };
+    }, [onComplete]);
+
+    return null;
+};
+
 export default function Layout({children, setCurrentView}) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +99,8 @@ export default function Layout({children, setCurrentView}) {
     const [activeView, setActiveView] = useState('inicio');
     const {logout} = useContext(AuthContext);
     const {user, setUser} = useUser();
+    const [clickCount, setClickCount] = useState(0);
+    const [showMatrixRain, setShowMatrixRain] = useState(false);
 
     const {displayedText, isTypingComplete} = useTypingAnimation("Taller De Ingeniería en Software", 100);
 
@@ -88,63 +156,72 @@ export default function Layout({children, setCurrentView}) {
         }
     }, [setCurrentView, isMobile]);
 
-    const UserSkeleton = () => (
-        <div className="mb-8">
+    const handleTitleClick = () => {
+        setClickCount(prevCount => {
+            const newCount = prevCount + 1;
+            if (newCount === 5) {
+                setShowMatrixRain(true);
+                return 0; // Reset click count
+            }
+            return newCount;
+        });
+
+        // Add this line to trigger the title animation
+        document.querySelector('.title-text').classList.add('animate-title');
+        setTimeout(() => document.querySelector('.title-text').classList.remove('animate-title'), 500);
+    };
+
+    const handleMatrixRainComplete = () => {
+        setShowMatrixRain(false);
+    };
+
+    const UserSkeleton = () => (<div className="mb-8">
             <Skeleton className="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4"/>
             <Skeleton className="h-6 w-3/4 mx-auto mb-2"/>
             <Skeleton className="h-4 w-1/2 mx-auto"/>
-        </div>
-    );
+        </div>);
 
     const getAvatarUrl = (name, lastName) => {
         return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + ' ' + lastName)}&backgroundColor=F3E8FF&textColor=6B21A8`;
     };
 
-    const menuItems = [
-        {icon: Home, label: 'Inicio', view: 'inicio'},
-        {icon: User, label: 'Perfil', view: 'perfil'},
-        {icon: Users, label: 'Grupo', view: 'grupo'},
-        {icon: Building2, label: 'FundEmpresa', view: 'empresas'},
-    ];
+    const menuItems = [{icon: Home, label: 'Inicio', view: 'inicio'}, {
+        icon: User,
+        label: 'Perfil',
+        view: 'perfil'
+    }, {icon: Users, label: 'Grupo', view: 'grupo'}, {icon: Building2, label: 'FundEmpresa', view: 'empresas'},];
 
-    return (
-        <div className="flex h-screen bg-purple-50">
+    return (<div className="flex h-screen bg-purple-50">
+            {showMatrixRain && <MatrixRain onComplete={handleMatrixRainComplete}/>}
             <AnimatePresence>
-                {(isSidebarOpen || !isMobile) && (
-                    <motion.div
+                {(isSidebarOpen || !isMobile) && (<motion.div
                         initial={{opacity: 0}}
                         animate={{opacity: 1}}
                         exit={{opacity: 0}}
                         transition={{duration: 0.2}}
-                        className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+                        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
                         onClick={toggleSidebar}
-                    />
-                )}
+                    />)}
             </AnimatePresence>
 
             <motion.aside
                 initial={isMobile ? {x: "-100%"} : {x: 0}}
                 animate={isSidebarOpen || !isMobile ? {x: 0} : {x: "-100%"}}
                 transition={{duration: 0.3, ease: [0.25, 0.1, 0.25, 1]}}
-                className={`w-full max-w-[280px] lg:w-64 bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700 text-white p-6 fixed inset-y-0 left-0 z-30 lg:relative overflow-y-auto`}
+                className={`w-full max-w-[280px] lg:w-64 bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700 text-white p-6 fixed inset-y-0 left-0 z-50 lg:relative overflow-y-auto`}
             >
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-300">
                         TRACKMASTER
                     </h1>
-                    {isMobile && (
-                        <button
+                    {isMobile && (<button
                             onClick={toggleSidebar}
                             className="text-purple-200 hover:text-white transition-colors"
                         >
                             <ChevronRight size={24}/>
-                        </button>
-                    )}
+                        </button>)}
                 </div>
-                {isLoading ? (
-                    <UserSkeleton/>
-                ) : user && (
-                    <div className="mb-8">
+                {isLoading ? (<UserSkeleton/>) : user && (<div className="mb-8">
                         <div
                             className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
                             <Avatar className="w-full h-full border-4 border-white rounded-full">
@@ -161,23 +238,16 @@ export default function Layout({children, setCurrentView}) {
                         <p className="text-center text-sm text-purple-300 mt-1">
                             {user.role}
                         </p>
-                    </div>
-                )}
+                    </div>)}
                 <nav className="space-y-2">
-                    {menuItems.map(({icon: Icon, label, view}) => (
-                        <button
+                    {menuItems.map(({icon: Icon, label, view}) => (<button
                             key={view}
                             onClick={() => handleMenuItemClick(view)}
-                            className={`flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 ${
-                                activeView === view
-                                    ? 'bg-purple-600 text-white shadow-md'
-                                    : 'text-purple-200 hover:bg-purple-700/50'
-                            }`}
+                            className={`flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 ${activeView === view ? 'bg-purple-600 text-white shadow-md' : 'text-purple-200 hover:bg-purple-700/50'}`}
                         >
                             <Icon className="mr-3 h-5 w-5"/>
                             {label}
-                        </button>
-                    ))}
+                        </button>))}
                     <button
                         onClick={() => {
                             handleLogout();
@@ -191,26 +261,46 @@ export default function Layout({children, setCurrentView}) {
             </motion.aside>
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white shadow-md p-4 flex justify-between items-center">
+                <header className="bg-white shadow-md p-4 flex justify-between items-center relative z-30">
                     <button
                         className="lg:hidden text-purple-800 hover:text-purple-600 transition-colors"
                         onClick={toggleSidebar}
                     >
                         <Menu className="h-6 w-6"/>
                     </button>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
+                    <h2
+                        className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 cursor-pointer select-none title-text"
+                        onClick={handleTitleClick}
+                    >
                         {displayedText}
-                        {!isTypingComplete && (
-                            <span className="animate-blink">|</span>
-                        )}
+                        {!isTypingComplete && (<span className="animate-blink">|</span>)}
                     </h2>
-                    <NotificationButton isMobile={isMobile}/>
+                    <div
+                        className={`${isMobile && isSidebarOpen ? 'pointer-events-none opacity-50' : ''} transition-opacity duration-300`}>
+                        <NotificationButton isMobile={isMobile}/>
+                    </div>
                 </header>
                 <main
                     className="flex-1 overflow-x-hidden overflow-y-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50">
                     {children}
                 </main>
             </div>
-        </div>
-    );
+            <style jsx global>{`
+                @keyframes titlePop {
+                    0% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(1.05);
+                    }
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+
+                .animate-title {
+                    animation: titlePop 0.5s ease-in-out;
+                }
+            `}</style>
+        </div>);
 }
