@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import React, {useState, useEffect} from 'react';
+import {Calendar, momentLocalizer} from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Toaster } from "@/components/ui/toaster"
-import { useToast } from "@/hooks/use-toast"
-import { getData, postData, putData, deleteData } from '../api/apiService';
-import { Loader2 } from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from "@/components/ui/dialog";
+import {useToast} from "@/hooks/use-toast";
+import {getData, postData, putData, deleteData} from '../api/apiService';
+import {Loader2} from "lucide-react";
 
 moment.locale('es');
 const localizer = momentLocalizer(moment);
@@ -36,19 +35,19 @@ const formats = {
     monthHeaderFormat: 'MMMM YYYY',
     weekdayFormat: 'dddd',
     dayFormat: 'D [de] MMMM',
-    dayRangeHeaderFormat: ({ start, end }) =>
-        `${moment(start).format('D [de] MMMM')} - ${moment(end).format('D [de] MMMM [de] YYYY')}`,
+    dayRangeHeaderFormat: ({
+                               start,
+                               end
+                           }) => `${moment(start).format('D [de] MMMM')} - ${moment(end).format('D [de] MMMM [de] YYYY')}`,
     dayHeaderFormat: 'dddd D [de] MMMM',
-    eventTimeRangeFormat: ({ start, end }) =>
-        `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
+    eventTimeRangeFormat: ({start, end}) => `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
     timeGutterFormat: 'HH:mm',
     agendaDateFormat: 'D [de] MMMM',
     agendaTimeFormat: 'HH:mm',
-    agendaTimeRangeFormat: ({ start, end }) =>
-        `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
+    agendaTimeRangeFormat: ({start, end}) => `${moment(start).format('HH:mm')} - ${moment(end).format('HH:mm')}`,
 };
 
-export default function CalendarioEventos({ calendarId }) {
+export default function CalendarioEventos({calendarId}) {
     const [events, setEvents] = useState([]);
     const [newEvent, setNewEvent] = useState({title: '', start: '', end: '', description: ''});
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -57,7 +56,7 @@ export default function CalendarioEventos({ calendarId }) {
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const { toast } = useToast()
+    const {toast} = useToast()
 
     useEffect(() => {
         fetchEvents();
@@ -68,9 +67,7 @@ export default function CalendarioEventos({ calendarId }) {
         try {
             const response = await getData(`/events?calendar_id=${calendarId}`);
             setEvents(response.map(event => ({
-                ...event,
-                start: new Date(event.start_date),
-                end: new Date(event.end_date)
+                ...event, start: new Date(event.start_date), end: new Date(event.end_date)
             })));
         } catch (error) {
             console.error('Error fetching events:', error);
@@ -103,9 +100,7 @@ export default function CalendarioEventos({ calendarId }) {
                     calendar_id: calendarId
                 });
                 setEvents([...events, {
-                    ...response,
-                    start: new Date(response.start_date),
-                    end: new Date(response.end_date)
+                    ...response, start: new Date(response.start_date), end: new Date(response.end_date)
                 }]);
                 setNewEvent({title: '', start: '', end: '', description: ''});
                 setIsDialogOpen(false);
@@ -127,9 +122,7 @@ export default function CalendarioEventos({ calendarId }) {
                     end_date: selectedEvent.end
                 });
                 setEvents(events.map(e => (e.id === selectedEvent.id ? {
-                    ...response,
-                    start: new Date(response.start_date),
-                    end: new Date(response.end_date)
+                    ...response, start: new Date(response.start_date), end: new Date(response.end_date)
                 } : e)));
                 setSelectedEvent(null);
                 setIsDialogOpen(false);
@@ -159,18 +152,13 @@ export default function CalendarioEventos({ calendarId }) {
 
     const showToast = (message, isError) => {
         toast({
-            title: isError ? "Error" : "Éxito",
-            description: message,
-            variant: isError ? "destructive" : "default",
+            title: isError ? "Error" : "Éxito", description: message, variant: isError ? "destructive" : "default",
         })
     };
 
-    const handleSelectSlot = ({ start, end }) => {
+    const handleSelectSlot = ({start, end}) => {
         setNewEvent({
-            title: '',
-            start: start.toISOString().slice(0, 16),
-            end: end.toISOString().slice(0, 16),
-            description: ''
+            title: '', start: start.toISOString().slice(0, 16), end: end.toISOString().slice(0, 16), description: ''
         });
         setIsDialogOpen(true);
     };
@@ -186,98 +174,101 @@ export default function CalendarioEventos({ calendarId }) {
         setIsDialogOpen(true);
     };
 
-    return (
-        <div className="space-y-6">
-            <Card className="bg-white shadow-lg">
-                <CardHeader className="flex justify-between items-center">
-                    <CardTitle>Calendario de Eventos</CardTitle>
-                    <Button onClick={() => setIsDialogOpen(true)} className="bg-purple-600 text-white">Agregar Evento</Button>
-                </CardHeader>
-                <CardContent className="p-0">
-                    {isLoading ? (
-                        <div className="flex items-center justify-center h-[500px]">
-                            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-                            <span className="ml-2 text-lg font-medium text-purple-600">Cargando eventos...</span>
-                        </div>
-                    ) : (
-                        <Calendar
-                            localizer={localizer}
-                            events={events}
-                            startAccessor="start"
-                            endAccessor="end"
-                            messages={messages}
-                            formats={formats}
-                            culture="es"
-                            style={{height: 500}}
-                            onSelectEvent={handleSelectEvent}
-                            onSelectSlot={handleSelectSlot}
-                            selectable
-                            views={['month', 'week', 'day', 'agenda']}
-                            defaultView="month"
-                        />
-                    )}
-                </CardContent>
-            </Card>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{selectedEvent ? 'Editar Evento' : 'Agregar Nuevo Evento'}</DialogTitle>
-                    </DialogHeader>
-                    <Input
-                        placeholder="Título del evento"
-                        value={selectedEvent ? selectedEvent.title : newEvent.title}
-                        onChange={(e) => selectedEvent ? setSelectedEvent({...selectedEvent, title: e.target.value}) : setNewEvent({...newEvent, title: e.target.value})}
-                        className={`w-full p-2 border rounded mb-4 ${formErrors.title ? 'border-red-500' : ''}`}
-                    />
-                    {formErrors.title && <p className="text-red-500 text-sm mb-2">{formErrors.title}</p>}
-                    <Input
-                        type="datetime-local"
-                        value={selectedEvent ? selectedEvent.start : newEvent.start}
-                        onChange={(e) => selectedEvent ? setSelectedEvent({...selectedEvent, start: e.target.value}) : setNewEvent({...newEvent, start: e.target.value})}
-                        className={`w-full p-2 border rounded mb-4 ${formErrors.start ? 'border-red-500' : ''}`}
-                    />
-                    {formErrors.start && <p className="text-red-500 text-sm mb-2">{formErrors.start}</p>}
-                    <Input
-                        type="datetime-local"
-                        value={selectedEvent ? selectedEvent.end : newEvent.end}
-                        onChange={(e) => selectedEvent ? setSelectedEvent({...selectedEvent, end: e.target.value}) : setNewEvent({...newEvent, end: e.target.value})}
-                        className={`w-full p-2 border rounded mb-4 ${formErrors.end ? 'border-red-500' : ''}`}
-                    />
-                    {formErrors.end && <p className="text-red-500 text-sm mb-2">{formErrors.end}</p>}
-                    <Input
-                        placeholder="Descripción del evento"
-                        value={selectedEvent ? selectedEvent.description : newEvent.description}
-                        onChange={(e) => selectedEvent ? setSelectedEvent({...selectedEvent, description: e.target.value}) : setNewEvent({...newEvent, description: e.target.value})}
-                        className="w-full p-2 border rounded mb-4"
-                    />
-                    <div className="flex space-x-4">
-                        {selectedEvent ? (
-                            <>
-                                <Button onClick={handleUpdateEvent} className="w-full bg-purple-600 text-white p-2 rounded">Actualizar Evento</Button>
-                                <Button onClick={handleDeleteEvent} className="w-full bg-red-600 text-white p-2 rounded">Eliminar Evento</Button>
-                            </>
-                        ) : (
-                            <Button onClick={handleAddEvent} className="w-full bg-purple-600 text-white p-2 rounded">Agregar Evento</Button>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
-            <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Confirmar Acción</DialogTitle>
-                    </DialogHeader>
-                    <p>¿Está seguro de que desea eliminar este evento?</p>
-                    <DialogFooter>
-                        <Button onClick={() => setIsConfirmDialogOpen(false)} className="bg-gray-300 text-black">Cancelar</Button>
-                        <Button onClick={() => {
-                            confirmAction();
-                            setIsConfirmDialogOpen(false);
-                        }} className="bg-red-600 text-white">Eliminar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-            <Toaster />
-        </div>
-    );
+    return (<div className="space-y-6">
+        <Card className="bg-white shadow-lg">
+            <CardHeader className="flex justify-between items-center">
+                <CardTitle>Calendario de Eventos</CardTitle>
+                <Button onClick={() => setIsDialogOpen(true)} className="bg-purple-600 text-white">Agregar
+                    Evento</Button>
+            </CardHeader>
+            <CardContent className="p-0">
+                {isLoading ? (<div className="flex items-center justify-center h-[500px]">
+                    <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
+                    <span className="ml-2 text-lg font-medium text-purple-600">Cargando eventos...</span>
+                </div>) : (<Calendar
+                    localizer={localizer}
+                    events={events}
+                    startAccessor="start"
+                    endAccessor="end"
+                    messages={messages}
+                    formats={formats}
+                    culture="es"
+                    style={{height: 500}}
+                    onSelectEvent={handleSelectEvent}
+                    onSelectSlot={handleSelectSlot}
+                    selectable
+                    views={['month', 'week', 'day', 'agenda']}
+                    defaultView="month"
+                />)}
+            </CardContent>
+        </Card>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{selectedEvent ? 'Editar Evento' : 'Agregar Nuevo Evento'}</DialogTitle>
+                </DialogHeader>
+                <Input
+                    placeholder="Título del evento"
+                    value={selectedEvent ? selectedEvent.title : newEvent.title}
+                    onChange={(e) => selectedEvent ? setSelectedEvent({
+                        ...selectedEvent, title: e.target.value
+                    }) : setNewEvent({...newEvent, title: e.target.value})}
+                    className={`w-full p-2 border rounded mb-4 ${formErrors.title ? 'border-red-500' : ''}`}
+                />
+                {formErrors.title && <p className="text-red-500 text-sm mb-2">{formErrors.title}</p>}
+                <Input
+                    type="datetime-local"
+                    value={selectedEvent ? selectedEvent.start : newEvent.start}
+                    onChange={(e) => selectedEvent ? setSelectedEvent({
+                        ...selectedEvent, start: e.target.value
+                    }) : setNewEvent({...newEvent, start: e.target.value})}
+                    className={`w-full p-2 border rounded mb-4 ${formErrors.start ? 'border-red-500' : ''}`}
+                />
+                {formErrors.start && <p className="text-red-500 text-sm mb-2">{formErrors.start}</p>}
+                <Input
+                    type="datetime-local"
+                    value={selectedEvent ? selectedEvent.end : newEvent.end}
+                    onChange={(e) => selectedEvent ? setSelectedEvent({
+                        ...selectedEvent, end: e.target.value
+                    }) : setNewEvent({...newEvent, end: e.target.value})}
+                    className={`w-full p-2 border rounded mb-4 ${formErrors.end ? 'border-red-500' : ''}`}
+                />
+                {formErrors.end && <p className="text-red-500 text-sm mb-2">{formErrors.end}</p>}
+                <Input
+                    placeholder="Descripción del evento"
+                    value={selectedEvent ? selectedEvent.description : newEvent.description}
+                    onChange={(e) => selectedEvent ? setSelectedEvent({
+                        ...selectedEvent, description: e.target.value
+                    }) : setNewEvent({...newEvent, description: e.target.value})}
+                    className="w-full p-2 border rounded mb-4"
+                />
+                <div className="flex space-x-4">
+                    {selectedEvent ? (<>
+                        <Button onClick={handleUpdateEvent}
+                                className="w-full bg-purple-600 text-white p-2 rounded">Actualizar
+                            Evento</Button>
+                        <Button onClick={handleDeleteEvent}
+                                className="w-full bg-red-600 text-white p-2 rounded">Eliminar Evento</Button>
+                    </>) : (<Button onClick={handleAddEvent} className="w-full bg-purple-600 text-white p-2 rounded">Agregar
+                        Evento</Button>)}
+                </div>
+            </DialogContent>
+        </Dialog>
+        <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Confirmar Acción</DialogTitle>
+                </DialogHeader>
+                <p>¿Está seguro de que desea eliminar este evento?</p>
+                <DialogFooter>
+                    <Button onClick={() => setIsConfirmDialogOpen(false)}
+                            className="bg-gray-300 text-black">Cancelar</Button>
+                    <Button onClick={() => {
+                        confirmAction();
+                        setIsConfirmDialogOpen(false);
+                    }} className="bg-red-600 text-white">Eliminar</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    </div>);
 }
