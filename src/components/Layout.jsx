@@ -16,9 +16,9 @@ export default function Layout({children, setCurrentView}) {
     const {logout} = useContext(AuthContext);
     const {user, setUser} = useUser();
 
-    const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
-    };
+    const toggleSidebar = useCallback(() => {
+        setIsSidebarOpen(prev => !prev);
+    }, []);
 
     const handleResize = useCallback(() => {
         setIsMobile(window.innerWidth < 1024);
@@ -60,13 +60,13 @@ export default function Layout({children, setCurrentView}) {
         }
     };
 
-    const handleMenuItemClick = (view) => {
+    const handleMenuItemClick = useCallback((view) => {
         setCurrentView(view);
         setActiveView(view);
         if (isMobile) {
             setIsSidebarOpen(false);
         }
-    };
+    }, [setCurrentView, isMobile]);
 
     const UserSkeleton = () => (
         <div className="mb-8">
@@ -78,11 +78,6 @@ export default function Layout({children, setCurrentView}) {
 
     const getAvatarUrl = (name, lastName) => {
         return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + ' ' + lastName)}&backgroundColor=F3E8FF&textColor=6B21A8`;
-    };
-
-    const sidebarVariants = {
-        open: {x: 0, opacity: 1},
-        closed: {x: "-100%", opacity: 0},
     };
 
     const menuItems = [
@@ -108,47 +103,30 @@ export default function Layout({children, setCurrentView}) {
             </AnimatePresence>
 
             <motion.aside
-                initial={isMobile ? "closed" : "open"}
-                animate={isSidebarOpen || !isMobile ? "open" : "closed"}
-                variants={sidebarVariants}
+                initial={isMobile ? {x: "-100%"} : {x: 0}}
+                animate={isSidebarOpen || !isMobile ? {x: 0} : {x: "-100%"}}
                 transition={{duration: 0.3, ease: [0.25, 0.1, 0.25, 1]}}
                 className={`w-full max-w-[280px] lg:w-64 bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700 text-white p-6 fixed inset-y-0 left-0 z-30 lg:relative overflow-y-auto`}
             >
                 <div className="flex justify-between items-center mb-8">
-                    <motion.h1
-                        className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-300"
-                        initial={{opacity: 0, y: -20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{duration: 0.5, delay: 0.2}}
-                    >
+                    <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-300">
                         TRACKMASTER
-                    </motion.h1>
+                    </h1>
                     {isMobile && (
-                        <motion.button
+                        <button
                             onClick={toggleSidebar}
-                            whileHover={{scale: 1.1}}
-                            whileTap={{scale: 0.9}}
                             className="text-purple-200 hover:text-white transition-colors"
                         >
                             <ChevronRight size={24}/>
-                        </motion.button>
+                        </button>
                     )}
                 </div>
                 {isLoading ? (
                     <UserSkeleton/>
                 ) : user && (
-                    <motion.div
-                        className="mb-8"
-                        initial={{opacity: 0, y: -20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{duration: 0.5, delay: 0.3}}
-                    >
-                        <motion.div
-                            className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg"
-                            initial={{opacity: 0, y: -20}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{duration: 0.5, delay: 0.4}}
-                        >
+                    <div className="mb-8">
+                        <div
+                            className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
                             <Avatar className="w-full h-full border-4 border-white rounded-full">
                                 <AvatarImage src={user.profilePicture || getAvatarUrl(user.name, user.last_name)}
                                              alt={`${user.name} ${user.last_name}`}/>
@@ -156,28 +134,18 @@ export default function Layout({children, setCurrentView}) {
                                     {user.name.charAt(0)}{user.last_name.charAt(0)}
                                 </AvatarFallback>
                             </Avatar>
-                        </motion.div>
-                        <motion.p
-                            className="text-center font-semibold text-xl text-purple-100"
-                            initial={{opacity: 0, y: -10}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{duration: 0.5, delay: 0.5}}
-                        >
+                        </div>
+                        <p className="text-center font-semibold text-xl text-purple-100">
                             {user.name} {user.last_name}
-                        </motion.p>
-                        <motion.p
-                            className="text-center text-sm text-purple-300 mt-1"
-                            initial={{opacity: 0, y: -10}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{duration: 0.5, delay: 0.6}}
-                        >
+                        </p>
+                        <p className="text-center text-sm text-purple-300 mt-1">
                             {user.role}
-                        </motion.p>
-                    </motion.div>
+                        </p>
+                    </div>
                 )}
                 <nav className="space-y-2">
-                    {menuItems.map(({icon: Icon, label, view}, index) => (
-                        <motion.button
+                    {menuItems.map(({icon: Icon, label, view}) => (
+                        <button
                             key={view}
                             onClick={() => handleMenuItemClick(view)}
                             className={`flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 ${
@@ -185,63 +153,39 @@ export default function Layout({children, setCurrentView}) {
                                     ? 'bg-purple-600 text-white shadow-md'
                                     : 'text-purple-200 hover:bg-purple-700/50'
                             }`}
-                            whileHover={{scale: 1.03}}
-                            whileTap={{scale: 0.98}}
-                            initial={{opacity: 0, y: -10}}
-                            animate={{opacity: 1, y: 0}}
-                            transition={{duration: 0.3, delay: 0.7 + index * 0.1}}
                         >
                             <Icon className="mr-3 h-5 w-5"/>
                             {label}
-                        </motion.button>
+                        </button>
                     ))}
-                    <motion.button
+                    <button
                         onClick={() => {
                             handleLogout();
                             if (isMobile) setIsSidebarOpen(false);
                         }}
                         className="flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 text-purple-200 hover:bg-purple-700/50 mt-8"
-                        whileHover={{scale: 1.03}}
-                        whileTap={{scale: 0.98}}
-                        initial={{opacity: 0, y: -10}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{duration: 0.3, delay: 1.1}}
                     >
                         <LogOut className="mr-3 h-5 w-5"/> Cerrar Sesión
-                    </motion.button>
+                    </button>
                 </nav>
             </motion.aside>
 
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white shadow-md p-4 flex justify-between items-center">
-                    <motion.button
+                    <button
                         className="lg:hidden text-purple-800 hover:text-purple-600 transition-colors"
                         onClick={toggleSidebar}
-                        whileHover={{scale: 1.1}}
-                        whileTap={{scale: 0.9}}
                     >
                         <Menu className="h-6 w-6"/>
-                    </motion.button>
-                    <motion.h2
-                        className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500"
-                        initial={{opacity: 0, y: -20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{duration: 0.5}}
-                    >
+                    </button>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
                         Taller De Ingeniería en Software
-                    </motion.h2>
+                    </h2>
                     <NotificationButton isMobile={isMobile}/>
                 </header>
                 <main
                     className="flex-1 overflow-x-hidden overflow-y-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50">
-                    <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{duration: 0.5}}
-                    >
-                        {children}
-                    </motion.div>
-
+                    {children}
                 </main>
             </div>
         </div>
