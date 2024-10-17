@@ -8,6 +8,24 @@ import {useUser} from '../context/UserContext';
 import {motion, AnimatePresence} from "framer-motion";
 import NotificationButton from './NotificationButton';
 
+const useTypingAnimation = (text, speed = 100) => {
+    const [displayedText, setDisplayedText] = useState('');
+    const [isTypingComplete, setIsTypingComplete] = useState(false);
+
+    useEffect(() => {
+        if (displayedText.length < text.length) {
+            const timeoutId = setTimeout(() => {
+                setDisplayedText(text.slice(0, displayedText.length + 1));
+            }, speed);
+            return () => clearTimeout(timeoutId);
+        } else {
+            setIsTypingComplete(true);
+        }
+    }, [displayedText, text, speed]);
+
+    return {displayedText, isTypingComplete};
+};
+
 export default function Layout({children, setCurrentView}) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -15,6 +33,8 @@ export default function Layout({children, setCurrentView}) {
     const [activeView, setActiveView] = useState('inicio');
     const {logout} = useContext(AuthContext);
     const {user, setUser} = useUser();
+
+    const {displayedText, isTypingComplete} = useTypingAnimation("Taller De Ingeniería en Software", 100);
 
     const toggleSidebar = useCallback(() => {
         setIsSidebarOpen(prev => !prev);
@@ -179,7 +199,10 @@ export default function Layout({children, setCurrentView}) {
                         <Menu className="h-6 w-6"/>
                     </button>
                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
-                        Taller De Ingeniería en Software
+                        {displayedText}
+                        {!isTypingComplete && (
+                            <span className="animate-blink">|</span>
+                        )}
                     </h2>
                     <NotificationButton isMobile={isMobile}/>
                 </header>
