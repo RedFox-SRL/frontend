@@ -3,10 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Phone, Hash, Copy, Edit2, Check, X, Settings, BarChart } from "lucide-react";
+import { Mail, Phone, Hash, Copy, Edit2, Check, X, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { putData } from '../api/apiService';
-import ReportView from './ReportView'; // Importamos el componente de reportes
 
 export default function GroupDetailCreator({ selectedGroup, onUpdateGroup }) {
     const [groupData, setGroupData] = useState({
@@ -19,10 +18,8 @@ export default function GroupDetailCreator({ selectedGroup, onUpdateGroup }) {
         contact_email: selectedGroup.contact_email,
         contact_phone: selectedGroup.contact_phone,
     });
-    const [isViewingReport, setIsViewingReport] = useState(false); // Estado para ver la vista de reportes
     const { toast } = useToast();
-    const reportRef = useRef(null); // Referencia para el componente de reportes
-    const topRef = useRef(null); // Referencia para la parte superior de la página
+    const topRef = useRef(null);
 
     useEffect(() => {
         setGroupData({
@@ -33,7 +30,6 @@ export default function GroupDetailCreator({ selectedGroup, onUpdateGroup }) {
             contact_email: selectedGroup.contact_email,
             contact_phone: selectedGroup.contact_phone,
         });
-        setIsViewingReport(false); // Resetear la vista de reportes al seleccionar un nuevo grupo
     }, [selectedGroup]);
 
     const validateField = (field, value) => {
@@ -158,23 +154,8 @@ export default function GroupDetailCreator({ selectedGroup, onUpdateGroup }) {
         );
     };
 
-    // Función para manejar la vista de reportes y hacer scroll al componente
-    const handleViewReport = () => {
-        setIsViewingReport(!isViewingReport); // Cambiar el estado de reportes
-        setTimeout(() => {
-            if (isViewingReport) {
-                // Si se oculta el reporte, hacer scroll hacia la parte superior de la página
-                topRef.current.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                // Si se muestra el reporte, hacer scroll hacia el componente de reportes
-                reportRef.current.scrollIntoView({ behavior: 'smooth' });
-            }
-        }, 100);
-    };
-
     return (
         <>
-            {/* Referencia a la parte superior de la página */}
             <div ref={topRef}></div>
 
             <Card className="bg-white shadow-lg border-t-4 border-t-purple-500">
@@ -229,27 +210,10 @@ export default function GroupDetailCreator({ selectedGroup, onUpdateGroup }) {
                                 <Settings className="w-4 h-4 mr-2" />
                                 Configuración
                             </Button>
-
-                            {/* Botón de "Reportes" para ver/ocultar las evaluaciones */}
-                            <Button
-                                variant="outline"
-                                className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
-                                onClick={handleViewReport}
-                            >
-                                <BarChart className="w-4 h-4 mr-2" />
-                                {isViewingReport ? 'Ocultar Reportes' : 'Reportes'}
-                            </Button>
                         </div>
                     </div>
                 </CardContent>
             </Card>
-
-            {/* Componente de ReportView */}
-            {isViewingReport && (
-                <div ref={reportRef}> {/* Referencia al componente de reportes */}
-                    <ReportView groupId={selectedGroup.id} />
-                </div>
-            )}
         </>
     );
 }

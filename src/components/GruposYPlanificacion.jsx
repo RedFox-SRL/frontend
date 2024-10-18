@@ -3,7 +3,7 @@ import { getData, postData, putData } from '../api/apiService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, Calendar, Users, LayoutDashboard, Upload, X } from "lucide-react"
+import { Loader2, Calendar, Users, LayoutDashboard, Clipboard, Upload, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import CalendarioEventos from './CalendarioEventos';
 import SprintKanbanBoard from './SprintKanbanBoard';
@@ -11,6 +11,7 @@ import GroupMemberListCreator from './GroupMemberListCreator';
 import GroupMemberListMember from './GroupMemberListMember';
 import GroupDetailCreator from './GroupDetailCreator';
 import GroupDetailMember from './GroupDetailMember';
+import ReportView from './ReportView';
 import { useDropzone } from 'react-dropzone';
 import Cropper from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -44,6 +45,7 @@ export default function GruposYPlanificacion() {
     const calendarRef = useRef(null);
     const kanbanRef = useRef(null);
     const equipoRef = useRef(null);
+    const reportesRef = useRef(null);
 
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
@@ -67,6 +69,8 @@ export default function GruposYPlanificacion() {
             kanbanRef.current.scrollIntoView({ behavior: 'smooth' });
         } else if (activeCard === 'equipo' && equipoRef.current) {
             equipoRef.current.scrollIntoView({ behavior: 'smooth' });
+        } else if (activeCard === 'reportes' && reportesRef.current) {
+            reportesRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [activeCard]);
 
@@ -578,7 +582,7 @@ export default function GruposYPlanificacion() {
                 ) : (
                     <GroupDetailMember selectedGroup={selectedGroup} />
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <Card
                         className={`cursor-pointer transition-all duration-200 ${activeCard === 'planificacion' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
                         onClick={() => handleCardClick('planificacion')}>
@@ -603,6 +607,14 @@ export default function GruposYPlanificacion() {
                             <CardTitle className="text-xl font-bold text-purple-800">Equipo</CardTitle>
                         </CardContent>
                     </Card>
+                    <Card
+                        className={`cursor-pointer transition-all duration-200 ${activeCard === 'reportes' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
+                        onClick={() => handleCardClick('reportes')}>
+                        <CardContent className="flex flex-col items-center justify-center p-6">
+                            <Clipboard className="h-12 w-12 text-purple-600 mb-4" />
+                            <CardTitle className="text-xl font-bold text-purple-800">Reportes</CardTitle>
+                        </CardContent>
+                    </Card>
                 </div>
                 <div ref={calendarRef} className={activeCard === 'planificacion' ? '' : 'hidden'}>
                     <CalendarioEventos calendarId={calendarId} />
@@ -616,6 +628,9 @@ export default function GruposYPlanificacion() {
                     ) : (
                         <GroupMemberListMember groupId={groupId} members={selectedGroup.members} />
                     )}
+                </div>
+                <div ref={reportesRef} className={activeCard === 'reportes' ? '' : 'hidden'}>
+                    <ReportView groupId={groupId} />
                 </div>
             </div>
         );

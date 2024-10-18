@@ -1,16 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Phone, Hash, BarChart, Copy } from "lucide-react";
+import { Mail, Phone, Hash, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import ReportView from './ReportView'; // Importamos el componente de reportes
 
 export default function GroupDetailMember({ selectedGroup }) {
     const { toast } = useToast();
-    const [isViewingReport, setIsViewingReport] = useState(false); // Estado para ver la vista de reportes
-    const reportRef = useRef(null); // Referencia para el componente de reportes
-    const topRef = useRef(null); // Referencia para la parte superior de la página
+    const topRef = useRef(null);
 
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -24,23 +21,8 @@ export default function GroupDetailMember({ selectedGroup }) {
         });
     };
 
-    // Función para manejar la vista de reportes y hacer scroll al componente
-    const handleViewReport = () => {
-        setIsViewingReport(!isViewingReport); // Cambiar el estado de reportes
-        setTimeout(() => {
-            if (isViewingReport) {
-                // Si se oculta el reporte, hacer scroll hacia la parte superior de la página
-                topRef.current.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                // Si se muestra el reporte, hacer scroll hacia el componente de reportes
-                reportRef.current.scrollIntoView({ behavior: 'smooth' });
-            }
-        }, 100);
-    };
-
     return (
         <>
-            {/* Referencia a la parte superior de la página */}
             <div ref={topRef}></div>
 
             <Card className="bg-white shadow-lg border-t-4 border-t-purple-500">
@@ -90,27 +72,9 @@ export default function GroupDetailMember({ selectedGroup }) {
                     <div className="flex flex-col justify-center space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800">Información del Grupo</h3>
                         <p className="text-sm text-gray-600">Este es tu grupo de trabajo actual.</p>
-                        <div className="space-y-2">
-                            {/* Botón de "Reportes" para ver/ocultar las evaluaciones */}
-                            <Button
-                                variant="outline"
-                                className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
-                                onClick={handleViewReport}
-                            >
-                                <BarChart className="w-4 h-4 mr-2" />
-                                {isViewingReport ? 'Ocultar Reportes' : 'Reportes'}
-                            </Button>
-                        </div>
                     </div>
                 </CardContent>
             </Card>
-
-            {/* Componente de ReportView */}
-            {isViewingReport && (
-                <div ref={reportRef}> {/* Referencia al componente de reportes */}
-                    <ReportView groupId={selectedGroup.id} />
-                </div>
-            )}
         </>
     );
 }
