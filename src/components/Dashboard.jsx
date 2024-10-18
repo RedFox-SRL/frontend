@@ -12,6 +12,7 @@ import GroupList from './GroupList';
 import ParticipantList from './ParticipantList';
 import GroupDetails from './GroupDetail';
 import AnnouncementList from './AnnouncementList';
+import CreateAnnouncement from './CreateAnnouncement';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
@@ -215,6 +216,7 @@ export default function Dashboard() {
                             </TabsList>
                             <div className="mt-2 sm:mt-4">
                                 <TabsContent value="announcements">
+                                    <CreateAnnouncement onAnnouncementCreated/>
                                     <AnnouncementList announcements={announcements}/>
                                 </TabsContent>
                                 <TabsContent value="groups">
