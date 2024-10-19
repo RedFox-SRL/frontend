@@ -37,7 +37,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
                 console.error('Error fetching user data:', error)
                 toast({
                     title: "Error",
-                    description: "No se pudo cargar la información del usuario.",
+                    description: "Could not load user information.",
                     variant: "destructive",
                 })
             } finally {
@@ -55,8 +55,8 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
             setAnnouncement(content)
         } else {
             toast({
-                title: "Límite de caracteres alcanzado",
-                description: `El anuncio no puede exceder ${MAX_CHAR_LIMIT} caracteres.`,
+                title: "Character limit reached",
+                description: `Announcements cannot exceed ${MAX_CHAR_LIMIT} characters.`,
                 variant: "warning",
             })
         }
@@ -66,8 +66,8 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
         const files = Array.from(event.target.files)
         if (attachments.filter(a => a.type === 'file').length + files.length > MAX_FILES) {
             toast({
-                title: "Límite de archivos alcanzado",
-                description: `No puedes adjuntar más de ${MAX_FILES} archivos.`,
+                title: "File limit reached",
+                description: `You cannot attach more than ${MAX_FILES} files.`,
                 variant: "warning",
             })
             return
@@ -75,8 +75,8 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
         const newAttachments = await Promise.all(files.map(async (file) => {
             if (file.size > MAX_FILE_SIZE) {
                 toast({
-                    title: "Archivo demasiado grande",
-                    description: `El archivo ${file.name} excede el tamaño máximo de ${formatFileSize(MAX_FILE_SIZE)}.`,
+                    title: "File too large",
+                    description: `The file ${file.name} exceeds the maximum size of ${formatFileSize(MAX_FILE_SIZE)}.`,
                     variant: "warning",
                 })
                 return null
@@ -110,8 +110,8 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
     const handleSubmit = async () => {
         if (!announcement.trim() && attachments.length === 0) {
             toast({
-                title: "Contenido vacío",
-                description: "Por favor, escribe un anuncio o adjunta algún archivo.",
+                title: "Empty announcement",
+                description: "Please write an announcement or attach a file.",
                 variant: "warning",
             })
             return
@@ -120,7 +120,10 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
         setIsLoading(true)
         const formData = new FormData()
         formData.append('management_id', managementId)
-        formData.append('content', announcement)
+
+        if (announcement.trim()) {
+            formData.append('announcement', announcement)
+        }
 
         attachments.forEach((attachment, index) => {
             if (attachment.type === 'file') {
@@ -139,15 +142,15 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
             setAttachments([])
             setIsExpanded(false)
             toast({
-                title: "Anuncio publicado",
-                description: "Tu anuncio ha sido publicado exitosamente.",
+                title: "Announcement published",
+                description: "Your announcement has been published successfully.",
                 variant: "success",
             })
         } catch (error) {
             console.error('Error creating announcement:', error)
             toast({
                 title: "Error",
-                description: "Hubo un problema al crear el anuncio. Por favor, inténtalo de nuevo.",
+                description: "There was a problem creating the announcement. Please try again.",
                 variant: "destructive",
             })
         } finally {
