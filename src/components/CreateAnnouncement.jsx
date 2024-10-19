@@ -2,27 +2,30 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { getData } from '../api/apiService'
-import { useUser } from '../context/UserContext'
-import { Paperclip, Youtube, Link as LinkIcon } from 'lucide-react'
+import { getData, postData } from '../api/apiService'
+import { Paperclip, Youtube, Link as LinkIcon, X } from 'lucide-react'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import YouTubeDialog from './YouTubeDialog'
 import LinkDialog from './LinkDialog'
-import AttachmentList from './AttachmentList'
-import { getFileType, getFilePreview, getAvatarUrl } from '../utils/fileUtils'
+import { getFileType, getFilePreview, getAvatarUrl, formatFileSize, getFileIcon } from '../utils/fileUtils'
+import { useToast } from "@/hooks/use-toast"
 
-export default function CreateAnnouncement({ onAnnouncementCreated }) {
+const MAX_CHAR_LIMIT = 2000
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILES = 5
+
+export default function CreateAnnouncement({ managementId, onAnnouncementCreated }) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [announcement, setAnnouncement] = useState('')
     const [attachments, setAttachments] = useState([])
     const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false)
     const [isYoutubeDialogOpen, setIsYoutubeDialogOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [user, setUser] = useState(null)
     const fileInputRef = useRef(null)
-    const { user, setUser } = useUser()
+    const { toast } = useToast()
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -32,31 +35,62 @@ export default function CreateAnnouncement({ onAnnouncementCreated }) {
                 setUser(response.data.item)
             } catch (error) {
                 console.error('Error fetching user data:', error)
+                toast({
+                    title: "Error",
+                    description: "No se pudo cargar la información del usuario.",
+                    variant: "destructive",
+                })
             } finally {
                 setIsLoading(false)
             }
         }
 
-        if (!user) {
-            fetchUserData()
-        }
-    }, [setUser, user])
+        fetchUserData()
+    }, [toast])
 
     const handleExpand = () => setIsExpanded(true)
 
-    const handleAnnouncementChange = (content) => setAnnouncement(content)
+    const handleAnnouncementChange = (content) => {
+        if (content.length <= MAX_CHAR_LIMIT) {
+            setAnnouncement(content)
+        } else {
+            toast({
+                title: "Límite de caracteres alcanzado",
+                description: `El anuncio no puede exceder ${MAX_CHAR_LIMIT} caracteres.`,
+                variant: "warning",
+            })
+        }
+    }
 
     const handleFileAttachment = async (event) => {
         const files = Array.from(event.target.files)
-        const newAttachments = await Promise.all(files.map(async (file) => ({
-            type: 'file',
-            name: file.name,
-            fileType: getFileType(file),
-            size: file.size,
-            file: file,
-            preview: await getFilePreview(file)
-        })))
-        setAttachments([...attachments, ...newAttachments])
+        if (attachments.filter(a => a.type === 'file').length + files.length > MAX_FILES) {
+            toast({
+                title: "Límite de archivos alcanzado",
+                description: `No puedes adjuntar más de ${MAX_FILES} archivos.`,
+                variant: "warning",
+            })
+            return
+        }
+        const newAttachments = await Promise.all(files.map(async (file) => {
+            if (file.size > MAX_FILE_SIZE) {
+                toast({
+                    title: "Archivo demasiado grande",
+                    description: `El archivo ${file.name} excede el tamaño máximo de ${formatFileSize(MAX_FILE_SIZE)}.`,
+                    variant: "warning",
+                })
+                return null
+            }
+            return {
+                type: 'file',
+                name: file.name,
+                fileType: getFileType(file),
+                size: file.size,
+                file: file,
+                preview: await getFilePreview(file)
+            }
+        }))
+        setAttachments([...attachments, ...newAttachments.filter(a => a !== null)])
     }
 
     const handleLinkAttachment = (linkData) => {
@@ -73,12 +107,90 @@ export default function CreateAnnouncement({ onAnnouncementCreated }) {
         setAttachments(attachments.filter((_, i) => i !== index))
     }
 
-    const handleSubmit = () => {
-        onAnnouncementCreated({ content: announcement, attachments })
-        setAnnouncement('')
-        setAttachments([])
-        setIsExpanded(false)
+    const handleSubmit = async () => {
+        if (!announcement.trim() && attachments.length === 0) {
+            toast({
+                title: "Contenido vacío",
+                description: "Por favor, escribe un anuncio o adjunta algún archivo.",
+                variant: "warning",
+            })
+            return
+        }
+
+        setIsLoading(true)
+        const formData = new FormData()
+        formData.append('management_id', managementId)
+        formData.append('content', announcement)
+
+        attachments.forEach((attachment, index) => {
+            if (attachment.type === 'file') {
+                formData.append(`files[${index}]`, attachment.file)
+            } else if (attachment.type === 'link') {
+                formData.append(`links[${index}]`, JSON.stringify(attachment))
+            } else if (attachment.type === 'youtube') {
+                formData.append(`youtube_videos[${index}]`, JSON.stringify(attachment))
+            }
+        })
+
+        try {
+            const response = await postData('/announcement', formData)
+            onAnnouncementCreated(response.data)
+            setAnnouncement('')
+            setAttachments([])
+            setIsExpanded(false)
+            toast({
+                title: "Anuncio publicado",
+                description: "Tu anuncio ha sido publicado exitosamente.",
+                variant: "success",
+            })
+        } catch (error) {
+            console.error('Error creating announcement:', error)
+            toast({
+                title: "Error",
+                description: "Hubo un problema al crear el anuncio. Por favor, inténtalo de nuevo.",
+                variant: "destructive",
+            })
+        } finally {
+            setIsLoading(false)
+        }
     }
+
+    const renderAttachment = (attachment, index) => (
+        <div key={index} className="relative bg-gray-100 p-2 rounded-lg flex items-center space-x-2">
+            {attachment.type === 'file' && (
+                <>
+                    <div className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded overflow-hidden">
+                        {attachment.fileType === 'image' && attachment.preview ? (
+                            <img src={attachment.preview} alt={attachment.name} className="w-full h-full object-cover"/>
+                        ) : (
+                            getFileIcon(attachment.fileType)
+                        )}
+                    </div>
+                    <span className="text-sm truncate">{attachment.name}</span>
+                </>
+            )}
+            {attachment.type === 'link' && (
+                <>
+                    <img src={attachment.icon} alt={attachment.name} className="w-10 h-10"/>
+                    <span className="text-sm truncate">{attachment.name}</span>
+                </>
+            )}
+            {attachment.type === 'youtube' && (
+                <>
+                    <img src={attachment.thumbnail} alt="YouTube Thumbnail" className="w-10 h-10 object-cover rounded"/>
+                    <span className="text-sm truncate">{attachment.name}</span>
+                </>
+            )}
+            <Button
+                variant="ghost"
+                size="icon"
+                className="absolute -top-2 -right-2 bg-white rounded-full shadow-md"
+                onClick={() => removeAttachment(index)}
+            >
+                <X className="w-4 h-4"/>
+            </Button>
+        </div>
+    )
 
     const modules = {
         toolbar: [['bold', 'italic', 'underline'], [{'list': 'bullet'}], ['clean']]
@@ -90,26 +202,24 @@ export default function CreateAnnouncement({ onAnnouncementCreated }) {
                 {!isExpanded ? (
                     <div className="flex items-center space-x-4 cursor-pointer" onClick={handleExpand}>
                         <Avatar className="w-10 h-10 border-2 border-purple-200">
-                            <AvatarImage src={user.profilePicture || getAvatarUrl(user.name, user.last_name)}
-                                         alt={`${user.name} ${user.last_name}`}/>
+                            <AvatarImage src={user?.profilePicture || getAvatarUrl(user?.name, user?.last_name)}
+                                         alt={user ? `${user.name} ${user.last_name}` : 'User'}/>
                             <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
-                                {user.name.charAt(0)}{user.last_name.charAt(0)}
+                                {user ? `${user.name.charAt(0)}${user.last_name.charAt(0)}` : 'U'}
                             </AvatarFallback>
                         </Avatar>
-                        <Input
-                            placeholder="Anuncia algo a tu clase"
-                            className="flex-grow"
-                            readOnly
-                        />
+                        <div className="flex-grow bg-gray-100 rounded-full px-4 py-2 text-gray-500">
+                            Anuncia algo a tu clase...
+                        </div>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         <div className="flex items-start space-x-4">
                             <Avatar className="w-10 h-10 border-2 border-purple-200">
-                                <AvatarImage src={user.profilePicture || getAvatarUrl(user.name, user.last_name)}
-                                             alt={`${user.name} ${user.last_name}`}/>
+                                <AvatarImage src={user?.profilePicture || getAvatarUrl(user?.name, user?.last_name)}
+                                             alt={user ? `${user.name} ${user.last_name}` : 'User'}/>
                                 <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
-                                    {user.name.charAt(0)}{user.last_name.charAt(0)}
+                                    {user ? `${user.name.charAt(0)}${user.last_name.charAt(0)}` : 'U'}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex-grow">
@@ -120,21 +230,29 @@ export default function CreateAnnouncement({ onAnnouncementCreated }) {
                                     placeholder="Anuncia algo a tu clase"
                                     className="bg-white"
                                 />
+                                <div className="text-right text-sm text-gray-500 mt-1">
+                                    {announcement.length}/{MAX_CHAR_LIMIT}
+                                </div>
                             </div>
                         </div>
-                        <AttachmentList attachments={attachments} onRemoveAttachment={removeAttachment} />
+                        {attachments.length > 0 && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                {attachments.map((attachment, index) => renderAttachment(attachment, index))}
+                            </div>
+                        )}
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <div className="flex flex-wrap gap-2">
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button variant="outline" size="icon"
-                                                    onClick={() => fileInputRef.current.click()}>
+                                                    onClick={() => fileInputRef.current.click()}
+                                                    disabled={attachments.filter(a => a.type === 'file').length >= MAX_FILES}>
                                                 <Paperclip className="w-4 h-4"/>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Adjuntar archivo</p>
+                                            <p>Adjuntar archivo (máx. {MAX_FILES})</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -166,9 +284,9 @@ export default function CreateAnnouncement({ onAnnouncementCreated }) {
                             <Button
                                 onClick={handleSubmit}
                                 className="bg-purple-600 hover:bg-purple-700 text-white"
-                                disabled={!announcement.trim() && attachments.length === 0}
+                                disabled={isLoading || (!announcement.trim() && attachments.length === 0)}
                             >
-                                Publicar
+                                {isLoading ? 'Publicando...' : 'Publicar'}
                             </Button>
                         </div>
                     </div>
