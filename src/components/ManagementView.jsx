@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getData, putData } from "../api/apiService";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Users, Clipboard, GraduationCap, TrendingUp, Megaphone } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Clipboard, Megaphone, GraduationCap, TrendingUp } from "lucide-react";
 import { Switch } from "@headlessui/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EvaluationView from "./EvaluationView";
 import ParticipantList from "./ParticipantList";
 import GroupDetails from "./GroupDetail";
-import AnimatedProgressBar from "./AnimatedProgressBar";
-import AnimatedPercentage from "./AnimatedPercentage";
-import GroupCard from "./GroupCard";
-import AnnouncementForm from "./AnnouncementForm";
+import AnnouncementList from "./AnnouncementList";
+import CreateAnnouncement from "./CreateAnnouncement";
 
 const colorSchemes = [
     { bg: "bg-gradient-to-br from-blue-500 to-blue-700", text: "text-white", hover: "hover:from-blue-600 hover:to-blue-800" },
@@ -32,25 +31,18 @@ export default function ManagementView({ management, onBack }) {
     const [isEvaluating, setIsEvaluating] = useState(false);
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
-    const [activeTab, setActiveTab] = useState("resources");
+    const [activeTab, setActiveTab] = useState("announcements");
     const [announcements, setAnnouncements] = useState([]);
 
-    const calculateProgress = () => {
-        const startDate = new Date(management.start_date);
-        const endDate = new Date(management.end_date);
-        const today = new Date();
-
-        const totalDuration = endDate - startDate;
-        const completedDuration = today - startDate;
-
-        let progress = (completedDuration / totalDuration) * 100;
-        return progress > 100 ? 100 : progress < 0 ? 0 : progress;
+    const handleAnnouncementCreated = (newAnnouncement) => {
+        setAnnouncements([newAnnouncement, ...announcements]);
     };
 
     useEffect(() => {
         if (management) {
             fetchGroups();
             fetchParticipants();
+            fetchAnnouncements();
         }
     }, [management]);
 
@@ -80,6 +72,20 @@ export default function ManagementView({ management, onBack }) {
             }
         } catch (error) {
             console.error("Error al cargar los participantes:", error);
+        }
+    };
+
+    const fetchAnnouncements = async () => {
+        try {
+            const response = await getData(`/managements/${management.id}/announcements`);
+            if (response && response.success && response.data) {
+                setAnnouncements(response.data);
+            } else {
+                setAnnouncements([]);
+            }
+        } catch (error) {
+            console.error('Error al obtener los anuncios:', error);
+            setAnnouncements([]);
         }
     };
 
@@ -129,7 +135,11 @@ export default function ManagementView({ management, onBack }) {
     };
 
     return (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
             {!isEvaluating && (
                 <Button onClick={onBack} className="flex items-center mb-4 bg-gray-400 hover:bg-gray-500">
                     <ArrowLeft className="mr-2" />
@@ -206,22 +216,9 @@ export default function ManagementView({ management, onBack }) {
                                 </div>
                             </div>
                         </div>
-
-                        <div className="mt-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center">
-                                    <TrendingUp className="h-6 w-6 text-purple-600 mr-2" />
-                                    <span className="text-sm font-medium text-purple-700">Progreso del curso</span>
-                                </div>
-                                <span className="text-sm font-semibold text-purple-900">
-                                    <AnimatedPercentage value={calculateProgress()} />%
-                                </span>
-                            </div>
-                            <AnimatedProgressBar value={calculateProgress()} />
-                        </div>
                     </div>
 
-                    <Card className="bg-white shadow-md rounded-lg mb-8">
+                    <Card className="bg-white shadow-md p-6 rounded-lg mb-8">
                         <CardHeader className="p-2 sm:p-4">
                             <CardTitle className="text-lg sm:text-xl text-purple-700">Gestión</CardTitle>
                         </CardHeader>
@@ -229,11 +226,11 @@ export default function ManagementView({ management, onBack }) {
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                                 <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
                                     <TabsTrigger
-                                        value="resources"
+                                        value="announcements"
                                         className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                                     >
                                         <Megaphone className="w-4 h-4 sm:w-5 sm:h-5" />
-                                        <span className="hidden sm:inline ml-1 sm:ml-2">Recursos</span>
+                                        <span className="hidden sm:inline ml-1 sm:ml-2">Anuncios</span>
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="groups"
@@ -251,8 +248,12 @@ export default function ManagementView({ management, onBack }) {
                                     </TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent value="resources">
-                                    <AnnouncementForm announcements={announcements} setAnnouncements={setAnnouncements} />
+                                <TabsContent value="announcements">
+                                    <CreateAnnouncement
+                                        managementId={management.id}
+                                        onAnnouncementCreated={handleAnnouncementCreated}
+                                    />
+                                    <AnnouncementList announcements={announcements} />
                                 </TabsContent>
 
                                 <TabsContent value="groups">
@@ -264,14 +265,42 @@ export default function ManagementView({ management, onBack }) {
                                                 {groups.map((group, index) => {
                                                     const colorScheme = colorSchemes[index % colorSchemes.length];
                                                     return (
-                                                        <GroupCard
-                                                            key={group.short_name}
-                                                            group={group}
-                                                            colorScheme={colorScheme}
-                                                            handleEvaluateClick={handleEvaluateClick}
-                                                            handleViewDetails={handleViewDetails}
-                                                            getInitials={getInitials}
-                                                        />
+                                                        <Card key={group.short_name} className="overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
+                                                            <CardContent className="p-0">
+                                                                <div className={`${colorScheme.bg} p-4 flex items-center space-x-4`}>
+                                                                    <Avatar className="w-16 h-16 border-2 border-white shadow-md">
+                                                                        <AvatarImage src={group.logo || '/placeholder.svg?height=64&width=64'} alt={group.short_name} />
+                                                                        <AvatarFallback className="text-xl bg-white text-gray-800 font-semibold">
+                                                                            {getInitials(group.short_name, group.long_name)}
+                                                                        </AvatarFallback>
+                                                                    </Avatar>
+                                                                    <div>
+                                                                        <h3 className={`text-xl font-bold ${colorScheme.text}`}>{group.short_name}</h3>
+                                                                        <p className={`text-sm ${colorScheme.text} opacity-90`}>{group.long_name}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="p-4 bg-white">
+                                                                    <div className="space-y-2 mb-4">
+                                                                        <p className="flex items-center text-sm text-gray-600">
+                                                                            <Users className="mr-2 h-4 w-4 text-gray-400" />
+                                                                            {group.members.length} integrantes
+                                                                        </p>
+                                                                    </div>
+                                                                    <Button
+                                                                        className={`w-full ${colorScheme.bg} ${colorScheme.text} ${colorScheme.hover} transition-colors duration-300`}
+                                                                        onClick={() => handleEvaluateClick(group.id)}
+                                                                    >
+                                                                        Evaluar
+                                                                    </Button>
+                                                                    <Button
+                                                                        className={`w-full mt-2 ${colorScheme.bg} ${colorScheme.text} ${colorScheme.hover} transition-all duration-300`}
+                                                                        onClick={() => handleViewDetails(group)}
+                                                                    >
+                                                                        Ver detalles
+                                                                    </Button>
+                                                                </div>
+                                                            </CardContent>
+                                                        </Card>
                                                     );
                                                 })}
                                             </div>
@@ -281,6 +310,7 @@ export default function ManagementView({ management, onBack }) {
                                     </div>
                                 </TabsContent>
 
+                                {/* Participantes */}
                                 <TabsContent value="participants">
                                     <div className="mt-4">
                                         {participants && (
@@ -288,6 +318,7 @@ export default function ManagementView({ management, onBack }) {
                                         )}
                                     </div>
                                 </TabsContent>
+
                             </Tabs>
                         </CardContent>
                     </Card>
