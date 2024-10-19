@@ -30,6 +30,10 @@ export default function Dashboard() {
         checkManagement();
     }, []);
 
+    const handleAnnouncementCreated = (newAnnouncement) => {
+        setAnnouncements([newAnnouncement, ...announcements])
+    }
+
     const checkManagement = async () => {
         setIsLoading(true);
         try {
@@ -216,7 +220,10 @@ export default function Dashboard() {
                             </TabsList>
                             <div className="mt-2 sm:mt-4">
                                 <TabsContent value="announcements">
-                                    <CreateAnnouncement onAnnouncementCreated/>
+                                    <CreateAnnouncement
+                                        managementId={managementDetails.id}
+                                        onAnnouncementCreated={handleAnnouncementCreated}
+                                    />
                                     <AnnouncementList announcements={announcements}/>
                                 </TabsContent>
                                 <TabsContent value="groups">
