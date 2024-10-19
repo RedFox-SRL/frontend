@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { getData, putData } from "../api/apiService";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Users, Clipboard, Mail, Phone, Megaphone, GraduationCap, TrendingUp } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Clipboard, GraduationCap, TrendingUp, Megaphone } from "lucide-react";
 import { Switch } from "@headlessui/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EvaluationView from "./EvaluationView";
 import ParticipantList from "./ParticipantList";
 import GroupDetails from "./GroupDetail";
+import AnimatedProgressBar from "./AnimatedProgressBar";
+import AnimatedPercentage from "./AnimatedPercentage";
+import GroupCard from "./GroupCard";
+import AnnouncementForm from "./AnnouncementForm";
 
 const colorSchemes = [
     { bg: "bg-gradient-to-br from-blue-500 to-blue-700", text: "text-white", hover: "hover:from-blue-600 hover:to-blue-800" },
@@ -17,42 +20,6 @@ const colorSchemes = [
     { bg: "bg-gradient-to-br from-purple-500 to-purple-700", text: "text-white", hover: "hover:from-purple-600 hover:to-purple-800" },
     { bg: "bg-gradient-to-br from-red-500 to-red-700", text: "text-white", hover: "hover:from-red-600 hover:to-red-800" },
 ];
-
-const AnimatedProgressBar = ({ value }) => (
-    <div className="relative pt-1">
-        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200">
-            <motion.div
-                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-pink-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${value}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-            />
-        </div>
-    </div>
-);
-
-const AnimatedPercentage = ({ value }) => {
-    const [displayValue, setDisplayValue] = useState(0);
-
-    useEffect(() => {
-        const animationDuration = 1000;
-        const startTime = Date.now();
-
-        const animateValue = () => {
-            const now = Date.now();
-            const progress = Math.min((now - startTime) / animationDuration, 1);
-            setDisplayValue(Math.round(progress * value));
-
-            if (progress < 1) {
-                requestAnimationFrame(animateValue);
-            }
-        };
-
-        requestAnimationFrame(animateValue);
-    }, [value]);
-
-    return <span>{displayValue}</span>;
-};
 
 export default function ManagementView({ management, onBack }) {
     const [groups, setGroups] = useState([]);
@@ -66,49 +33,7 @@ export default function ManagementView({ management, onBack }) {
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
     const [activeTab, setActiveTab] = useState("resources");
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const formRef = useRef(null);
-
-    const [formData, setFormData] = useState({
-        title: "",
-        date: "",
-        file: null,
-        description: "",
-    });
-    const [announcements, setAnnouncements] = useState([]); // Simulación de anuncios
-
-    const [resourceType, setResourceType] = useState("Recurso");
-
-    const toggleForm = () => {
-        setIsFormOpen(!isFormOpen);
-        if (!isFormOpen) {
-            setTimeout(() => {
-                formRef.current.scrollIntoView({ behavior: "smooth" });
-            }, 100);
-        }
-    };
-
-    const handleFormChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleFileChange = (e) => {
-        setFormData({ ...formData, file: e.target.files[0] });
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setAnnouncements((prev) => [
-            ...prev,
-            { title: formData.title, date: formData.date, description: formData.description },
-        ]);
-        setFormData({
-            title: "",
-            date: "",
-            description: "",
-        });
-        setIsFormOpen(false);
-    };
+    const [announcements, setAnnouncements] = useState([]);
 
     const calculateProgress = () => {
         const startDate = new Date(management.start_date);
@@ -204,12 +129,7 @@ export default function ManagementView({ management, onBack }) {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="p-6 max-w-7xl mx-auto"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             {!isEvaluating && (
                 <Button onClick={onBack} className="flex items-center mb-4 bg-gray-400 hover:bg-gray-500">
                     <ArrowLeft className="mr-2" />
@@ -301,7 +221,7 @@ export default function ManagementView({ management, onBack }) {
                         </div>
                     </div>
 
-                    <Card className="bg-white shadow-md p-6 rounded-lg mb-8">
+                    <Card className="bg-white shadow-md rounded-lg mb-8">
                         <CardHeader className="p-2 sm:p-4">
                             <CardTitle className="text-lg sm:text-xl text-purple-700">Gestión</CardTitle>
                         </CardHeader>
@@ -332,100 +252,7 @@ export default function ManagementView({ management, onBack }) {
                                 </TabsList>
 
                                 <TabsContent value="resources">
-                                    <div className="mt-4">
-                                        <h2 className="text-2xl font-bold text-purple-700">Recursos</h2>
-                                        <p className="text-gray-600">Aún no hay recursos publicados.</p>
-                                        <div className="mt-4 flex justify-end">
-                                            <Button
-                                                onClick={toggleForm}
-                                                className="bg-purple-600 hover:bg-purple-700 text-white rounded-md py-2 px-4 shadow-lg hover:shadow-xl transition-transform duration-300 transform hover:scale-105"
-                                            >
-                                                {isFormOpen ? "Cancelar" : "Añadir Recurso"}
-                                            </Button>
-                                        </div>
-
-                                        {isFormOpen && (
-                                            <div className="mt-6 bg-gray-100 p-4 rounded-md shadow-md" ref={formRef}>
-                                                <form onSubmit={handleSubmit} className="space-y-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Tipo</label>
-                                                        <select
-                                                            value={resourceType}
-                                                            onChange={(e) => setResourceType(e.target.value)}
-                                                            className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-600 focus:border-purple-600"
-                                                        >
-                                                            <option value="Recurso">Recurso</option>
-                                                            <option value="Anuncio">Anuncio</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Título</label>
-                                                        <input
-                                                            type="text"
-                                                            name="title"
-                                                            value={formData.title}
-                                                            onChange={handleFormChange}
-                                                            className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-600 focus:border-purple-600"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Fecha</label>
-                                                        <input
-                                                            type="date"
-                                                            name="date"
-                                                            value={formData.date}
-                                                            onChange={handleFormChange}
-                                                            className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-600 focus:border-purple-600"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700">Descripción</label>
-                                                        <textarea
-                                                            name="description"
-                                                            value={formData.description}
-                                                            onChange={handleFormChange}
-                                                            className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-600 focus:border-purple-600"
-                                                            rows="3"
-                                                            required
-                                                        ></textarea>
-                                                    </div>
-
-                                                    <Button
-                                                        className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
-                                                        type="submit"
-                                                    >
-                                                        Enviar
-                                                    </Button>
-                                                </form>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="mt-8">
-                                        <h2 className="text-2xl font-bold text-purple-700">Anuncios Publicados</h2>
-                                        {announcements.length > 0 ? (
-                                            <div className="mt-4 space-y-4">
-                                                {announcements.map((announcement, index) => (
-                                                    <Card key={index} className="bg-white shadow-md p-4 rounded-lg">
-                                                        <CardHeader>
-                                                            <CardTitle className="text-xl font-semibold text-purple-700">{announcement.title}</CardTitle>
-                                                        </CardHeader>
-                                                        <CardContent>
-                                                            <p className="text-sm text-gray-600">Fecha: {announcement.date}</p>
-                                                            <p className="mt-2 text-gray-700">{announcement.description}</p>
-                                                        </CardContent>
-                                                    </Card>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-gray-600 mt-4">No hay anuncios publicados todavía.</p>
-                                        )}
-                                    </div>
+                                    <AnnouncementForm announcements={announcements} setAnnouncements={setAnnouncements} />
                                 </TabsContent>
 
                                 <TabsContent value="groups">
@@ -437,50 +264,14 @@ export default function ManagementView({ management, onBack }) {
                                                 {groups.map((group, index) => {
                                                     const colorScheme = colorSchemes[index % colorSchemes.length];
                                                     return (
-                                                        <Card key={group.short_name} className="overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
-                                                            <CardContent className="p-0">
-                                                                <div className={`${colorScheme.bg} p-4 flex items-center space-x-4`}>
-                                                                    <Avatar className="w-16 h-16 border-2 border-white shadow-md">
-                                                                        <AvatarImage src={group.logo || '/placeholder.svg?height=64&width=64'} alt={group.short_name} />
-                                                                        <AvatarFallback className="text-xl bg-white text-gray-800 font-semibold">
-                                                                            {getInitials(group.short_name, group.long_name)}
-                                                                        </AvatarFallback>
-                                                                    </Avatar>
-                                                                    <div>
-                                                                        <h3 className={`text-xl font-bold ${colorScheme.text}`}>{group.short_name}</h3>
-                                                                        <p className={`text-sm ${colorScheme.text} opacity-90`}>{group.long_name}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="p-4 bg-white">
-                                                                    <div className="space-y-2 mb-4">
-                                                                        <p className="flex items-center text-sm text-gray-600">
-                                                                            <Mail className="mr-2 h-4 w-4 text-gray-400" />
-                                                                            {group.contact_email || "No disponible"}
-                                                                        </p>
-                                                                        <p className="flex items-center text-sm text-gray-600">
-                                                                            <Phone className="mr-2 h-4 w-4 text-gray-400" />
-                                                                            {group.contact_phone || "No disponible"}
-                                                                        </p>
-                                                                        <p className="flex items-center text-sm text-gray-600">
-                                                                            <Users className="mr-2 h-4 w-4 text-gray-400" />
-                                                                            {group.members.length} integrantes
-                                                                        </p>
-                                                                    </div>
-                                                                    <Button
-                                                                        className={`w-full ${colorScheme.bg} ${colorScheme.text} ${colorScheme.hover} transition-colors duration-300`}
-                                                                        onClick={() => handleEvaluateClick(group.id)}
-                                                                    >
-                                                                        Evaluar
-                                                                    </Button>
-                                                                    <Button
-                                                                        className={`w-full mt-2 ${colorScheme.bg} ${colorScheme.text} ${colorScheme.hover} transition-all duration-300`}
-                                                                        onClick={() => handleViewDetails(group)}
-                                                                    >
-                                                                        Ver detalles
-                                                                    </Button>
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
+                                                        <GroupCard
+                                                            key={group.short_name}
+                                                            group={group}
+                                                            colorScheme={colorScheme}
+                                                            handleEvaluateClick={handleEvaluateClick}
+                                                            handleViewDetails={handleViewDetails}
+                                                            getInitials={getInitials}
+                                                        />
                                                     );
                                                 })}
                                             </div>
@@ -497,7 +288,6 @@ export default function ManagementView({ management, onBack }) {
                                         )}
                                     </div>
                                 </TabsContent>
-
                             </Tabs>
                         </CardContent>
                     </Card>
