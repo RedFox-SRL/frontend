@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -25,49 +25,54 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
     const [isLoading, setIsLoading] = useState(false)
     const [user, setUser] = useState(null)
     const fileInputRef = useRef(null)
+    const quillRef = useRef(null)
     const { toast } = useToast()
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                setIsLoading(true)
-                const response = await getData('/me')
+    const fetchUserData = useCallback(async () => {
+        try {
+            setIsLoading(true)
+            const response = await getData('/me')
+            if (response && response.data && response.data.item) {
                 setUser(response.data.item)
-            } catch (error) {
-                console.error('Error fetching user data:', error)
-                toast({
-                    title: "Error",
-                    description: "Could not load user information.",
-                    variant: "destructive",
-                })
-            } finally {
-                setIsLoading(false)
+            } else {
+                throw new Error('Respuesta de usuario inválida')
             }
+        } catch (error) {
+            console.error('Error al obtener datos del usuario:', error)
+            toast({
+                title: "Error",
+                description: "No se pudo cargar la información del usuario.",
+                variant: "destructive",
+            })
+        } finally {
+            setIsLoading(false)
         }
-
-        fetchUserData()
     }, [toast])
+
+    useEffect(() => {
+        fetchUserData()
+    }, [fetchUserData])
 
     const handleExpand = () => setIsExpanded(true)
 
-    const handleAnnouncementChange = (content) => {
+    const handleAnnouncementChange = useCallback((content) => {
         if (content.length <= MAX_CHAR_LIMIT) {
             setAnnouncement(content)
         } else {
             toast({
-                title: "Character limit reached",
-                description: `Announcements cannot exceed ${MAX_CHAR_LIMIT} characters.`,
+                title: "Límite de caracteres alcanzado",
+                description: `Los anuncios no pueden exceder ${MAX_CHAR_LIMIT} caracteres.`,
                 variant: "warning",
             })
         }
-    }
+    }, [toast])
 
-    const handleFileAttachment = async (event) => {
+    const handleFileAttachment = useCallback(async (event) => {
         const files = Array.from(event.target.files)
         if (attachments.filter(a => a.type === 'file').length + files.length > MAX_FILES) {
             toast({
-                title: "File limit reached",
-                description: `You cannot attach more than ${MAX_FILES} files.`,
+                title: "Límite de archivos alcanzado",
+                description: `No puedes adjuntar más de ${MAX_FILES} archivos.`,
                 variant: "warning",
             })
             return
@@ -75,44 +80,64 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
         const newAttachments = await Promise.all(files.map(async (file) => {
             if (file.size > MAX_FILE_SIZE) {
                 toast({
-                    title: "File too large",
-                    description: `The file ${file.name} exceeds the maximum size of ${formatFileSize(MAX_FILE_SIZE)}.`,
+                    title: "Archivo demasiado grande",
+                    description: `El archivo ${file.name} excede el tamaño máximo de ${formatFileSize(MAX_FILE_SIZE)}.`,
                     variant: "warning",
                 })
                 return null
             }
-            return {
-                type: 'file',
-                name: file.name,
-                fileType: getFileType(file),
-                size: file.size,
-                file: file,
-                preview: await getFilePreview(file)
+            try {
+                const preview = await getFilePreview(file)
+                return {
+                    type: 'file',
+                    name: file.name,
+                    fileType: getFileType(file),
+                    size: file.size,
+                    file: file,
+                    preview: preview
+                }
+            } catch (error) {
+                console.error('Error al procesar el archivo:', error)
+                toast({
+                    title: "Error de archivo",
+                    description: `No se pudo procesar el archivo ${file.name}.`,
+                    variant: "destructive",
+                })
+                return null
             }
         }))
-        setAttachments([...attachments, ...newAttachments.filter(a => a !== null)])
-    }
+        setAttachments(prev => [...prev, ...newAttachments.filter(a => a !== null)])
+    }, [attachments, toast])
 
-    const handleLinkAttachment = (linkData) => {
-        setAttachments([...attachments, { type: 'link', ...linkData }])
+    const handleLinkAttachment = useCallback((linkData) => {
+        setAttachments(prev => [...prev, { type: 'link', ...linkData }])
         setIsLinkDialogOpen(false)
-    }
+    }, [])
 
-    const handleYoutubeAttachment = (videoData) => {
-        setAttachments([...attachments, { type: 'youtube', ...videoData }])
+    const handleYoutubeAttachment = useCallback((videoData) => {
+        setAttachments(prev => [...prev, { type: 'youtube', ...videoData }])
         setIsYoutubeDialogOpen(false)
-    }
+    }, [])
 
-    const removeAttachment = (index) => {
-        setAttachments(attachments.filter((_, i) => i !== index))
-    }
+    const removeAttachment = useCallback((index) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index))
+    }, [])
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         if (!announcement.trim() && attachments.length === 0) {
             toast({
-                title: "Empty announcement",
-                description: "Please write an announcement or attach a file.",
+                title: "Anuncio vacío",
+                description: "Por favor, escribe un anuncio o adjunta un archivo.",
                 variant: "warning",
+            })
+            return
+        }
+
+        if (!user || !user.id) {
+            toast({
+                title: "Error",
+                description: "No se pudo obtener la información del usuario. Por favor, inténtalo de nuevo.",
+                variant: "destructive",
             })
             return
         }
@@ -120,6 +145,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
         setIsLoading(true)
         const formData = new FormData()
         formData.append('management_id', managementId)
+        formData.append('user_id', user.id)
 
         if (announcement.trim()) {
             formData.append('announcement', announcement)
@@ -127,38 +153,42 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
 
         attachments.forEach((attachment, index) => {
             if (attachment.type === 'file') {
-                formData.append(`files[${index}]`, attachment.file)
+                formData.append(`files[]`, attachment.file)
             } else if (attachment.type === 'link') {
-                formData.append(`links[${index}]`, JSON.stringify(attachment))
+                formData.append(`links[]`, JSON.stringify(attachment))
             } else if (attachment.type === 'youtube') {
-                formData.append(`youtube_videos[${index}]`, JSON.stringify(attachment))
+                formData.append(`youtube_videos[]`, JSON.stringify(attachment))
             }
         })
 
         try {
-            const response = await postData('/announcement', formData)
-            onAnnouncementCreated(response.data)
-            setAnnouncement('')
-            setAttachments([])
-            setIsExpanded(false)
-            toast({
-                title: "Announcement published",
-                description: "Your announcement has been published successfully.",
-                variant: "success",
-            })
+            const response = await postData('/announcements', formData)
+            if (response && response.data) {
+                onAnnouncementCreated(response.data)
+                setAnnouncement('')
+                setAttachments([])
+                setIsExpanded(false)
+                toast({
+                    title: "Anuncio publicado",
+                    description: "Tu anuncio ha sido publicado con éxito.",
+                    variant: "success",
+                })
+            } else {
+                throw new Error('Respuesta inválida del servidor')
+            }
         } catch (error) {
-            console.error('Error creating announcement:', error)
+            console.error('Error al crear el anuncio:', error)
             toast({
                 title: "Error",
-                description: "There was a problem creating the announcement. Please try again.",
+                description: "Hubo un problema al crear el anuncio. Por favor, inténtalo de nuevo.",
                 variant: "destructive",
             })
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [announcement, attachments, managementId, user, onAnnouncementCreated, toast])
 
-    const renderAttachment = (attachment, index) => (
+    const renderAttachment = useCallback((attachment, index) => (
         <div key={index} className="relative bg-gray-100 p-2 rounded-lg flex items-center space-x-2">
             {attachment.type === 'file' && (
                 <>
@@ -180,7 +210,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
             )}
             {attachment.type === 'youtube' && (
                 <>
-                    <img src={attachment.thumbnail} alt="YouTube Thumbnail" className="w-10 h-10 object-cover rounded"/>
+                    <img src={attachment.thumbnail} alt="Miniatura de YouTube" className="w-10 h-10 object-cover rounded"/>
                     <span className="text-sm truncate">{attachment.name}</span>
                 </>
             )}
@@ -193,7 +223,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
                 <X className="w-4 h-4"/>
             </Button>
         </div>
-    )
+    ), [removeAttachment])
 
     const modules = {
         toolbar: [['bold', 'italic', 'underline'], [{'list': 'bullet'}], ['clean']]
@@ -206,7 +236,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
                     <div className="flex items-center space-x-4 cursor-pointer" onClick={handleExpand}>
                         <Avatar className="w-10 h-10 border-2 border-purple-200">
                             <AvatarImage src={user?.profilePicture || getAvatarUrl(user?.name, user?.last_name)}
-                                         alt={user ? `${user.name} ${user.last_name}` : 'User'}/>
+                                         alt={user ? `${user.name} ${user.last_name}` : 'Usuario'}/>
                             <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
                                 {user ? `${user.name.charAt(0)}${user.last_name.charAt(0)}` : 'U'}
                             </AvatarFallback>
@@ -220,13 +250,14 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
                         <div className="flex items-start space-x-4">
                             <Avatar className="w-10 h-10 border-2 border-purple-200">
                                 <AvatarImage src={user?.profilePicture || getAvatarUrl(user?.name, user?.last_name)}
-                                             alt={user ? `${user.name} ${user.last_name}` : 'User'}/>
+                                             alt={user ? `${user.name} ${user.last_name}` : 'Usuario'}/>
                                 <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
                                     {user ? `${user.name.charAt(0)}${user.last_name.charAt(0)}` : 'U'}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex-grow">
                                 <ReactQuill
+                                    ref={quillRef}
                                     value={announcement}
                                     onChange={handleAnnouncementChange}
                                     modules={modules}
@@ -249,7 +280,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button variant="outline" size="icon"
-                                                    onClick={() => fileInputRef.current.click()}
+                                                    onClick={() => fileInputRef.current?.click()}
                                                     disabled={attachments.filter(a => a.type === 'file').length >= MAX_FILES}>
                                                 <Paperclip className="w-4 h-4"/>
                                             </Button>
@@ -306,6 +337,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
             <LinkDialog
                 isOpen={isLinkDialogOpen}
                 onClose={() => setIsLinkDialogOpen(false)}
+
                 onSubmit={handleLinkAttachment}
             />
             <YouTubeDialog
