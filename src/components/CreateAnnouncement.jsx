@@ -9,6 +9,7 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import YouTubeDialog from './YouTubeDialog'
 import LinkDialog from './LinkDialog'
+import AttachmentList from './AttachmentList'
 import { getFileType, getFilePreview, getAvatarUrl, formatFileSize, getFileIcon } from '../utils/fileUtils'
 import { useToast } from "@/hooks/use-toast"
 
@@ -151,20 +152,33 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
             formData.append('announcement', announcement)
         }
 
+        const links = []
+        const youtubeVideos = []
+
         attachments.forEach((attachment, index) => {
             if (attachment.type === 'file') {
-                formData.append(`files[]`, attachment.file)
+                formData.append(`files[${index}]`, attachment.file)
             } else if (attachment.type === 'link') {
-                formData.append(`links[]`, JSON.stringify(attachment))
+                links.push({ url: attachment.url, title: attachment.name })
             } else if (attachment.type === 'youtube') {
-                formData.append(`youtube_videos[]`, JSON.stringify(attachment))
+                youtubeVideos.push({ video_id: attachment.videoId, title: attachment.name })
             }
         })
 
+        if (links.length > 0) {
+            formData.append('links', JSON.stringify(links))
+        }
+
+        if (youtubeVideos.length > 0) {
+            formData.append('youtube_videos', JSON.stringify(youtubeVideos))
+        }
+
         try {
             const response = await postData('/announcements', formData)
-            if (response && response.data) {
-                onAnnouncementCreated(response.data)
+            console.log('Server response:', response) // For debugging
+
+            if (response && response.message === "Anuncio creado con éxito" && response.announcement) {
+                onAnnouncementCreated(response.announcement)
                 setAnnouncement('')
                 setAttachments([])
                 setIsExpanded(false)
@@ -178,52 +192,19 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
             }
         } catch (error) {
             console.error('Error al crear el anuncio:', error)
+            let errorMessage = "Hubo un problema al crear el anuncio. Por favor, inténtalo de nuevo."
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message
+            }
             toast({
                 title: "Error",
-                description: "Hubo un problema al crear el anuncio. Por favor, inténtalo de nuevo.",
+                description: errorMessage,
                 variant: "destructive",
             })
         } finally {
             setIsLoading(false)
         }
     }, [announcement, attachments, managementId, user, onAnnouncementCreated, toast])
-
-    const renderAttachment = useCallback((attachment, index) => (
-        <div key={index} className="relative bg-gray-100 p-2 rounded-lg flex items-center space-x-2">
-            {attachment.type === 'file' && (
-                <>
-                    <div className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded overflow-hidden">
-                        {attachment.fileType === 'image' && attachment.preview ? (
-                            <img src={attachment.preview} alt={attachment.name} className="w-full h-full object-cover"/>
-                        ) : (
-                            getFileIcon(attachment.fileType)
-                        )}
-                    </div>
-                    <span className="text-sm truncate">{attachment.name}</span>
-                </>
-            )}
-            {attachment.type === 'link' && (
-                <>
-                    <img src={attachment.icon} alt={attachment.name} className="w-10 h-10"/>
-                    <span className="text-sm truncate">{attachment.name}</span>
-                </>
-            )}
-            {attachment.type === 'youtube' && (
-                <>
-                    <img src={attachment.thumbnail} alt="Miniatura de YouTube" className="w-10 h-10 object-cover rounded"/>
-                    <span className="text-sm truncate">{attachment.name}</span>
-                </>
-            )}
-            <Button
-                variant="ghost"
-                size="icon"
-                className="absolute -top-2 -right-2 bg-white rounded-full shadow-md"
-                onClick={() => removeAttachment(index)}
-            >
-                <X className="w-4 h-4"/>
-            </Button>
-        </div>
-    ), [removeAttachment])
 
     const modules = {
         toolbar: [['bold', 'italic', 'underline'], [{'list': 'bullet'}], ['clean']]
@@ -270,9 +251,7 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
                             </div>
                         </div>
                         {attachments.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                                {attachments.map((attachment, index) => renderAttachment(attachment, index))}
-                            </div>
+                            <AttachmentList attachments={attachments} onRemoveAttachment={removeAttachment} />
                         )}
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             <div className="flex flex-wrap gap-2">
@@ -337,7 +316,6 @@ export default function CreateAnnouncement({ managementId, onAnnouncementCreated
             <LinkDialog
                 isOpen={isLinkDialogOpen}
                 onClose={() => setIsLinkDialogOpen(false)}
-
                 onSubmit={handleLinkAttachment}
             />
             <YouTubeDialog
