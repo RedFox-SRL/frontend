@@ -208,14 +208,14 @@ export default function Dashboard() {
                                     className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                                 >
                                     <Users className="w-4 h-4 sm:w-5 sm:h-5"/>
-                                    <span className="hidden sm:inline ml-1 sm:ml-2">Grupos</span>
+                                    <span className="hidden sm:inline ml-1 sm:ml-2">Grupos ({groups.length})</span>
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="participants"
                                     className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                                 >
                                     <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5"/>
-                                    <span className="hidden sm:inline ml-1 sm:ml-2">Estudiantes</span>
+                                    <span className="hidden sm:inline ml-1 sm:ml-2">Estudiantes ({participants.students.length})</span>
                                 </TabsTrigger>
                             </TabsList>
                             <div className="mt-2 sm:mt-4">
