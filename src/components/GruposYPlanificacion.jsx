@@ -240,8 +240,13 @@ export default function GruposYPlanificacion() {
         setActiveCard(activeCard === card ? null : card)
     }
 
-    const handleUpdateGroup = async () => {
-        await checkGroup()
+    const handleUpdateGroup = (updatedGroupData) => {
+        setSelectedGroup(prevGroup => ({
+            ...prevGroup, ...updatedGroupData
+        }));
+        toast({
+            title: "Éxito", description: "Información del grupo actualizada correctamente.", duration: 3000,
+        });
     }
 
     const handleImageCropped = (croppedImageBlob) => {
@@ -259,8 +264,9 @@ export default function GruposYPlanificacion() {
         return (<div className="space-y-4 p-4 sm:p-6 max-w-md mx-auto">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">No estás inscrito en un
-                        curso</CardTitle>
+                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
+                        No estás inscrito en un curso
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Input
@@ -283,20 +289,23 @@ export default function GruposYPlanificacion() {
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
                 <Button
                     onClick={() => setView('join')}
-                    className={`px-4 py-2 ${view === 'join' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}>
+                    className={`px-4 py-2 ${view === 'join' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}
+                >
                     Unirse por código
                 </Button>
                 <Button
                     onClick={() => setView('create')}
-                    className={`px-4 py-2 ${view === 'create' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}>
+                    className={`px-4 py-2 ${view === 'create' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}
+                >
                     Crear grupo
                 </Button>
             </div>
 
             {view === 'join' && (<Card>
                 <CardHeader>
-                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">Unirse a un
-                        grupo</CardTitle>
+                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
+                        Unirse a un grupo
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Input
@@ -313,8 +322,9 @@ export default function GruposYPlanificacion() {
             </Card>)}
             {view === 'create' && (<Card>
                 <CardHeader>
-                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">Crear un
-                        grupo</CardTitle>
+                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
+                        Crear un grupo
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -327,8 +337,8 @@ export default function GruposYPlanificacion() {
                                 className={errors.short_name ? "border-red-500" : ""}
                                 required
                             />
-                            {errors.short_name &&
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.short_name}</p>}
+                            {errors.short_name && (
+                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.short_name}</p>)}
                         </div>
                         <div>
                             <Input
@@ -339,8 +349,8 @@ export default function GruposYPlanificacion() {
                                 className={errors.long_name ? "border-red-500" : ""}
                                 required
                             />
-                            {errors.long_name &&
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.long_name}</p>}
+                            {errors.long_name && (
+                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.long_name}</p>)}
                         </div>
                         <div>
                             <Input
@@ -350,8 +360,8 @@ export default function GruposYPlanificacion() {
                                 onChange={(e) => setGroupData({...groupData, contact_email: e.target.value})}
                                 className={errors.contact_email ? "border-red-500" : ""}
                             />
-                            {errors.contact_email &&
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_email}</p>}
+                            {errors.contact_email && (
+                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_email}</p>)}
                         </div>
                         <div>
                             <Input
@@ -361,8 +371,8 @@ export default function GruposYPlanificacion() {
                                 onChange={(e) => setGroupData({...groupData, contact_phone: e.target.value})}
                                 className={errors.contact_phone ? "border-red-500" : ""}
                             />
-                            {errors.contact_phone &&
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_phone}</p>}
+                            {errors.contact_phone && (
+                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_phone}</p>)}
                         </div>
                         <ImageCropper onImageCropped={handleImageCropped}/>
                         {errors.logo && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.logo}</p>}
@@ -379,13 +389,14 @@ export default function GruposYPlanificacion() {
     if (isInGroup && selectedGroup) {
         return (<div className="space-y-6 p-4 sm:p-6">
             {isCreator ? (<GroupDetailCreator
-                selectedGroup={selectedGroup}
+                initialGroupData={selectedGroup}
                 onUpdateGroup={handleUpdateGroup}
             />) : (<GroupDetailMember selectedGroup={selectedGroup}/>)}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                 <Card
                     className={`cursor-pointer transition-all duration-200 ${activeCard === 'planificacion' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('planificacion')}>
+                    onClick={() => handleCardClick('planificacion')}
+                >
                     <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
                         <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
                         <CardTitle
@@ -394,7 +405,8 @@ export default function GruposYPlanificacion() {
                 </Card>
                 <Card
                     className={`cursor-pointer transition-all duration-200 ${activeCard === 'tablero' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('tablero')}>
+                    onClick={() => handleCardClick('tablero')}
+                >
                     <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
                         <LayoutDashboard className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
                         <CardTitle className="text-lg sm:text-xl font-bold text-purple-800">Tablero</CardTitle>
@@ -402,7 +414,8 @@ export default function GruposYPlanificacion() {
                 </Card>
                 <Card
                     className={`cursor-pointer transition-all duration-200 ${activeCard === 'equipo' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('equipo')}>
+                    onClick={() => handleCardClick('equipo')}
+                >
                     <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
                         <Users className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
                         <CardTitle className="text-lg sm:text-xl font-bold text-purple-800">Equipo</CardTitle>
@@ -410,7 +423,8 @@ export default function GruposYPlanificacion() {
                 </Card>
                 <Card
                     className={`cursor-pointer transition-all duration-200 ${activeCard === 'reportes' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('reportes')}>
+                    onClick={() => handleCardClick('reportes')}
+                >
                     <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
                         <Clipboard className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
                         <CardTitle className="text-lg sm:text-xl font-bold text-purple-800">Reportes</CardTitle>
