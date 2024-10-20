@@ -7,7 +7,7 @@ export default function StarWarsIntro({onClose}) {
 
     useEffect(() => {
         soundRef.current = new Howl({
-            src: ['/src/assets/audio.mp3'], volume: 0.5, loop: true, onend: () => console.log('Finished playing'),
+            src: ['/public/audio.mp3'], volume: 0.5, loop: true, onend: () => console.log('Finished playing'),
         });
 
         soundRef.current.play();
