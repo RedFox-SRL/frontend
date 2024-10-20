@@ -1,13 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Phone, Hash, Copy } from "lucide-react";
+import { Mail, Phone, Hash, Copy, ChartNoAxesCombined, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import RankingModal from "@/components/RankingModal";
 
 export default function GroupDetailMember({ selectedGroup }) {
     const { toast } = useToast();
     const topRef = useRef(null);
+    const [isRankingDialogOpen, setIsRankingDialogOpen] = useState(false);
 
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -20,6 +23,9 @@ export default function GroupDetailMember({ selectedGroup }) {
             console.error('Error al copiar: ', err);
         });
     };
+
+    const handleOpenRanking = () => setIsRankingDialogOpen(true);
+    const handleCloseRanking = () => setIsRankingDialogOpen(false);
 
     return (
         <>
@@ -72,9 +78,31 @@ export default function GroupDetailMember({ selectedGroup }) {
                     <div className="flex flex-col justify-center space-y-4">
                         <h3 className="text-lg font-semibold text-gray-800">Información del Grupo</h3>
                         <p className="text-sm text-gray-600">Este es tu grupo de trabajo actual.</p>
+
+                        <Button
+                            variant="outline"
+                            className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
+                            onClick={handleOpenRanking}
+                        >
+                            <ChartNoAxesCombined className="w-4 h-4 mr-2" />
+                            Ranking
+                        </Button>
+
+                        <h3 className="text-lg font-semibold text-gray-800 mt-4">Satisfacción del docente</h3>
+                        <div className="flex space-x-1 mt-2">
+                            {Array.from({ length: 5 }).map((_, index) => (
+                                <Star key={index} className="w-6 h-6 text-yellow-500" />
+                            ))}
+                        </div>
                     </div>
                 </CardContent>
             </Card>
+
+            <RankingModal
+                group={selectedGroup}
+                isOpen={isRankingDialogOpen}
+                onClose={handleCloseRanking}
+            />
         </>
     );
 }
