@@ -46,6 +46,7 @@
     "react-particles": "^2.12.2",
     "react-quill": "^2.0.0",
     "react-router-dom": "^6.26.2",
+    "recharts": "^2.13.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "tsparticles": "^2.12.0"

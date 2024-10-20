@@ -6,19 +6,48 @@ import { ArrowLeft, Calendar, Users, Clipboard, Megaphone, GraduationCap, Trendi
 import { Switch } from "@headlessui/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AnnouncementList from "./AnnouncementList";
+import CreateAnnouncement from "./CreateAnnouncement";
 import EvaluationView from "./EvaluationView";
 import ParticipantList from "./ParticipantList";
 import GroupDetails from "./GroupDetail";
-import AnnouncementList from "./AnnouncementList";
-import CreateAnnouncement from "./CreateAnnouncement";
+import GroupListComponent from "./GroupListComponent";
 
-const colorSchemes = [
-    { bg: "bg-gradient-to-br from-blue-500 to-blue-700", text: "text-white", hover: "hover:from-blue-600 hover:to-blue-800" },
-    { bg: "bg-gradient-to-br from-green-500 to-green-700", text: "text-white", hover: "hover:from-green-600 hover:to-green-800" },
-    { bg: "bg-gradient-to-br from-purple-500 to-purple-700", text: "text-white", hover: "hover:from-purple-600 hover:to-purple-800" },
-    { bg: "bg-gradient-to-br from-red-500 to-red-700", text: "text-white", hover: "hover:from-red-600 hover:to-red-800" },
-];
+const AnimatedProgressBar = ({ value }) => (
+    <div className="relative pt-1">
+        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200">
+            <motion.div
+                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-pink-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${value}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+            />
+        </div>
+    </div>
+);
+
+const AnimatedPercentage = ({ value }) => {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        const animationDuration = 1000;
+        const startTime = Date.now();
+
+        const animateValue = () => {
+            const now = Date.now();
+            const progress = Math.min((now - startTime) / animationDuration, 1);
+            setDisplayValue(Math.round(progress * value));
+
+            if (progress < 1) {
+                requestAnimationFrame(animateValue);
+            }
+        };
+
+        requestAnimationFrame(animateValue);
+    }, [value]);
+
+    return <span>{displayValue}</span>;
+};
 
 export default function ManagementView({ management, onBack }) {
     const [groups, setGroups] = useState([]);
@@ -32,17 +61,64 @@ export default function ManagementView({ management, onBack }) {
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
     const [activeTab, setActiveTab] = useState("announcements");
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const formRef = useRef(null);
+
+    const [formData, setFormData] = useState({
+        title: "",
+        date: "",
+        file: null,
+        description: "",
+    });
     const [announcements, setAnnouncements] = useState([]);
 
-    const handleAnnouncementCreated = (newAnnouncement) => {
-        setAnnouncements([newAnnouncement, ...announcements]);
+    const toggleForm = () => {
+        setIsFormOpen(!isFormOpen);
+        if (!isFormOpen) {
+            setTimeout(() => {
+                formRef.current.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        }
+    };
+
+    const handleFormChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e) => {
+        setFormData({ ...formData, file: e.target.files[0] });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setAnnouncements((prev) => [
+            ...prev,
+            { title: formData.title, date: formData.date, description: formData.description },
+        ]);
+        setFormData({
+            title: "",
+            date: "",
+            description: "",
+        });
+        setIsFormOpen(false);
+    };
+
+    const calculateProgress = () => {
+        const startDate = new Date(management.start_date);
+        const endDate = new Date(management.end_date);
+        const today = new Date();
+
+        const totalDuration = endDate - startDate;
+        const completedDuration = today - startDate;
+
+        let progress = (completedDuration / totalDuration) * 100;
+        return progress > 100 ? 100 : progress < 0 ? 0 : progress;
     };
 
     useEffect(() => {
         if (management) {
             fetchGroups();
             fetchParticipants();
-            fetchAnnouncements();
         }
     }, [management]);
 
@@ -75,20 +151,6 @@ export default function ManagementView({ management, onBack }) {
         }
     };
 
-    const fetchAnnouncements = async () => {
-        try {
-            const response = await getData(`/managements/${management.id}/announcements`);
-            if (response && response.success && response.data) {
-                setAnnouncements(response.data);
-            } else {
-                setAnnouncements([]);
-            }
-        } catch (error) {
-            console.error('Error al obtener los anuncios:', error);
-            setAnnouncements([]);
-        }
-    };
-
     const handleGroupLimitChange = (e) => {
         setNewGroupLimit(e.target.value);
     };
@@ -96,7 +158,7 @@ export default function ManagementView({ management, onBack }) {
     const saveGroupLimit = async () => {
         try {
             const response = await putData(`/managements/${management.id}/update-group-limit`, {
-                group_limit: parseInt(newGroupLimit, 10)
+                group_limit: parseInt(newGroupLimit, 10),
             });
             if (response && response.success) {
                 setIsEditingLimit(false);
@@ -135,11 +197,7 @@ export default function ManagementView({ management, onBack }) {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="sm:p-4 p-0 max-w-7xl mx-auto">
             {!isEvaluating && (
                 <Button onClick={onBack} className="flex items-center mb-4 bg-gray-400 hover:bg-gray-500">
                     <ArrowLeft className="mr-2" />
@@ -178,13 +236,7 @@ export default function ManagementView({ management, onBack }) {
                                     <div className="flex items-center space-x-2">
                                         {isEditingLimit ? (
                                             <>
-                                                <input
-                                                    type="number"
-                                                    value={newGroupLimit}
-                                                    onChange={handleGroupLimitChange}
-                                                    className="border rounded p-1"
-                                                    style={{ width: '60px' }}
-                                                />
+                                                <input type="number" value={newGroupLimit} onChange={handleGroupLimitChange} className="border rounded p-1" style={{ width: "60px" }} />
                                                 <Button onClick={saveGroupLimit} className="w-20 bg-purple-600 hover:bg-purple-700">
                                                     Guardar
                                                 </Button>
@@ -205,16 +257,25 @@ export default function ManagementView({ management, onBack }) {
                                 <div>
                                     <p className="font-semibold">Código de la gestión:</p>
                                     <p className="font-bold text-lg">{management.code}</p>
-                                    <Switch
-                                        checked={isCodeActive}
-                                        onChange={toggleCodeStatus}
-                                        className={`${isCodeActive ? 'bg-purple-600' : 'bg-gray-400'} relative inline-flex items-center h-6 rounded-full w-11`}
-                                    >
+                                    <Switch checked={isCodeActive} onChange={toggleCodeStatus} className={`${isCodeActive ? "bg-purple-600" : "bg-gray-400"} relative inline-flex items-center h-6 rounded-full w-11`}>
                                         <span className="sr-only">Toggle code</span>
-                                        <span className={`${isCodeActive ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
+                                        <span className={`${isCodeActive ? "translate-x-6" : "translate-x-1"} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
                                     </Switch>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center">
+                                    <TrendingUp className="h-6 w-6 text-purple-600 mr-2" />
+                                    <span className="text-sm font-medium text-purple-700">Progreso del curso</span>
+                                </div>
+                                <span className="text-sm font-semibold text-purple-900">
+                                    <AnimatedPercentage value={calculateProgress()} />%
+                                </span>
+                            </div>
+                            <AnimatedProgressBar value={calculateProgress()} />
                         </div>
                     </div>
 
@@ -225,111 +286,41 @@ export default function ManagementView({ management, onBack }) {
                         <CardContent className="p-1 sm:p-4">
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                                 <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
-                                    <TabsTrigger
-                                        value="announcements"
-                                        className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
-                                    >
+                                    <TabsTrigger value="announcements" className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm">
                                         <Megaphone className="w-4 h-4 sm:w-5 sm:h-5" />
                                         <span className="hidden sm:inline ml-1 sm:ml-2">Anuncios</span>
                                     </TabsTrigger>
-                                    <TabsTrigger
-                                        value="groups"
-                                        className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
-                                    >
+                                    <TabsTrigger value="groups" className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm">
                                         <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                                         <span className="hidden sm:inline ml-1 sm:ml-2">Grupos</span>
                                     </TabsTrigger>
-                                    <TabsTrigger
-                                        value="participants"
-                                        className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
-                                    >
+                                    <TabsTrigger value="participants" className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm">
                                         <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
                                         <span className="hidden sm:inline ml-1 sm:ml-2">Estudiantes</span>
                                     </TabsTrigger>
                                 </TabsList>
 
                                 <TabsContent value="announcements">
-                                    <CreateAnnouncement
-                                        managementId={management.id}
-                                        onAnnouncementCreated={handleAnnouncementCreated}
-                                    />
+                                    <CreateAnnouncement managementId={management.id} onAnnouncementCreated={(announcement) => setAnnouncements([announcement, ...announcements])} />
                                     <AnnouncementList announcements={announcements} />
                                 </TabsContent>
 
                                 <TabsContent value="groups">
-                                    <div className="mt-4">
-                                        {errorMessage ? (
-                                            <p className="mt-4 text-red-500">{errorMessage}</p>
-                                        ) : groups.length > 0 ? (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                {groups.map((group, index) => {
-                                                    const colorScheme = colorSchemes[index % colorSchemes.length];
-                                                    return (
-                                                        <Card key={group.short_name} className="overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl">
-                                                            <CardContent className="p-0">
-                                                                <div className={`${colorScheme.bg} p-4 flex items-center space-x-4`}>
-                                                                    <Avatar className="w-16 h-16 border-2 border-white shadow-md">
-                                                                        <AvatarImage src={group.logo || '/placeholder.svg?height=64&width=64'} alt={group.short_name} />
-                                                                        <AvatarFallback className="text-xl bg-white text-gray-800 font-semibold">
-                                                                            {getInitials(group.short_name, group.long_name)}
-                                                                        </AvatarFallback>
-                                                                    </Avatar>
-                                                                    <div>
-                                                                        <h3 className={`text-xl font-bold ${colorScheme.text}`}>{group.short_name}</h3>
-                                                                        <p className={`text-sm ${colorScheme.text} opacity-90`}>{group.long_name}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="p-4 bg-white">
-                                                                    <div className="space-y-2 mb-4">
-                                                                        <p className="flex items-center text-sm text-gray-600">
-                                                                            <Users className="mr-2 h-4 w-4 text-gray-400" />
-                                                                            {group.members.length} integrantes
-                                                                        </p>
-                                                                    </div>
-                                                                    <Button
-                                                                        className={`w-full ${colorScheme.bg} ${colorScheme.text} ${colorScheme.hover} transition-colors duration-300`}
-                                                                        onClick={() => handleEvaluateClick(group.id)}
-                                                                    >
-                                                                        Evaluar
-                                                                    </Button>
-                                                                    <Button
-                                                                        className={`w-full mt-2 ${colorScheme.bg} ${colorScheme.text} ${colorScheme.hover} transition-all duration-300`}
-                                                                        onClick={() => handleViewDetails(group)}
-                                                                    >
-                                                                        Ver detalles
-                                                                    </Button>
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <p>No hay grupos registrados en esta gestión.</p>
-                                        )}
-                                    </div>
+                                    {errorMessage ? (
+                                        <p className="mt-4 text-red-500">{errorMessage}</p>
+                                    ) : (
+                                        <GroupListComponent groups={groups} handleEvaluateClick={handleEvaluateClick} handleViewDetails={handleViewDetails} getInitials={getInitials} />
+                                    )}
                                 </TabsContent>
 
-                                {/* Participantes */}
                                 <TabsContent value="participants">
-                                    <div className="mt-4">
-                                        {participants && (
-                                            <ParticipantList participants={participants} getInitials={getInitials} />
-                                        )}
-                                    </div>
+                                    <ParticipantList participants={participants} getInitials={getInitials} />
                                 </TabsContent>
-
                             </Tabs>
                         </CardContent>
                     </Card>
 
-                    {selectedGroupDetails && (
-                        <GroupDetails
-                            group={selectedGroupDetails}
-                            onClose={() => setSelectedGroupDetails(null)}
-                            getInitials={getInitials}
-                        />
-                    )}
+                    {selectedGroupDetails && <GroupDetails group={selectedGroupDetails} onClose={() => setSelectedGroupDetails(null)} getInitials={getInitials} />}
                 </>
             )}
         </motion.div>
