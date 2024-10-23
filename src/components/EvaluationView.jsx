@@ -45,37 +45,37 @@ export default function EvaluationView({ groupId, onBack }) {
                 {/* Tabs para navegación entre tipos de evaluaciones */}
                 <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid grid-cols-4 md:grid-cols-4 gap-2 w-full bg-purple-100 p-1 rounded-md">
+                        <TabsList className="grid w-full grid-cols-4 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
                             <TabsTrigger
                                 value="evaluation-template"
-                                className="flex items-center justify-center p-2 text-sm sm:text-base data-[state=active]:bg-white data-[state=active]:text-purple-700 transition-all duration-200 ease-in-out"
+                                className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                             >
-                                <ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                                <span className="hidden sm:inline">Planilla</span>
+                                <ClipboardCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="hidden sm:inline ml-1 sm:ml-2">Planilla</span>
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value="student-evaluation"
-                                className="flex items-center justify-center p-2 text-sm sm:text-base data-[state=active]:bg-white data-[state=active]:text-purple-700 transition-all duration-200 ease-in-out"
+                                className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                             >
-                                <User className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                                <span className="hidden sm:inline">Estudiante</span>
+                                <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="hidden sm:inline ml-1 sm:ml-2">Estudiante</span>
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value="weekly-evaluation"
-                                className="flex items-center justify-center p-2 text-sm sm:text-base data-[state=active]:bg-white data-[state=active]:text-purple-700 transition-all duration-200 ease-in-out"
+                                className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                             >
-                                <CalendarCheck className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                                <span className="hidden sm:inline">Semanal</span>
+                                <CalendarCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="hidden sm:inline ml-1 sm:ml-2">Semanal</span>
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value="sprint-evaluation"
-                                className="flex items-center justify-center p-2 text-sm sm:text-base data-[state=active]:bg-white data-[state=active]:text-purple-700 transition-all duration-200 ease-in-out"
+                                className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                             >
-                                <CheckSquare className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                                <span className="hidden sm:inline">Sprint</span>
+                                <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="hidden sm:inline ml-1 sm:ml-2">Sprint</span>
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>

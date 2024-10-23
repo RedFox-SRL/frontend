@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { getData, putData } from "../api/apiService";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -103,7 +103,8 @@ export default function ManagementView({ management, onBack }) {
         setIsFormOpen(false);
     };
 
-    const calculateProgress = () => {
+    // Calculate the progress only once, when the component loads
+    const progress = useMemo(() => {
         const startDate = new Date(management.start_date);
         const endDate = new Date(management.end_date);
         const today = new Date();
@@ -111,9 +112,9 @@ export default function ManagementView({ management, onBack }) {
         const totalDuration = endDate - startDate;
         const completedDuration = today - startDate;
 
-        let progress = (completedDuration / totalDuration) * 100;
-        return progress > 100 ? 100 : progress < 0 ? 0 : progress;
-    };
+        let calculatedProgress = (completedDuration / totalDuration) * 100;
+        return calculatedProgress > 100 ? 100 : calculatedProgress < 0 ? 0 : calculatedProgress;
+    }, [management.start_date, management.end_date]);
 
     useEffect(() => {
         if (management) {
@@ -272,10 +273,10 @@ export default function ManagementView({ management, onBack }) {
                                     <span className="text-sm font-medium text-purple-700">Progreso del curso</span>
                                 </div>
                                 <span className="text-sm font-semibold text-purple-900">
-                                    <AnimatedPercentage value={calculateProgress()} />%
+                                    <AnimatedPercentage value={progress} />%
                                 </span>
                             </div>
-                            <AnimatedProgressBar value={calculateProgress()} />
+                            <AnimatedProgressBar value={progress} />
                         </div>
                     </div>
 
