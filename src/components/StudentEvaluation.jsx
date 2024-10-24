@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#8b5cf6', '#a78bfa', '#c4b5fd'];
@@ -14,29 +13,29 @@ const data = [
 
 export default function StudentEvaluation() {
     return (
-        <div className="container mx-auto p-4 bg-purple-50 min-h-screen">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold centered text-purple-600">Evaluación Estudiante</h1>
+        <div className="container mx-auto bg-purple-50 min-h-screen">
+            <div className="flex justify-between items-center mb-2 md:mb-4">
+                <h1 className="text-xl md:text-2xl font-bold centered text-purple-600">Evaluación Estudiante</h1>
                 <div className="w-[70px]"></div>
             </div>
 
-            <Card className="mb-6">
-                <CardContent className="p-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+            <Card className="mb-4 md:mb-6">
+                <CardContent className="p-4 md:p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div>
-                            <h2 className="text-xl font-semibold mb-4">Estudiante: Oliver Alandia</h2>
-                            <div className="space-y-4">
+                            <h2 className="text-lg md:text-xl font-semibold mb-2 md:mb-4">Estudiante: Oliver Alandia</h2>
+                            <div className="space-y-2 md:space-y-4">
                                 <div>
-                                    <h3 className="text-lg font-medium mb-2">Tasa de participación</h3>
-                                    <div className="text-5xl font-bold text-purple-600">45%</div>
-                                    <p className="text-sm text-gray-600 mt-1">Numero de tareas realizadas: 8</p>
+                                    <h3 className="text-md md:text-lg font-medium mb-1 md:mb-2">Tasa de participación</h3>
+                                    <div className="text-4xl md:text-5xl font-bold text-purple-600">45%</div>
+                                    <p className="text-xs md:text-sm text-gray-600 mt-1">Número de tareas realizadas: 8</p>
                                 </div>
 
                                 <div>
                                     <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">Calificación</label>
                                     <select
                                         id="rating"
-                                        className="max-w-[200px] p-2 border rounded"
+                                        className="max-w-full md:max-w-[200px] p-1 md:p-2 border rounded"
                                         defaultValue="Excelente"
                                     >
                                         <option value="Excelente">Excelente</option>
@@ -50,15 +49,15 @@ export default function StudentEvaluation() {
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-medium mb-4">Estado de tareas</h3>
-                            <ResponsiveContainer width="100%" height={200}>
+                            <h3 className="text-md md:text-lg font-medium mb-2 md:mb-4">Estado de tareas</h3>
+                            <ResponsiveContainer width="100%" height={150}>
                                 <PieChart>
                                     <Pie
                                         data={data}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
+                                        innerRadius={50}
+                                        outerRadius={70}
                                         fill="#8884d8"
                                         paddingAngle={5}
                                         dataKey="value"
@@ -74,19 +73,19 @@ export default function StudentEvaluation() {
                 </CardContent>
             </Card>
 
-            <Card className="mb-6">
+            <Card className="mb-4 md:mb-6">
                 <CardHeader>
-                    <CardTitle>Recomendación</CardTitle>
+                    <CardTitle className="text-lg md:text-xl">Recomendación</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <textarea
-                        className="w-full p-2 border rounded"
+                        className="w-full p-1 md:p-2 border rounded"
                         placeholder="Escribe una recomendación"
                     />
                 </CardContent>
             </Card>
 
-            <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+            <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-1 md:p-2">
                 Guardar evaluación
             </Button>
         </div>

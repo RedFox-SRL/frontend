@@ -18,7 +18,7 @@ const teamMembers = [
 
 const ParticipationBar = ({ name, participation }) => (
     <div className="flex items-center mb-2">
-        <span className="w-32 text-sm">{name}</span>
+        <span className="w-28 text-sm">{name}</span>
         <div className="flex-grow bg-purple-100 rounded-full h-2">
             <div
                 className="bg-purple-600 h-2 rounded-full"
@@ -34,12 +34,12 @@ export default function SprintEvaluation() {
     const [recommendation, setRecommendation] = useState("");
 
     return (
-        <div className="container mx-auto p-4 max-w-4xl">
-            <h1 className="text-3xl font-bold text-center mb-6 text-purple-600">
+        <div className="container mx-auto bg-purple-50 min-h-screen">
+            <h1 className="text-xl md:text-3xl font-bold text-center mb-4 md:mb-6 text-purple-600">
                 Evaluación de Sprint
             </h1>
 
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-3 md:p-4 mb-4 md:mb-6">
                 <h2 className="font-bold text-lg mb-2">Seleccionar Sprint</h2>
                 <select
                     value={selectedSprint}
@@ -52,15 +52,15 @@ export default function SprintEvaluation() {
                 </select>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-4 grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-lg shadow-md p-3 md:p-4 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                    <h3 className="font-semibold mb-4">Sprint 1</h3>
+                    <h3 className="font-semibold mb-2 md:mb-4">Sprint 1</h3>
                     <h4 className="text-sm font-medium mb-2">Tasa de participación</h4>
                     {teamMembers.map((member, index) => (
                         <ParticipationBar key={index} {...member} />
                     ))}
 
-                    <div className="mt-6">
+                    <div className="mt-4 md:mt-6">
                         <h4 className="text-sm font-medium mb-2">Requerimientos</h4>
                         <ul className="list-disc pl-4">
                             <li>Registrar los resultados de las evaluaciones</li>
@@ -76,8 +76,8 @@ export default function SprintEvaluation() {
                                 data={taskData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
+                                innerRadius={50}
+                                outerRadius={70}
                                 fill="#8884d8"
                                 paddingAngle={5}
                                 dataKey="value"
@@ -91,7 +91,7 @@ export default function SprintEvaluation() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div className="bg-white rounded-lg shadow-md p-3 md:p-4 mb-4 md:mb-6">
                 <select
                     value={selectedRating}
                     onChange={(e) => setSelectedRating(e.target.value)}
@@ -105,13 +105,13 @@ export default function SprintEvaluation() {
                 </select>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-        <textarea
-            className="w-full border border-gray-300 rounded-md p-2"
-            placeholder="Recomendación"
-            value={recommendation}
-            onChange={(e) => setRecommendation(e.target.value)}
-        />
+            <div className="bg-white rounded-lg shadow-md p-3 md:p-4 mb-4 md:mb-6">
+                <textarea
+                    className="w-full border border-gray-300 rounded-md p-2"
+                    placeholder="Recomendación"
+                    value={recommendation}
+                    onChange={(e) => setRecommendation(e.target.value)}
+                />
             </div>
 
             <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-md">

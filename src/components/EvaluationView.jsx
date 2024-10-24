@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EvaluationTemplate from './EvaluationTemplate';
 import { Button } from "@/components/ui/button";
 import { ClipboardCheck, User, CalendarCheck, CheckSquare } from "lucide-react";
@@ -33,17 +33,21 @@ export default function EvaluationView({ groupId, onBack }) {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white-100 to-indigo-100 p-6">
-            <div className="max-w-7xl mx-auto">
-                <Button onClick={onBack}
-                        className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-all duration-300 ease-in-out mb-6">
-                    Volver
-                </Button>
+        <div className="min-h-screen bg-gradient-to-br from-white-100 to-indigo-100 p-4 sm:p-6">
+            <div className="max-w-7xl mx-auto min-h-screen flex flex-col">
+                {/* Contenedor flex para alinear el botón de "Volver" y el título "Evaluaciones" */}
+                <div className="flex justify-between items-center mb-6">
+                    <Button onClick={onBack}
+                            className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-all duration-300 ease-in-out">
+                        Volver
+                    </Button>
 
-                <h1 className="text-3xl font-bold text-purple-800 mb-8 text-center">Evaluaciones</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-purple-800 text-center">Evaluaciones</h1>
+                    <div className="w-[70px]"></div> {/* Espaciado para que el botón y el título queden centrados */}
+                </div>
 
                 {/* Tabs para navegación entre tipos de evaluaciones */}
-                <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+                <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 mb-6 w-full">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-4 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
                             <TabsTrigger
@@ -81,29 +85,29 @@ export default function EvaluationView({ groupId, onBack }) {
                     </Tabs>
                 </div>
 
-                <div className="tab-content-container w-full">
+                {/* Contenido de cada tab */}
+                <div className="flex-grow">
                     {activeTab === 'evaluation-template' && (
-                        <div className="bg-white shadow-lg rounded-lg p-6 w-full">
+                        <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
                             <EvaluationTemplate groupId={groupId} sprints={sprints} />
                         </div>
                     )}
                     {activeTab === 'student-evaluation' && (
-                        <div className="bg-white shadow-lg rounded-lg p-6 w-full">
+                        <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
                             <StudentEvaluation />
                         </div>
                     )}
                     {activeTab === 'weekly-evaluation' && (
-                        <div className="bg-white shadow-lg rounded-lg p-6 w-full">
+                        <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
                             <WeeklyEvaluation />
                         </div>
                     )}
                     {activeTab === 'sprint-evaluation' && (
-                        <div className="bg-white shadow-lg rounded-lg p-6 w-full">
+                        <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
                             <SprintEvaluation />
                         </div>
                     )}
                 </div>
-
             </div>
         </div>
     );

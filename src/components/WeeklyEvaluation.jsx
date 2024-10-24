@@ -17,21 +17,21 @@ export default function WeeklyEvaluation() {
     const [calificacion, setCalificacion] = useState("Bueno");
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold text-center mb-6 text-purple-600">Evaluaciones Semanales</h1>
+        <div className="container mx-auto">
+            <h1 className="text-xl md:text-2xl font-bold text-center mb-4 md:mb-6 text-purple-600">Evaluaciones Semanales</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 md:gap-4">
                 {/* Lista de miembros */}
-                <Card className="md:col-span-1">
+                <Card className="lg:col-span-1">
                     <CardHeader>
-                        <CardTitle>Filtrar por Miembro</CardTitle>
+                        <CardTitle className="text-lg md:text-xl">Filtrar por Miembro</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ul className="list-none p-0">
                             {['Oliver Alandia', 'Diego Sandoval', 'Diego Romero', 'Gilmar Orellana'].map((member, idx) => (
                                 <li
                                     key={idx}
-                                    className={`cursor-pointer p-2 ${selectedMember === member ? 'text-purple-600 font-bold' : 'text-gray-600'}`}
+                                    className={`cursor-pointer p-0 md:p-2 ${selectedMember === member ? 'text-purple-600 font-bold' : 'text-gray-600'}`}
                                     onClick={() => setSelectedMember(member)}
                                 >
                                     {member}
@@ -42,15 +42,15 @@ export default function WeeklyEvaluation() {
                 </Card>
 
                 {/* Contenido principal */}
-                <div className="md:col-span-3 space-y-4">
+                <div className="lg:col-span-3 space-y-2 md:space-y-4">
                     {/* Selección de Sprint */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Seleccionar Sprint</CardTitle>
+                            <CardTitle className="text-lg md:text-xl">Seleccionar Sprint</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <select
-                                className="w-full p-2 border rounded"
+                                className="w-full p-0 md:p-2 border rounded"
                                 value={selectedSprint}
                                 onChange={(e) => setSelectedSprint(e.target.value)}
                             >
@@ -64,12 +64,12 @@ export default function WeeklyEvaluation() {
                     {/* Información de la tarea */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>{selectedSprint}: (2024-09-06 - 2024-09-13)</CardTitle>
+                            <CardTitle className="text-lg md:text-xl">{selectedSprint}: (2024-09-06 - 2024-09-13)</CardTitle>
                         </CardHeader>
                         <CardContent className="grid md:grid-cols-2 gap-4">
                             <div>
-                                <h3 className="font-semibold mb-2">Tarea 1</h3>
-                                <p>Descripción de la tarea 1</p>
+                                <h3 className="font-semibold mb-2 text-base md:text-lg">Tarea 1</h3>
+                                <p className="text-sm md:text-base">Descripción de la tarea 1</p>
                                 <p className="text-sm text-purple-600 mt-2">Asignado a: {selectedMember}</p>
                                 <a href="https://www.trackmaster.systems/" className="text-blue-600">Recurso</a>
 
@@ -78,7 +78,7 @@ export default function WeeklyEvaluation() {
                                     <label htmlFor="calificacion" className="block mb-1">Calificación:</label>
                                     <select
                                         id="calificacion"
-                                        className="w-full p-2 border rounded"
+                                        className="w-full p-0 md:p-2 border rounded"
                                         value={calificacion}
                                         onChange={(e) => setCalificacion(e.target.value)}
                                     >
@@ -110,9 +110,9 @@ export default function WeeklyEvaluation() {
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div className="text-center mt-2">
-                                    <p className="text-xl font-bold text-purple-600">{data[0].value}% Por hacer</p>
-                                    <p className="text-md font-bold text-purple-500">{data[1].value}% En progreso</p>
-                                    <p className="text-md font-bold text-purple-400">{data[2].value}% Hecho</p>
+                                    <p className="text-base md:text-xl font-bold text-purple-600">{data[0].value}% Por hacer</p>
+                                    <p className="text-sm md:text-md font-bold text-purple-500">{data[1].value}% En progreso</p>
+                                    <p className="text-sm md:text-md font-bold text-purple-400">{data[2].value}% Hecho</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -121,15 +121,15 @@ export default function WeeklyEvaluation() {
                     {/* Recomendación */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Recomendación</CardTitle>
+                            <CardTitle className="text-lg md:text-xl">Recomendación</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <textarea className="w-full p-2 border rounded" placeholder="Escribe una recomendación"></textarea>
+                            <textarea className="w-full p-0 md:p-2 border rounded" placeholder="Escribe una recomendación"></textarea>
                         </CardContent>
                     </Card>
 
                     {/* Botón de Guardar */}
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white p-0 md:p-2">
                         Guardar evaluación
                     </Button>
                 </div>
