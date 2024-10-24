@@ -12,6 +12,7 @@ export default function EvaluationTemplate({ groupId }) {
     const [toast, setToast] = useState(null);
     const [error, setError] = useState('');
     const [membersFilter, setMembersFilter] = useState('Todos');
+    const [commentWarnings, setCommentWarnings] = useState({});
 
     useEffect(() => {
         const fetchSprints = async () => {
@@ -63,6 +64,13 @@ export default function EvaluationTemplate({ groupId }) {
     };
 
     const handleEvaluationChange = (taskId, field, value) => {
+        if (field === 'comment' && value.length > 200) {
+            setCommentWarnings((prev) => ({ ...prev, [taskId]: 'Has alcanzado el máximo de 200 caracteres' }));
+            return; // No permitir más caracteres
+        } else {
+            setCommentWarnings((prev) => ({ ...prev, [taskId]: '' }));
+        }
+
         setEvaluations((prev) => ({
             ...prev,
             [taskId]: {
@@ -210,8 +218,12 @@ export default function EvaluationTemplate({ groupId }) {
                                                 value={evaluations[task.id]?.comment || ''}
                                                 onChange={(e) => handleEvaluationChange(task.id, 'comment', e.target.value)}
                                                 rows={3}
+                                                maxLength={200} // Límite de 200 caracteres
                                                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-300 ease-in-out"
                                             />
+                                            {commentWarnings[task.id] && (
+                                                <p className="text-red-500 text-sm mt-1">{commentWarnings[task.id]}</p>
+                                            )}
                                         </div>
                                     </div>
                                     <button
