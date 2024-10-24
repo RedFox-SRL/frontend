@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -15,11 +15,12 @@ export default function WeeklyReport() {
     const [selectedMember, setSelectedMember] = useState("Oliver Alandia");
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold text-center mb-6 text-purple-600">Reporte Semanal</h1>
+        <div className="container mx-auto p-4 sm:p-6 bg-purple-50 min-h-screen">
+            <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-purple-600">Reporte Semanal</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="md:col-span-1">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                {/* Lista de miembros */}
+                <Card className="lg:col-span-1">
                     <CardHeader>
                         <CardTitle>Filtrar por Miembro</CardTitle>
                     </CardHeader>
@@ -38,7 +39,8 @@ export default function WeeklyReport() {
                     </CardContent>
                 </Card>
 
-                <div className="md:col-span-3 space-y-4">
+                <div className="lg:col-span-3 space-y-4">
+                    {/* Selección de Sprint */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Seleccionar Sprint</CardTitle>
@@ -56,11 +58,12 @@ export default function WeeklyReport() {
                         </CardContent>
                     </Card>
 
+                    {/* Información del Sprint */}
                     <Card>
                         <CardHeader>
                             <CardTitle>{selectedSprint}: (2024-09-06 - 2024-09-13)</CardTitle>
                         </CardHeader>
-                        <CardContent className="grid md:grid-cols-2 gap-4">
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <h3 className="font-semibold mb-2">Tarea 1</h3>
                                 <p>Descripción de la tarea 1</p>
@@ -73,6 +76,7 @@ export default function WeeklyReport() {
                                 </div>
                             </div>
 
+                            {/* Gráfico de progreso */}
                             <div className="flex flex-col items-center justify-center">
                                 <ResponsiveContainer width="100%" height={150}>
                                     <PieChart>
@@ -99,12 +103,13 @@ export default function WeeklyReport() {
                         </CardContent>
                     </Card>
 
+                    {/* Recomendación */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Recomendación</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-md text-gray-700">Realizar ajustes en las tareas en progreso y finalizar las tareas por hacer para cumplir con el sprint.</p> {/* Texto estático */}
+                            <p className="text-md text-gray-700">Realizar ajustes en las tareas en progreso y finalizar las tareas por hacer para cumplir con el sprint.</p>
                         </CardContent>
                     </Card>
                 </div>

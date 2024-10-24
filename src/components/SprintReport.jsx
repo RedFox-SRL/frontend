@@ -12,18 +12,18 @@ const data = [
 
 export default function SprintReport() {
     return (
-        <div className="container mx-auto p-4 bg-purple-50 min-h-screen">
-            <h1 className="text-2xl font-bold text-center mb-6 text-purple-600">Reporte de Sprint</h1>
+        <div className="container mx-auto p-4 sm:p-6 bg-purple-50 min-h-screen">
+            <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 text-purple-600">Reporte de Sprint</h1>
 
             <Card className="mb-6">
-                <CardContent className="p-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+                <CardContent className="p-4 sm:p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
-                            <h2 className="text-xl font-semibold mb-4">Sprint 1: (2024-09-06 - 2024-09-13)</h2>
+                            <h2 className="text-lg sm:text-xl font-semibold mb-4">Sprint 1: (2024-09-06 - 2024-09-13)</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <h3 className="text-lg font-medium mb-2">Tasa de participación</h3>
-                                    <div className="flex flex-col">
+                                    <h3 className="text-md sm:text-lg font-medium mb-2">Tasa de participación</h3>
+                                    <div className="flex flex-col space-y-1">
                                         <span className="font-semibold">Oliver Alandia - 80%</span>
                                         <span className="font-semibold">Diego Sandoval - 75%</span>
                                         <span className="font-semibold">Diego Romero - 60%</span>
@@ -39,7 +39,7 @@ export default function SprintReport() {
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-medium mb-4">Estado de tareas</h3>
+                            <h3 className="text-md sm:text-lg font-medium mb-4">Estado de tareas</h3>
                             <ResponsiveContainer width="100%" height={200}>
                                 <PieChart>
                                     <Pie
