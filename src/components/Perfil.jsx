@@ -76,6 +76,9 @@ export default function Perfil() {
     if (name === 'nombre') {
       const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
       setUserData(prev => ({ ...prev, [name]: filteredValue }));
+    } else if (name === 'apellido') {
+      const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
+      setUserData(prev => ({ ...prev, [name]: filteredValue }));
     } else {
       setUserData(prev => ({ ...prev, [name]: value }));
     }
