@@ -73,11 +73,12 @@ export default function Perfil() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
+    // Solo filtrar los campos 'nombre' y 'apellido' para aceptar únicamente letras y espacios
     if (name === 'nombre') {
-      const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
+      const filteredValue = value.replace(/[^a-zA-Z\s]/g, ''); // Solo permite letras y espacios
       setUserData(prev => ({ ...prev, [name]: filteredValue }));
     } else if (name === 'apellido') {
-      const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
+      const filteredValue = value.replace(/[^a-zA-Z\s]/g, ''); // Solo permite letras y espacios
       setUserData(prev => ({ ...prev, [name]: filteredValue }));
     } else {
       setUserData(prev => ({ ...prev, [name]: value }));
