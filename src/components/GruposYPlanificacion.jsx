@@ -238,10 +238,10 @@ export default function GruposYPlanificacion() {
     const handleUpdateGroup = (updatedGroupData) => {
         setSelectedGroup(prevGroup => ({
             ...prevGroup, ...updatedGroupData
-        }));
+        }))
         toast({
             title: "Éxito", description: "Información del grupo actualizada correctamente.", duration: 3000,
-        });
+        })
     }
 
     const handleImageCropped = (croppedImageBlob) => {
@@ -249,198 +249,223 @@ export default function GruposYPlanificacion() {
     }
 
     if (isLoading) {
-        return (<div className="flex items-center justify-center h-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
-            <span className="ml-2 text-lg font-medium text-purple-600">Cargando...</span>
-        </div>)
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
+                <span className="ml-2 text-lg font-medium text-purple-600">Cargando...</span>
+            </div>
+        )
     }
 
     if (!isInManagement) {
-        return (<div className="space-y-4 p-4 sm:p-6 max-w-md mx-auto">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
-                        No estás inscrito en un curso
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Input
-                        type="text"
-                        placeholder="Ingrese el código de la clase"
-                        value={managementCode}
-                        onChange={(e) => setManagementCode(e.target.value)}
-                        className="mb-4"
-                    />
-                    <Button onClick={handleJoinManagement} className="w-full bg-purple-600 hover:bg-purple-700">
-                        Unirse a Clase
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>)
+        return (
+            <div className="space-y-4 p-4 sm:p-6 max-w-md mx-auto">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
+                            No estás inscrito en un curso
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Input
+                            type="text"
+                            placeholder="Ingrese el código de la clase"
+                            value={managementCode}
+                            onChange={(e) => setManagementCode(e.target.value)}
+                            className="mb-4"
+                        />
+                        <Button onClick={handleJoinManagement} className="w-full bg-purple-600 hover:bg-purple-700">
+                            Unirse a Clase
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     if (isInManagement && !isInGroup) {
-        return (<div className="space-y-4 p-4 sm:p-6 max-w-md sm:max-w-2xl mx-auto">
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
-                <Button
-                    onClick={() => setView('join')}
-                    className={`px-4 py-2 ${view === 'join' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}
-                >
-                    Unirse por código
-                </Button>
-                <Button
-                    onClick={() => setView('create')}
-                    className={`px-4 py-2 ${view === 'create' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}
-                >
-                    Crear grupo
-                </Button>
-            </div>
-
-            {view === 'join' && (<Card>
-                <CardHeader>
-                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
-                        Unirse a un grupo
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Input
-                        type="text"
-                        placeholder="Ingrese el código del grupo"
-                        value={groupCode}
-                        onChange={(e) => setGroupCode(e.target.value)}
-                        className="mb-4"
-                    />
-                    <Button onClick={handleJoinGroup} className="w-full bg-purple-600 hover:bg-purple-700">
-                        Unirse al Grupo
+        return (
+            <div className="space-y-4 p-4 sm:p-6 max-w-md sm:max-w-2xl mx-auto">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
+                    <Button
+                        onClick={() => setView('join')}
+                        className={`px-4 py-2 ${view === 'join' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}
+                    >
+                        Unirse por código
                     </Button>
-                </CardContent>
-            </Card>)}
-            {view === 'create' && (<Card>
-                <CardHeader>
-                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
-                        Crear un grupo
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        <div>
+                    <Button
+                        onClick={() => setView('create')}
+                        className={`px-4 py-2 ${view === 'create' ? 'bg-purple-600 text-white' : 'bg-purple-200 text-purple-800'}`}
+                    >
+                        Crear grupo
+                    </Button>
+                </div>
+
+                {view === 'join' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
+                                Unirse a un grupo
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
                             <Input
                                 type="text"
-                                placeholder="Nombre corto"
-                                value={groupData.short_name}
-                                onChange={(e) => setGroupData({...groupData, short_name: e.target.value})}
-                                className={errors.short_name ? "border-red-500" : ""}
-                                required
+                                placeholder="Ingrese el código del grupo"
+                                value={groupCode}
+                                onChange={(e) => setGroupCode(e.target.value)}
+                                className="mb-4"
                             />
-                            {errors.short_name && (
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.short_name}</p>)}
-                        </div>
-                        <div>
-                            <Input
-                                type="text"
-                                placeholder="Nombre largo"
-                                value={groupData.long_name}
-                                onChange={(e) => setGroupData({...groupData, long_name: e.target.value})}
-                                className={errors.long_name ? "border-red-500" : ""}
-                                required
-                            />
-                            {errors.long_name && (
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.long_name}</p>)}
-                        </div>
-                        <div>
-                            <Input
-                                type="email"
-                                placeholder="Email de contacto"
-                                value={groupData.contact_email}
-                                onChange={(e) => setGroupData({...groupData, contact_email: e.target.value})}
-                                className={errors.contact_email ? "border-red-500" : ""}
-                            />
-                            {errors.contact_email && (
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_email}</p>)}
-                        </div>
-                        <div>
-                            <Input
-                                type="tel"
-                                placeholder="Teléfono de contacto"
-                                value={groupData.contact_phone}
-                                onChange={(e) => setGroupData({...groupData, contact_phone: e.target.value})}
-                                className={errors.contact_phone ? "border-red-500" : ""}
-                            />
-                            {errors.contact_phone && (
-                                <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_phone}</p>)}
-                        </div>
-                        <ImageCropper onImageCropped={handleImageCropped}/>
-                        {errors.logo && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.logo}</p>}
-                        <Button onClick={handleCreateGroup}
-                                className="w-full bg-purple-600 hover:bg-purple-700">
-                            Crear Grupo
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>)}
-        </div>)
+                            <Button onClick={handleJoinGroup} className="w-full bg-purple-600 hover:bg-purple-700">
+                                Unirse al Grupo
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
+                {view === 'create' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
+                                Crear un grupo
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div>
+                                    <Input
+                                        type="text"
+                                        placeholder="Nombre corto"
+                                        value={groupData.short_name}
+                                        onChange={(e) => setGroupData({...groupData, short_name: e.target.value})}
+                                        className={errors.short_name ? "border-red-500" : ""}
+                                        required
+                                    />
+                                    {errors.short_name && (
+                                        <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.short_name}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <Input
+                                        type="text"
+                                        placeholder="Nombre largo"
+                                        value={groupData.long_name}
+                                        onChange={(e) => setGroupData({...groupData, long_name: e.target.value})}
+                                        className={errors.long_name ? "border-red-500" : ""}
+                                        required
+                                    />
+                                    {errors.long_name && (
+                                        <p className="text-red-500  text-xs sm:text-sm mt-1">{errors.long_name}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <Input
+                                        type="email"
+                                        placeholder="Email de contacto"
+                                        value={groupData.contact_email}
+                                        onChange={(e) => setGroupData({...groupData, contact_email: e.target.value})}
+                                        className={errors.contact_email ? "border-red-500" : ""}
+                                    />
+                                    {errors.contact_email && (
+                                        <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_email}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <Input
+                                        type="tel"
+                                        placeholder="Teléfono de contacto"
+                                        value={groupData.contact_phone}
+                                        onChange={(e) => setGroupData({...groupData, contact_phone: e.target.value})}
+                                        className={errors.contact_phone ? "border-red-500" : ""}
+                                    />
+                                    {errors.contact_phone && (
+                                        <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.contact_phone}</p>
+                                    )}
+                                </div>
+                                <ImageCropper onImageCropped={handleImageCropped}/>
+                                {errors.logo && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.logo}</p>}
+                                <Button onClick={handleCreateGroup}
+                                        className="w-full bg-purple-600 hover:bg-purple-700">
+                                    Crear Grupo
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+        )
     }
 
     if (isInGroup && selectedGroup) {
-        return (<div className="space-y-6 p-4 sm:p-6">
-            {isCreator ? (<GroupDetailCreator
-                initialGroupData={selectedGroup}
-                onUpdateGroup={handleUpdateGroup}
-            />) : (<GroupDetailMember selectedGroup={selectedGroup}/>)}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <Card
-                    className={`cursor-pointer transition-all duration-200 ${activeCard === 'planificacion' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('planificacion')}
-                >
-                    <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
-                        <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
-                        <CardTitle
-                            className="text-lg sm:text-xl font-bold text-purple-800">Planificación</CardTitle>
-                    </CardContent>
-                </Card>
-                <Card
-                    className={`cursor-pointer transition-all duration-200 ${activeCard === 'tablero' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('tablero')}
-                >
-                    <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
-                        <LayoutDashboard className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
-                        <CardTitle className="text-lg sm:text-xl font-bold text-purple-800">Tablero</CardTitle>
-                    </CardContent>
-                </Card>
-                <Card
-                    className={`cursor-pointer transition-all duration-200 ${activeCard === 'equipo' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('equipo')}
-                >
-                    <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
-                        <Users className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
-                        <CardTitle className="text-lg sm:text-xl font-bold text-purple-800">Equipo</CardTitle>
-                    </CardContent>
-                </Card>
-                <Card
-                    className={`cursor-pointer transition-all duration-200 ${activeCard === 'reportes' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
-                    onClick={() => handleCardClick('reportes')}
-                >
-                    <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
-                        <Clipboard className="h-8 w-8 sm:h-12 sm:w-12 text-purple-600 mb-2 sm:mb-4"/>
-                        <CardTitle className="text-lg sm:text-xl font-bold text-purple-800">Reportes</CardTitle>
-                    </CardContent>
-                </Card>
-            </div>
-            <div ref={calendarRef} className={activeCard === 'planificacion' ? '' : 'hidden'}>
-                <CalendarioEventos groupId={groupId}/>
-            </div>
-            <div ref={kanbanRef} className={activeCard === 'tablero' ? '' : 'hidden'}>
-                <SprintKanbanBoard groupId={groupId}/>
-            </div>
-            <div ref={equipoRef} className={activeCard === 'equipo' ? '' : 'hidden'}>
+        return (
+            <div className="space-y-6 p-4 sm:p-6">
                 {isCreator ? (
-                    <GroupMemberListCreator groupId={groupId} members={selectedGroup.members} userId={userId}/>) : (
-                    <GroupMemberListMember groupId={groupId} members={selectedGroup.members}/>)}
+                    <GroupDetailCreator
+                        initialGroupData={selectedGroup}
+                        onUpdateGroup={handleUpdateGroup}
+                    />
+                ) : (
+                    <GroupDetailMember selectedGroup={selectedGroup}/>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <Card
+                        className={`cursor-pointer transition-all duration-200 ${activeCard === 'planificacion' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
+                        onClick={() => handleCardClick('planificacion')}
+                    >
+                        <CardContent className="flex flex-col items-center justify-center p-4">
+                            <Calendar className="h-8 w-8 text-purple-600 mb-2"/>
+                            <CardTitle
+                                className="text-sm sm:text-lg font-bold text-purple-800 text-center">Planificación</CardTitle>
+                        </CardContent>
+                    </Card>
+                    <Card
+                        className={`cursor-pointer transition-all duration-200 ${activeCard === 'tablero' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
+                        onClick={() => handleCardClick('tablero')}
+                    >
+                        <CardContent className="flex flex-col items-center justify-center p-4">
+                            <LayoutDashboard className="h-8 w-8 text-purple-600 mb-2"/>
+                            <CardTitle
+                                className="text-sm sm:text-lg font-bold text-purple-800 text-center">Tablero</CardTitle>
+                        </CardContent>
+                    </Card>
+                    <Card
+                        className={`cursor-pointer transition-all duration-200 ${activeCard === 'equipo' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
+                        onClick={() => handleCardClick('equipo')}
+                    >
+                        <CardContent className="flex flex-col items-center justify-center p-4">
+                            <Users className="h-8 w-8 text-purple-600 mb-2"/>
+                            <CardTitle
+                                className="text-sm sm:text-lg font-bold text-purple-800 text-center">Equipo</CardTitle>
+                        </CardContent>
+                    </Card>
+                    <Card
+                        className={`cursor-pointer transition-all duration-200 ${activeCard === 'reportes' ? 'bg-purple-100 ring-2 ring-purple-600' : 'bg-white hover:bg-purple-50'}`}
+                        onClick={() => handleCardClick('reportes')}
+                    >
+                        <CardContent className="flex flex-col items-center justify-center p-4">
+                            <Clipboard className="h-8 w-8 text-purple-600 mb-2"/>
+                            <CardTitle
+                                className="text-sm sm:text-lg font-bold text-purple-800 text-center">Reportes</CardTitle>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div ref={calendarRef} className={activeCard === 'planificacion' ? '' : 'hidden'}>
+                    <CalendarioEventos groupId={groupId}/>
+                </div>
+                <div ref={kanbanRef} className={activeCard === 'tablero' ? '' : 'hidden'}>
+                    <SprintKanbanBoard groupId={groupId}/>
+                </div>
+                <div ref={equipoRef} className={activeCard === 'equipo' ? '' : 'hidden'}>
+                    {isCreator ? (
+                        <GroupMemberListCreator groupId={groupId} members={selectedGroup.members} userId={userId}/>
+                    ) : (
+                        <GroupMemberListMember groupId={groupId} members={selectedGroup.members}/>
+                    )}
+                </div>
+                <div ref={reportesRef} className={activeCard === 'reportes' ? '' : 'hidden'}>
+                    <ReportView groupId={groupId}/>
+                </div>
             </div>
-            <div ref={reportesRef} className={activeCard === 'reportes' ? '' : 'hidden'}>
-                <ReportView groupId={groupId}/>
-            </div>
-        </div>)
+        )
     }
 
     return null
