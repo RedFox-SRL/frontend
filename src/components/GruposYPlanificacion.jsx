@@ -391,7 +391,7 @@ export default function GruposYPlanificacion() {
     }
 
     if (isInGroup && selectedGroup) {
-        return (<div className="space-y-6 p-4 sm:p-6">
+        return (<div className="space-y-6 sm:p-4">
             {isCreator ? (<GroupDetailCreator
                 initialGroupData={selectedGroup}
                 onUpdateGroup={handleUpdateGroup}
