@@ -5,7 +5,7 @@ import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Loader2, Calendar, Users, LayoutDashboard, Clipboard} from "lucide-react"
 import {useToast} from "@/hooks/use-toast"
-import CalendarioEventos from './CalendarioEventos'
+import CalendarioEventos from './CalendarioSprints.jsx'
 import SprintKanbanBoard from './SprintKanbanBoard'
 import GroupMemberListCreator from './GroupMemberListCreator'
 import GroupMemberListMember from './GroupMemberListMember'
@@ -27,7 +27,6 @@ export default function GruposYPlanificacion() {
         short_name: '', long_name: '', contact_email: '', contact_phone: '', logo: null
     })
     const [errors, setErrors] = useState({})
-    const [calendarId, setCalendarId] = useState(null)
     const [groupId, setGroupId] = useState(null)
     const [activeCard, setActiveCard] = useState(null)
     const [isCreator, setIsCreator] = useState(false)
@@ -93,7 +92,6 @@ export default function GruposYPlanificacion() {
             if (groupResponse && groupResponse.success && groupResponse.data && groupResponse.data.group) {
                 setIsInGroup(true)
                 setSelectedGroup(groupResponse.data.group)
-                setCalendarId(groupResponse.data.group.calendar_id)
                 setGroupId(groupResponse.data.group.id)
                 if (groupResponse.data.group.representative && userId) {
                     setIsCreator(groupResponse.data.group.representative.id === userId)
@@ -101,7 +99,6 @@ export default function GruposYPlanificacion() {
             } else {
                 setIsInGroup(false)
                 setSelectedGroup(null)
-                setCalendarId(null)
                 setGroupId(null)
                 setIsCreator(false)
             }
@@ -109,7 +106,6 @@ export default function GruposYPlanificacion() {
             console.error('Error al verificar el grupo:', error)
             setIsInGroup(false)
             setSelectedGroup(null)
-            setCalendarId(null)
             setGroupId(null)
             setIsCreator(false)
         }
@@ -206,7 +202,6 @@ export default function GruposYPlanificacion() {
                     title: "Éxito", description: "Grupo creado exitosamente.", duration: 3000,
                 })
                 setSelectedGroup(response.data.group)
-                setCalendarId(response.data.group.calendar_id)
                 setGroupId(response.data.group.id)
                 setIsInGroup(true)
                 if (response.data.group.representative && userId) {
@@ -432,7 +427,7 @@ export default function GruposYPlanificacion() {
                 </Card>
             </div>
             <div ref={calendarRef} className={activeCard === 'planificacion' ? '' : 'hidden'}>
-                <CalendarioEventos calendarId={calendarId}/>
+                <CalendarioEventos groupId={groupId}/>
             </div>
             <div ref={kanbanRef} className={activeCard === 'tablero' ? '' : 'hidden'}>
                 <SprintKanbanBoard groupId={groupId}/>
