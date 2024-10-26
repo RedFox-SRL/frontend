@@ -38,7 +38,7 @@ const LoginRegister = () => {
     }, []);
 
     const passwordRequirements = [
-        {regex: /.{8,15}/, text: "Entre 8 y 15 caracteres"},
+        {regex: /.{8,10}/, text: "Entre 8 y 10 caracteres"},
         {regex: /[A-Z]/, text: "Al menos una letra mayúscula"},
         {regex: /[a-z]/, text: "Al menos una letra minúscula"},
         {regex: /[0-9]/, text: "Al menos un número"},
@@ -253,6 +253,7 @@ const LoginRegister = () => {
                                         handleBlur('password');
                                         setShowPasswordRequirements(false);
                                     }}
+                                    maxLength={10}
                                     required
                                 />
                                 <button
@@ -297,6 +298,7 @@ const LoginRegister = () => {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     onBlur={() => handleBlur('confirmPassword')}
+                                    maxLength={10}
                                     required
                                 />
                                 <button
