@@ -1,10 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import {getData, postData, putData, deleteData} from '../api/apiService';
-import {Loader2} from "lucide-react";
+import {Loader2, AlertCircle} from "lucide-react";
 import SprintHeader from './SprintHeader';
 import KanbanBoard from './KanbanBoard';
 import NewTaskDialog from './NewTaskDialog';
 import {useToast} from "@/hooks/use-toast";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 
 const initialColumns = [{id: 'todo', title: 'Por Hacer', tasks: []}, {
     id: 'in_progress', title: 'En Progreso', tasks: []
@@ -104,9 +105,6 @@ export default function SprintKanbanBoard({groupId}) {
                     description: removedTask.description,
                     assigned_to: removedTask.assigned_to,
                     status: destColumn.id
-                });
-                toast({
-                    title: "Tarea actualizada", description: "La tarea se ha movido exitosamente.",
                 });
             } catch (error) {
                 console.error("Error updating task:", error);
@@ -214,13 +212,16 @@ export default function SprintKanbanBoard({groupId}) {
     };
 
     if (isLoading) {
-        return (<div className="flex items-center justify-center h-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
-            <span className="ml-2 text-lg text-purple-600">Cargando...</span>
+        return (<div className="flex items-center justify-center h-screen bg-gray-50">
+            <div className="bg-white p-8 rounded-lg shadow-md flex flex-col items-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-purple-600"/>
+                <span className="text-xl text-purple-800 font-semibold">Cargando tablero...</span>
+                <p className="text-gray-600 text-center">Estamos preparando tu espacio de trabajo.</p>
+            </div>
         </div>);
     }
 
-    return (<div className="w-full bg-white rounded-lg shadow-lg overflow-hidden mt-6">
+    return (<div className="w-full bg-gray-50 rounded-lg shadow-lg overflow-hidden mt-6">
         <SprintHeader
             sprints={sprints}
             currentSprint={currentSprint}
@@ -235,8 +236,18 @@ export default function SprintKanbanBoard({groupId}) {
                 teamMembers={teamMembers}
                 onDeleteTask={handleDeleteTask}
                 onEditTask={handleEditTask}
-            />) : (<div className="text-center py-12">
-                <p className="text-lg sm:text-xl text-purple-600">No hay sprint disponible.</p>
+            />) : (<div className="text-center py-12 bg-white rounded-lg shadow-md">
+                <AlertCircle className="mx-auto h-12 w-12 text-yellow-500 mb-4"/>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">No hay sprint disponible</h3>
+                <p className="text-gray-600 mb-6">Para comenzar a gestionar tus tareas, crea un nuevo
+                    sprint.</p>
+                <Alert variant="warning" className="max-w-md mx-auto">
+                    <AlertTitle>Sugerencia</AlertTitle>
+                    <AlertDescription>
+                        Crea un sprint para organizar y planificar las tareas de tu equipo en un período
+                        específico.
+                    </AlertDescription>
+                </Alert>
             </div>)}
         </div>
         <NewTaskDialog
