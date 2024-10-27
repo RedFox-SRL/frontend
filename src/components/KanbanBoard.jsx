@@ -1,21 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import React, { useState, useEffect, useCallback } from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
-  CheckCircle,
+  MoreHorizontal,
+  Edit,
+  Trash,
   ChevronDown,
   ChevronUp,
-  Edit,
-  Link,
-  MoreVertical,
-  Paperclip,
-  Trash,
   User,
+  Paperclip,
+  Link,
+  CheckCircle,
 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,10 +20,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import TaskEditDialog from "./TaskEditDialog";
 
-const getTaskBorderColor = (status) => {
-  switch (status) {
+const getTaskBorderColor = (columnId) => {
+  switch (columnId) {
     case "todo":
       return "border-yellow-400";
     case "in_progress":
@@ -102,10 +103,14 @@ export default function KanbanBoard({
         );
 
         const [movedTask] = sourceColumn.tasks.splice(source.index, 1);
-        movedTask.status = destColumn.id;
         destColumn.tasks.splice(destination.index, 0, movedTask);
 
-        onDragEnd(result);
+        // Solo actualizar el estado de la tarea y hacer la petición PUT si se movió a una columna diferente
+        if (source.droppableId !== destination.droppableId) {
+          movedTask.status = destColumn.id;
+          onDragEnd(result);
+        }
+
         return updatedColumns;
       });
     },
@@ -119,25 +124,28 @@ export default function KanbanBoard({
       <div className="mt-2 flex flex-wrap gap-1">
         {resources.map((resource, index) => (
           <TooltipProvider key={index}>
-            <Tooltip>
+            <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <a
                   href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-purple-700 hover:text-purple-900 flex items-center bg-purple-100 hover:bg-purple-200 px-2 py-1 rounded-full transition-all duration-200"
+                  className="text-xs sm:text-sm text-purple-700 hover:text-purple-900 flex items-center bg-purple-100 hover:bg-purple-200 px-2 py-1 rounded-full transition-all duration-200"
                 >
                   {resource.type === "file" ? (
                     <Paperclip className="h-3 w-3 mr-1" />
                   ) : (
                     <Link className="h-3 w-3 mr-1" />
                   )}
-                  <span className="truncate max-w-[100px]">
+                  <span className="truncate max-w-[80px] sm:max-w-[100px]">
                     {resource.name}
                   </span>
                 </a>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent
+                side="bottom"
+                className="bg-purple-800 text-white p-2 text-xs sm:text-sm"
+              >
                 <p>
                   {resource.type === "file"
                     ? "Archivo adjunto"
@@ -153,21 +161,21 @@ export default function KanbanBoard({
 
   return (
     <>
-      <h3 className="text-2xl sm:text-3xl font-bold mb-6 text-purple-900 pb-3 border-b border-purple-200">
+      <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-purple-900 pb-2 sm:pb-3 border-b border-purple-200">
         Sprint: {sprint.title}
       </h3>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {columns.map((column) => (
             <div
               key={column.id}
-              className="bg-white rounded-lg shadow-lg overflow-hidden max-h-[calc(100vh-200px)] flex flex-col"
+              className="bg-white rounded-lg shadow-lg overflow-hidden"
             >
-              <h4 className="font-semibold text-lg text-white bg-gradient-to-r from-purple-600 to-purple-800 p-3 flex justify-between items-center">
+              <h4 className="font-semibold text-base sm:text-lg text-white bg-gradient-to-r from-purple-600 to-purple-800 p-2 sm:p-3 flex justify-between items-center">
                 {column.title}
                 <Badge
                   variant="outline"
-                  className="bg-white text-purple-800 border-purple-300"
+                  className="bg-white text-purple-800 border-purple-300 text-xs sm:text-sm"
                 >
                   {column.tasks.length}
                 </Badge>
@@ -177,7 +185,7 @@ export default function KanbanBoard({
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className={`p-3 min-h-[200px] space-y-3 flex-grow overflow-y-auto ${snapshot.isDraggingOver ? "bg-purple-50" : ""}`}
+                    className={`p-2 sm:p-3 min-h-[200px] space-y-2 sm:space-y-3 max-h-[60vh] overflow-y-auto ${snapshot.isDraggingOver ? "bg-purple-50" : ""}`}
                   >
                     {column.tasks.map((task, index) => (
                       <Draggable
@@ -191,83 +199,64 @@ export default function KanbanBoard({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`${getTaskBorderColor(task.status)} border-l-4 ${snapshot.isDragging ? "shadow-lg" : ""} ${task.status === "done" && task.reviewed ? "opacity-75" : ""} mb-3 w-full`}
+                            className={`${getTaskBorderColor(column.id)} border-l-4 ${snapshot.isDragging ? "shadow-lg" : ""} ${task.status === "done" && task.reviewed ? "bg-green-50 relative overflow-hidden" : ""}`}
                           >
-                            <CardContent className="p-3">
+                            {task.status === "done" && task.reviewed && (
+                              <div className="absolute top-0 right-0 w-16 h-16">
+                                <div className="absolute transform rotate-45 bg-green-500 text-white text-xs font-bold py-1 right-[-35px] top-[32px] w-[170px] text-center">
+                                  Revisada
+                                </div>
+                              </div>
+                            )}
+                            <CardContent className="p-2 sm:p-3">
                               <div className="flex justify-between items-start mb-2">
-                                <span className="font-semibold text-base sm:text-lg text-purple-800 break-words w-5/6">
+                                <span className="font-semibold text-sm sm:text-base text-purple-800 break-words w-5/6">
                                   {task.title}
                                 </span>
                                 {task.status === "done" && task.reviewed ? (
                                   <TooltipProvider>
-                                    <Tooltip>
+                                    <Tooltip delayDuration={300}>
                                       <TooltipTrigger asChild>
-                                        <span>
-                                          <CheckCircle className="h-5 w-5 text-green-500" />
+                                        <span className="bg-green-500 rounded-full p-1 shadow-md">
+                                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                                         </span>
                                       </TooltipTrigger>
-                                      <TooltipContent>
+                                      <TooltipContent
+                                        side="left"
+                                        className="bg-green-700 text-white p-2 text-xs sm:text-sm"
+                                      >
                                         <p>Tarea completada y revisada</p>
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
                                 ) : (
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <button className="text-purple-600 hover:text-purple-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-full p-1">
-                                        <MoreVertical className="h-5 w-5" />
-                                      </button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-1 bg-white shadow-lg border border-purple-100 rounded-lg">
-                                      <div className="flex space-x-1">
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-purple-700 hover:bg-purple-50 rounded-md transition-colors duration-200"
-                                                onClick={() =>
-                                                  handleEditClick(task)
-                                                }
-                                              >
-                                                <Edit className="h-4 w-4" />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                              <p>Editar tarea</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
-                                                onClick={() =>
-                                                  onDeleteTask(task.id)
-                                                }
-                                                disabled={
-                                                  task.status === "done" &&
-                                                  task.reviewed
-                                                }
-                                              >
-                                                <Trash className="h-4 w-4" />
-                                              </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                              <p>Eliminar tarea</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-                                      </div>
-                                    </PopoverContent>
-                                  </Popover>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        className="h-8 w-8 p-0"
+                                      >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem
+                                        onClick={() => handleEditClick(task)}
+                                      >
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        <span>Editar</span>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => onDeleteTask(task.id)}
+                                      >
+                                        <Trash className="mr-2 h-4 w-4" />
+                                        <span>Eliminar</span>
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 )}
                               </div>
-                              <div className="text-sm text-gray-700 mb-2 break-words">
+                              <div className="text-xs sm:text-sm text-gray-700 mb-2 break-words">
                                 {expandedTasks[task.id]
                                   ? task.description
                                   : task.description.slice(0, 100) +
@@ -297,8 +286,8 @@ export default function KanbanBoard({
                               )}
                               {renderResources(task.resources)}
                             </CardContent>
-                            <CardFooter className="px-3 py-2">
-                              <div className="text-xs text-gray-600 w-full">
+                            <CardFooter className="px-2 sm:px-3 py-1 sm:py-2">
+                              <div className="text-xs sm:text-sm text-gray-600">
                                 <div className="flex items-center mb-1">
                                   <User className="h-3 w-3 mr-1" />
                                   <span className="font-medium">
@@ -311,7 +300,7 @@ export default function KanbanBoard({
                                       <Badge
                                         key={index}
                                         variant="secondary"
-                                        className="bg-purple-100 text-purple-800 px-2 py-1"
+                                        className="bg-purple-100 text-purple-800 px-1 sm:px-2 py-0.5 sm:py-1 text-xs"
                                       >
                                         {name}
                                       </Badge>
