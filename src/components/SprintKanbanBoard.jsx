@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { getData, postData, putData, deleteData } from "../api/apiService";
-import { Loader2, AlertCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { deleteData, getData, postData, putData } from "../api/apiService";
+import { AlertCircle, Loader2 } from "lucide-react";
 import SprintHeader from "./SprintHeader";
 import KanbanBoard from "./KanbanBoard";
 import NewTaskDialog from "./NewTaskDialog";
@@ -163,7 +163,7 @@ export default function SprintKanbanBoard({ groupId }) {
       sprint_id: currentSprint.id,
       title: newTask.title,
       description: newTask.description,
-      assigned_to: newTask.assigned_to,
+      assigned_to: newTask.assigned_to.map((user) => user.id),
       status: "todo",
     };
 
