@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import React, { useCallback, useEffect, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import {
-  MoreVertical,
-  Edit,
-  Trash,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
-  User,
-  Paperclip,
+  Edit,
   Link,
-  CheckCircle,
+  MoreVertical,
+  Paperclip,
+  Trash,
+  User,
 } from "lucide-react";
 import {
   Popover,
@@ -24,6 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import TaskEditDialog from "./TaskEditDialog";
 
 const getTaskBorderColor = (status) => {
@@ -160,7 +161,7 @@ export default function KanbanBoard({
           {columns.map((column) => (
             <div
               key={column.id}
-              className="bg-white rounded-lg shadow-lg overflow-hidden"
+              className="bg-white rounded-lg shadow-lg overflow-hidden max-h-[calc(100vh-200px)] flex flex-col"
             >
               <h4 className="font-semibold text-lg text-white bg-gradient-to-r from-purple-600 to-purple-800 p-3 flex justify-between items-center">
                 {column.title}
@@ -176,7 +177,7 @@ export default function KanbanBoard({
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className={`p-3 min-h-[200px] space-y-3 ${snapshot.isDraggingOver ? "bg-purple-50" : ""}`}
+                    className={`p-3 min-h-[200px] space-y-3 flex-grow overflow-y-auto ${snapshot.isDraggingOver ? "bg-purple-50" : ""}`}
                   >
                     {column.tasks.map((task, index) => (
                       <Draggable
@@ -186,132 +187,140 @@ export default function KanbanBoard({
                         isDragDisabled={task.status === "done" && task.reviewed}
                       >
                         {(provided, snapshot) => (
-                          <div
+                          <Card
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`bg-white p-3 rounded-lg shadow-md border-l-4 ${getTaskBorderColor(task.status)} ${snapshot.isDragging ? "shadow-lg" : ""} ${task.status === "done" && task.reviewed ? "opacity-75" : ""}`}
+                            className={`${getTaskBorderColor(task.status)} border-l-4 ${snapshot.isDragging ? "shadow-lg" : ""} ${task.status === "done" && task.reviewed ? "opacity-75" : ""} mb-3 w-full`}
                           >
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="font-semibold text-base sm:text-lg text-purple-800 break-words w-5/6">
-                                {task.title}
-                              </span>
-                              {task.status === "done" && task.reviewed ? (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span>
-                                        <CheckCircle className="h-5 w-5 text-green-500" />
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Tarea completada y revisada</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              ) : (
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <button className="text-purple-600 hover:text-purple-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-full p-1">
-                                      <MoreVertical className="h-5 w-5" />
-                                    </button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-1 bg-white shadow-lg border border-purple-100 rounded-lg">
-                                    <div className="flex space-x-1">
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              className="text-purple-700 hover:bg-purple-50 rounded-md transition-colors duration-200"
-                                              onClick={() =>
-                                                handleEditClick(task)
-                                              }
-                                            >
-                                              <Edit className="h-4 w-4" />
-                                            </Button>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>Editar tarea</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
-                                              onClick={() =>
-                                                onDeleteTask(task.id)
-                                              }
-                                              disabled={
-                                                task.status === "done" &&
-                                                task.reviewed
-                                              }
-                                            >
-                                              <Trash className="h-4 w-4" />
-                                            </Button>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>Eliminar tarea</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    </div>
-                                  </PopoverContent>
-                                </Popover>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-700 mb-2 break-words">
-                              {expandedTasks[task.id]
-                                ? task.description
-                                : task.description.slice(0, 100) +
-                                  (task.description.length > 100 ? "..." : "")}
-                            </div>
-                            {task.description.length > 100 && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => toggleTaskExpansion(task.id)}
-                                className="text-purple-600 hover:text-purple-800 p-0 h-auto transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300 rounded text-xs"
-                              >
-                                {expandedTasks[task.id] ? (
-                                  <>
-                                    <ChevronUp className="h-3 w-3 mr-1" />
-                                    Menos
-                                  </>
+                            <CardContent className="p-3">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="font-semibold text-base sm:text-lg text-purple-800 break-words w-5/6">
+                                  {task.title}
+                                </span>
+                                {task.status === "done" && task.reviewed ? (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span>
+                                          <CheckCircle className="h-5 w-5 text-green-500" />
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Tarea completada y revisada</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 ) : (
-                                  <>
-                                    <ChevronDown className="h-3 w-3 mr-1" />
-                                    Más
-                                  </>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <button className="text-purple-600 hover:text-purple-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-full p-1">
+                                        <MoreVertical className="h-5 w-5" />
+                                      </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-1 bg-white shadow-lg border border-purple-100 rounded-lg">
+                                      <div className="flex space-x-1">
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-purple-700 hover:bg-purple-50 rounded-md transition-colors duration-200"
+                                                onClick={() =>
+                                                  handleEditClick(task)
+                                                }
+                                              >
+                                                <Edit className="h-4 w-4" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Editar tarea</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
+                                                onClick={() =>
+                                                  onDeleteTask(task.id)
+                                                }
+                                                disabled={
+                                                  task.status === "done" &&
+                                                  task.reviewed
+                                                }
+                                              >
+                                                <Trash className="h-4 w-4" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Eliminar tarea</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
                                 )}
-                              </Button>
-                            )}
-                            {renderResources(task.resources)}
-                            <div className="text-xs text-gray-600 mt-2">
-                              <div className="flex items-center mb-1">
-                                <User className="h-3 w-3 mr-1" />
-                                <span className="font-medium">Asignados:</span>
                               </div>
-                              <div className="flex flex-wrap gap-1">
-                                {getAssigneeNames(task.assigned_to).map(
-                                  (name, index) => (
-                                    <Badge
-                                      key={index}
-                                      variant="secondary"
-                                      className="bg-purple-100 text-purple-800 px-2 py-1"
-                                    >
-                                      {name}
-                                    </Badge>
-                                  ),
-                                )}
+                              <div className="text-sm text-gray-700 mb-2 break-words">
+                                {expandedTasks[task.id]
+                                  ? task.description
+                                  : task.description.slice(0, 100) +
+                                    (task.description.length > 100
+                                      ? "..."
+                                      : "")}
                               </div>
-                            </div>
-                          </div>
+                              {task.description.length > 100 && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleTaskExpansion(task.id)}
+                                  className="text-purple-600 hover:text-purple-800 p-0 h-auto transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300 rounded text-xs"
+                                >
+                                  {expandedTasks[task.id] ? (
+                                    <>
+                                      <ChevronUp className="h-3 w-3 mr-1" />
+                                      Menos
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ChevronDown className="h-3 w-3 mr-1" />
+                                      Más
+                                    </>
+                                  )}
+                                </Button>
+                              )}
+                              {renderResources(task.resources)}
+                            </CardContent>
+                            <CardFooter className="px-3 py-2">
+                              <div className="text-xs text-gray-600 w-full">
+                                <div className="flex items-center mb-1">
+                                  <User className="h-3 w-3 mr-1" />
+                                  <span className="font-medium">
+                                    Asignados:
+                                  </span>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {getAssigneeNames(task.assigned_to).map(
+                                    (name, index) => (
+                                      <Badge
+                                        key={index}
+                                        variant="secondary"
+                                        className="bg-purple-100 text-purple-800 px-2 py-1"
+                                      >
+                                        {name}
+                                      </Badge>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            </CardFooter>
+                          </Card>
                         )}
                       </Draggable>
                     ))}
