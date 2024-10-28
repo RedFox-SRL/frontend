@@ -157,7 +157,8 @@ export default function CalendarioSprints({groupId}) {
 
     const showToast = (message, isError) => {
         toast({
-            title: isError ? "Error" : "Éxito", description: message, variant: isError ? "destructive" : "default",
+            title: isError ? "Error" : "Éxito", description: message, variant: isError ? "destructive" : "success",
+            className: isError ? "bg-red-500 text-white" : "bg-green-500 text-white",
         })
     };
 

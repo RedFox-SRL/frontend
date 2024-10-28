@@ -168,7 +168,8 @@ export default function CreateAnnouncement({managementId, onAnnouncementCreated}
                 toast({
                     title: "Anuncio publicado",
                     description: "Tu anuncio ha sido publicado con éxito.",
-                    variant: "success",
+                    variant: "default",
+                    className: "bg-green-500 text-white",
                 });
             } else {
                 throw new Error('Respuesta inválida del servidor');

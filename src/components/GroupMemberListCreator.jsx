@@ -75,6 +75,7 @@ export default function GroupMemberListCreator({groupId, members, userId}) {
                 toast({
                     title: "Rol actualizado",
                     description: "El rol del miembro ha sido actualizado exitosamente.",
+                    className: "bg-green-500 text-white",
                 })
             } else {
                 toast({

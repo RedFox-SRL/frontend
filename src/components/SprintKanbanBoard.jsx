@@ -183,6 +183,7 @@ export default function SprintKanbanBoard({ groupId }) {
       toast({
         title: "Tarea creada",
         description: "La nueva tarea se ha añadido exitosamente.",
+        className: "bg-green-500 text-white",
       });
     } catch (error) {
       console.error("Error creating task:", error);
@@ -217,6 +218,8 @@ export default function SprintKanbanBoard({ groupId }) {
       toast({
         title: "Tarea eliminada",
         description: "La tarea se ha eliminado exitosamente.",
+        variant: "success",
+        className: "bg-green-500 text-white",
       });
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -245,6 +248,7 @@ export default function SprintKanbanBoard({ groupId }) {
       toast({
         title: "Tarea actualizada",
         description: "La tarea se ha actualizado exitosamente.",
+        className: "bg-green-500 text-white",
       });
     } catch (error) {
       console.error("Error editing task:", error);

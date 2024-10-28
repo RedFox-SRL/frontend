@@ -145,6 +145,7 @@ export default function GruposYPlanificacion() {
                     title: "Éxito",
                     description: response.message || "Te has unido al curso exitosamente.",
                     duration: 3000,
+                    className: "bg-green-500 text-white",
                 })
                 await checkManagementAndGroup()
             } else {
@@ -166,6 +167,7 @@ export default function GruposYPlanificacion() {
                     title: "Éxito",
                     description: response.message || "Te has unido al grupo exitosamente.",
                     duration: 3000,
+                    className: "bg-green-500 text-white",
                 })
                 await checkManagementAndGroup()
             } else {
@@ -201,6 +203,7 @@ export default function GruposYPlanificacion() {
             if (response.success && response.data && response.data.group) {
                 toast({
                     title: "Éxito", description: "Grupo creado exitosamente.", duration: 3000,
+                    className: "bg-green-500 text-white",
                 })
                 setSelectedGroup(response.data.group)
                 setGroupId(response.data.group.id)
@@ -249,6 +252,7 @@ export default function GruposYPlanificacion() {
         }))
         toast({
             title: "Éxito", description: "Información del grupo actualizada correctamente.", duration: 3000,
+            className: "bg-green-500 text-white",
         })
     }
 

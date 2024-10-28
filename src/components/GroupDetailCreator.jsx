@@ -66,6 +66,7 @@ export default function GroupDetailCreator({ initialGroupData, onUpdateGroup }) 
                 }));
                 toast({
                     title: "Éxito", description: "Información actualizada exitosamente.", duration: 3000,
+                    className: "bg-green-500 text-white",
                 });
                 setEditingField(null);
                 onUpdateGroup({ ...groupData, [field]: newValue });
@@ -100,6 +101,7 @@ export default function GroupDetailCreator({ initialGroupData, onUpdateGroup }) 
         navigator.clipboard.writeText(text).then(() => {
             toast({
                 title: "Copiado", description: "Código copiado al portapapeles", duration: 3000,
+                className: "bg-green-500 text-white",
             });
         }, (err) => {
             console.error('Error al copiar: ', err);
@@ -135,6 +137,7 @@ export default function GroupDetailCreator({ initialGroupData, onUpdateGroup }) 
                     }));
                     toast({
                         title: "Éxito", description: "Logo actualizado exitosamente.", duration: 3000,
+                        className: "bg-green-500 text-white",
                     });
                     onUpdateGroup({ ...groupData, logo: newLogoUrl });
                 } else {

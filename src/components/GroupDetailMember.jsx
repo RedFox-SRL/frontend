@@ -18,6 +18,7 @@ export default function GroupDetailMember({ selectedGroup }) {
                 title: "Copiado",
                 description: "Código copiado al portapapeles",
                 duration: 3000,
+                className: "bg-green-500 text-white",
             });
         }, (err) => {
             console.error('Error al copiar: ', err);
