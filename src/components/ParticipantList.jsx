@@ -1,13 +1,15 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function ParticipantList({ participants, getInitials }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl sm:text-2xl text-purple-700">Participantes del Curso</CardTitle>
+        <CardTitle className="text-xl sm:text-2xl text-purple-700">
+          Participantes del Curso
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[300px] sm:h-[400px]">
@@ -17,11 +19,18 @@ export default function ParticipantList({ participants, getInitials }) {
                 <h3 className="text-lg font-semibold mb-2">Profesor</h3>
                 <div className="flex items-center space-x-4">
                   <Avatar>
-                    <AvatarFallback>{getInitials(participants.teacher.name, participants.teacher.last_name)}</AvatarFallback>
+                    <AvatarFallback>
+                      {getInitials(
+                        participants.teacher.name,
+                        participants.teacher.last_name,
+                      )}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{`${participants.teacher.name} ${participants.teacher.last_name}`}</p>
-                    <p className="text-sm text-gray-500">{participants.teacher.email}</p>
+                    <p className="text-sm text-gray-500">
+                      {participants.teacher.email}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -31,9 +40,14 @@ export default function ParticipantList({ participants, getInitials }) {
                 <h3 className="text-lg font-semibold mb-2">Estudiantes</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {participants.students.map((student) => (
-                    <div key={student.id} className="flex items-center space-x-4">
+                    <div
+                      key={student.id}
+                      className="flex items-center space-x-4"
+                    >
                       <Avatar>
-                        <AvatarFallback>{getInitials(student.name, student.last_name)}</AvatarFallback>
+                        <AvatarFallback>
+                          {getInitials(student.name, student.last_name)}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium">{`${student.name} ${student.last_name}`}</p>

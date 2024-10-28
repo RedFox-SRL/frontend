@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx
-import { createContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -9,8 +9,9 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    const role = localStorage.getItem('role') || sessionStorage.getItem('role');
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    const role = localStorage.getItem("role") || sessionStorage.getItem("role");
     if (token && role) {
       setUser({ token, role });
     }
@@ -18,30 +19,30 @@ export const AuthProvider = ({ children }) => {
 
   const login = (token, role, rememberMe) => {
     if (rememberMe) {
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', role);
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
     } else {
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('role', role);
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("role", role);
     }
 
     setUser({ token, role });
 
     // Redirigir según el rol
-    if (role === 'student') {
-      navigate('/DashboardStudent');
-    } else if (role === 'teacher') {
-      navigate('/DashboardTeacher');
+    if (role === "student") {
+      navigate("/DashboardStudent");
+    } else if (role === "teacher") {
+      navigate("/DashboardTeacher");
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('role');
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("role");
     setUser(null);
   };
 

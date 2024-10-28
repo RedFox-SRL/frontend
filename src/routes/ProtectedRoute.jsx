@@ -1,6 +1,6 @@
 // src/components/ProtectedRoute.jsx
-import useAuth from '../hooks/useAuth'; // Import corregido
-import { Navigate } from 'react-router-dom'; // Import desde react-router-dom
+import useAuth from "../hooks/useAuth"; // Import corregido
+import { Navigate } from "react-router-dom"; // Import desde react-router-dom
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { user } = useAuth(); // Asegúrate que este hook está bien importado
