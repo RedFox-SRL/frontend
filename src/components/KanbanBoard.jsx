@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import React, { useCallback, useEffect, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import {
-  MoreHorizontal,
-  Edit,
-  Trash,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
-  User,
-  Paperclip,
+  Edit,
   Link,
-  CheckCircle,
+  MoreHorizontal,
+  Paperclip,
+  Trash,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -105,7 +105,6 @@ export default function KanbanBoard({
         const [movedTask] = sourceColumn.tasks.splice(source.index, 1);
         destColumn.tasks.splice(destination.index, 0, movedTask);
 
-        // Solo actualizar el estado de la tarea y hacer la petición PUT si se movió a una columna diferente
         if (source.droppableId !== destination.droppableId) {
           movedTask.status = destColumn.id;
           onDragEnd(result);
@@ -115,6 +114,23 @@ export default function KanbanBoard({
       });
     },
     [onDragEnd],
+  );
+
+  const handleEditTask = useCallback(
+    (taskId, updatedTask) => {
+      setColumns((prevColumns) => {
+        const newColumns = prevColumns.map((column) => ({
+          ...column,
+          tasks: column.tasks.map((task) =>
+            task.id === taskId ? { ...task, ...updatedTask } : task,
+          ),
+        }));
+        return newColumns;
+      });
+      onEditTask(taskId, updatedTask);
+      setIsEditDialogOpen(false);
+    },
+    [onEditTask],
   );
 
   const renderResources = useCallback((resources) => {
@@ -161,7 +177,7 @@ export default function KanbanBoard({
 
   return (
     <>
-      <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-purple-900 pb-2 sm:pb-3 border-b border-purple-200">
+      <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-purple-900  pb-2 sm:pb-3 border-b border-purple-200">
         Sprint: {sprint.title}
       </h3>
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -325,7 +341,7 @@ export default function KanbanBoard({
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
         task={selectedTask}
-        onEditTask={onEditTask}
+        onEditTask={handleEditTask}
         teamMembers={teamMembers}
       />
     </>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -29,14 +29,17 @@ export default function TaskEditDialog({
   onEditTask,
   teamMembers,
 }) {
-  const [editedTask, setEditedTask] = useState(task);
+  const [editedTask, setEditedTask] = useState(null);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setEditedTask(task);
-  }, [task]);
+    if (isOpen && task) {
+      setEditedTask({ ...task });
+      setErrors({});
+    }
+  }, [isOpen, task]);
 
-  const handleEditTask = () => {
+  const handleEditTask = useCallback(() => {
     const validationErrors = {};
     if (editedTask.title.length === 0)
       validationErrors.title = "El título es obligatorio";
@@ -54,31 +57,56 @@ export default function TaskEditDialog({
     }
 
     onEditTask(editedTask.id, editedTask);
-    onClose();
-    setErrors({});
-  };
+    handleClose();
+  }, [editedTask, onEditTask]);
 
-  const handleAssigneeChange = (value) => {
-    const assigned_to = editedTask.assigned_to || [];
-    if (!assigned_to.some((user) => user.id === parseInt(value))) {
-      setEditedTask({
-        ...editedTask,
-        assigned_to: [...assigned_to, { id: parseInt(value) }],
-      });
-    }
-  };
-
-  const removeAssignee = (assigneeId) => {
-    setEditedTask({
-      ...editedTask,
-      assigned_to: editedTask.assigned_to.filter(
-        (user) => user.id !== assigneeId,
-      ),
+  const handleAssigneeChange = useCallback((value) => {
+    setEditedTask((prevTask) => {
+      if (!prevTask) return null;
+      const assigned_to = prevTask.assigned_to || [];
+      if (!assigned_to.some((user) => user.id === parseInt(value))) {
+        return {
+          ...prevTask,
+          assigned_to: [...assigned_to, { id: parseInt(value) }],
+        };
+      }
+      return prevTask;
     });
-  };
+  }, []);
+
+  const removeAssignee = useCallback((assigneeId) => {
+    setEditedTask((prevTask) => {
+      if (!prevTask) return null;
+      return {
+        ...prevTask,
+        assigned_to: prevTask.assigned_to.filter(
+          (user) => user.id !== assigneeId,
+        ),
+      };
+    });
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setEditedTask(null);
+    setErrors({});
+    onClose();
+  }, [onClose]);
+
+  const handleInputChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setEditedTask((prevTask) => {
+      if (!prevTask) return null;
+      return {
+        ...prevTask,
+        [name]: value,
+      };
+    });
+  }, []);
+
+  if (!isOpen || !task || !editedTask) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-purple-600">Editar Tarea</DialogTitle>
@@ -90,10 +118,9 @@ export default function TaskEditDialog({
             </Label>
             <Input
               id="taskTitle"
-              value={editedTask?.title || ""}
-              onChange={(e) =>
-                setEditedTask({ ...editedTask, title: e.target.value })
-              }
+              name="title"
+              value={editedTask.title || ""}
+              onChange={handleInputChange}
               className={`col-span-3 ${errors.title ? "border-red-500" : ""}`}
               maxLength={TITLE_MAX_LENGTH}
             />
@@ -110,10 +137,9 @@ export default function TaskEditDialog({
             <div className="col-span-3">
               <textarea
                 id="taskDescription"
-                value={editedTask?.description || ""}
-                onChange={(e) =>
-                  setEditedTask({ ...editedTask, description: e.target.value })
-                }
+                name="description"
+                value={editedTask.description || ""}
+                onChange={handleInputChange}
                 className={`w-full px-3 py-2 text-sm rounded-md border ${errors.description ? "border-red-500" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-purple-500`}
                 rows={4}
                 maxLength={DESCRIPTION_MAX_LENGTH}
@@ -150,7 +176,7 @@ export default function TaskEditDialog({
                 </p>
               )}
               <div className="flex flex-wrap gap-2 mt-2">
-                {editedTask?.assigned_to &&
+                {editedTask.assigned_to &&
                   editedTask.assigned_to.map((user) => {
                     const assignee = teamMembers.find(
                       (member) => member.id === user.id,
@@ -180,7 +206,7 @@ export default function TaskEditDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={handleClose} variant="outline">
             Cancelar
           </Button>
           <Button
