@@ -132,15 +132,21 @@ export default function EvaluationTemplate({ groupId }) {
         if (memberName === 'Todos') {
             setFilteredTasks(tasks);
         } else {
-            setFilteredTasks(tasks.filter((task) => `${task.assigned_to.user.name} ${task.assigned_to.user.last_name}` === memberName));
+            setFilteredTasks(tasks.filter((task) =>
+                task.assigned_to.some((assignee) => `${assignee.user?.name} ${assignee.user?.last_name}` === memberName)
+            ));
         }
     };
 
     const getMemberTaskCount = (name) => {
-        return tasks.filter(task => `${task.assigned_to.user.name} ${task.assigned_to.user.last_name}` === name).length;
+        return tasks.filter(task =>
+            task.assigned_to.some((assignee) => `${assignee.user?.name} ${assignee.user?.last_name}` === name)
+        ).length;
     };
 
-    const uniqueMembers = [...new Set(tasks.map(task => `${task.assigned_to.user.name} ${task.assigned_to.user.last_name}`))];
+    const uniqueMembers = [...new Set(tasks.flatMap(task =>
+        task.assigned_to.map(assignee => `${assignee.user?.name} ${assignee.user?.last_name}`)
+    ))];
 
     return (
         <div className="w-full">
@@ -194,7 +200,9 @@ export default function EvaluationTemplate({ groupId }) {
                                 <div key={task.id} className="bg-white shadow-md rounded-lg p-6 transition-all duration-300 ease-in-out transform hover:shadow-lg">
                                     <h3 className="text-lg font-semibold text-purple-600 mb-2">{task.title}</h3>
                                     <p className="text-gray-600 mb-4">{task.description}</p>
-                                    <p className="text-sm text-purple-500 mb-4">Asignado a: {task.assigned_to.user.name} {task.assigned_to.user.last_name}</p>
+                                    <p className="text-sm text-purple-500 mb-4">
+                                        Asignado a: {task.assigned_to.map((assignee) => `${assignee.user?.name || 'N/A'} ${assignee.user?.last_name || ''}`).join(', ')}
+                                    </p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Calificación</label>
@@ -218,7 +226,7 @@ export default function EvaluationTemplate({ groupId }) {
                                                 value={evaluations[task.id]?.comment || ''}
                                                 onChange={(e) => handleEvaluationChange(task.id, 'comment', e.target.value)}
                                                 rows={3}
-                                                maxLength={200} // Límite de 200 caracteres
+                                                maxLength={200}
                                                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-300 ease-in-out"
                                             />
                                             {commentWarnings[task.id] && (

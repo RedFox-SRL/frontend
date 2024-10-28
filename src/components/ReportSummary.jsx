@@ -9,6 +9,7 @@ export default function ReportSummary({ groupId }) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [membersFilter, setMembersFilter] = useState('Todos');
+    const [expandedComments, setExpandedComments] = useState({});
 
     useEffect(() => {
         const fetchSprints = async () => {
@@ -63,37 +64,65 @@ export default function ReportSummary({ groupId }) {
         if (memberName === 'Todos') {
             setFilteredTasks(tasks);
         } else {
-            setFilteredTasks(tasks.filter((task) => `${task.assigned_to.user.name} ${task.assigned_to.user.last_name}` === memberName));
+            setFilteredTasks(tasks.filter((task) =>
+                task.assigned_to.some(
+                    (assignee) =>
+                        `${assignee.user?.name || ''} ${assignee.user?.last_name || ''}` === memberName
+                )
+            ));
         }
     };
 
     const getMemberTaskCount = (name) => {
-        return tasks.filter((task) => `${task.assigned_to.user.name} ${task.assigned_to.user.last_name}` === name).length;
+        return tasks.reduce((count, task) => {
+            const assigned = task.assigned_to.some(
+                (assignee) => `${assignee.user?.name || ''} ${assignee.user?.last_name || ''}` === name
+            );
+            return assigned ? count + 1 : count;
+        }, 0);
     };
 
-    const uniqueMembers = [...new Set(tasks.map((task) => `${task.assigned_to.user.name} ${task.assigned_to.user.last_name}`))];
+    const uniqueMembers = [
+        ...new Set(
+            tasks.flatMap((task) =>
+                task.assigned_to.map(
+                    (assignee) => `${assignee.user?.name || ''} ${assignee.user?.last_name || ''}`
+                )
+            )
+        ),
+    ];
+
+    const toggleCommentExpansion = (taskId) => {
+        setExpandedComments((prev) => ({
+            ...prev,
+            [taskId]: !prev[taskId],
+        }));
+    };
 
     return (
         <div className="w-full">
-            {/* Filtro de miembros */}
             <div className="flex flex-col lg:flex-row items-start space-y-6 lg:space-y-0 lg:space-x-6">
                 <div className="lg:w-1/4 w-full bg-white shadow-lg rounded-lg p-6 transition-all duration-300 ease-in-out">
                     <h2 className="text-xl font-semibold text-purple-700 mb-4">Filtrar por Miembro</h2>
                     <ul>
-                        <li className={`cursor-pointer mb-2 ${membersFilter === 'Todos' ? 'font-bold text-purple-700' : 'text-gray-600'}`}
-                            onClick={() => handleFilterByMember('Todos')}>
+                        <li
+                            className={`cursor-pointer mb-2 ${membersFilter === 'Todos' ? 'font-bold text-purple-700' : 'text-gray-600'}`}
+                            onClick={() => handleFilterByMember('Todos')}
+                        >
                             Todos ({tasks.length})
                         </li>
                         {uniqueMembers.map((member) => (
-                            <li key={member} className={`cursor-pointer mb-2 ${membersFilter === member ? 'font-bold text-purple-700' : 'text-gray-600'}`}
-                                onClick={() => handleFilterByMember(member)}>
+                            <li
+                                key={member}
+                                className={`cursor-pointer mb-2 ${membersFilter === member ? 'font-bold text-purple-700' : 'text-gray-600'}`}
+                                onClick={() => handleFilterByMember(member)}
+                            >
                                 {member} ({getMemberTaskCount(member)})
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                {/* Tareas filtradas */}
                 <div className="lg:w-3/4 w-full">
                     <div className="bg-white shadow-lg rounded-lg p-6 mb-8 transition-all duration-300 ease-in-out transform hover:shadow-xl">
                         <h2 className="text-xl font-semibold text-purple-700 mb-4">Seleccionar Sprint</h2>
@@ -125,10 +154,21 @@ export default function ReportSummary({ groupId }) {
                                 <div key={task.id} className="bg-white shadow-md rounded-lg p-6 transition-all duration-300 ease-in-out transform hover:shadow-lg">
                                     <h3 className="text-lg font-semibold text-purple-600 mb-2">{task.title}</h3>
                                     <p className="text-gray-600 mb-4">{task.description}</p>
-                                    <p className="text-sm text-purple-500 mb-4">Asignado a: {task.assigned_to.user.name} {task.assigned_to.user.last_name}</p>
+                                    <p className="text-sm text-purple-500 mb-4">
+                                        Asignado a:{" "}
+                                        {task.assigned_to.map((assignee) => `${assignee.user?.name || ''} ${assignee.user?.last_name || ''}`).join(', ') || 'N/A'}
+                                    </p>
                                     <div>
-                                        <p className="font-bold">Calificación: <span className="font-normal">{task.evaluation.grade}</span></p>
-                                        <p className="font-bold">Comentario: <span className="font-normal">{task.evaluation.comment}</span></p>
+                                        <p className="font-bold">Calificación: <span className="font-normal">{task.evaluation?.grade || 'Sin calificación'}</span></p>
+                                        <p className="font-bold">Comentario:</p>
+                                        <p className={`font-normal ${expandedComments[task.id] ? 'whitespace-pre-wrap break-words' : 'overflow-hidden text-ellipsis whitespace-nowrap'}`}>
+                                            {expandedComments[task.id] ? task.evaluation?.comment : task.evaluation?.comment?.slice(0, 100) || 'Sin comentario'}
+                                        </p>
+                                        {task.evaluation?.comment?.length > 100 && (
+                                            <button onClick={() => toggleCommentExpansion(task.id)} className="text-blue-500">
+                                                {expandedComments[task.id] ? 'Ver menos' : 'Ver más'}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
