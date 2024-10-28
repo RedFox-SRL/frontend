@@ -5,9 +5,9 @@ import { Label } from "./ui/label";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "./ui/dialog";
 import {
   Select,
