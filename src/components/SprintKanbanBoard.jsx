@@ -9,11 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const initialColumns = [
   { id: "todo", title: "Por Hacer", tasks: [] },
-  {
-    id: "in_progress",
-    title: "En Progreso",
-    tasks: [],
-  },
+  { id: "in_progress", title: "En Progreso", tasks: [] },
   { id: "done", title: "Hecho", tasks: [] },
 ];
 
@@ -74,12 +70,17 @@ export default function SprintKanbanBoard({ groupId }) {
 
   const fetchTasks = async (sprintId) => {
     try {
-      const tasks = await getData(`/tasks?sprint_id=${sprintId}`);
-      const updatedColumns = initialColumns.map((col) => ({
-        ...col,
-        tasks: tasks.filter((task) => task.status === col.id),
-      }));
-      setColumns(updatedColumns);
+      const response = await getData(`/tasks?sprint_id=${sprintId}`);
+      if (response.success && response.data && response.data.items) {
+        const tasks = response.data.items;
+        const updatedColumns = initialColumns.map((col) => ({
+          ...col,
+          tasks: tasks.filter((task) => task.status === col.id),
+        }));
+        setColumns(updatedColumns);
+      } else {
+        throw new Error("Invalid response format");
+      }
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast({
@@ -168,23 +169,27 @@ export default function SprintKanbanBoard({ groupId }) {
     };
 
     try {
-      const createdTask = await postData("/tasks", newTaskObj);
+      const response = await postData("/tasks", newTaskObj);
+      if (response.success && response.data && response.data.item) {
+        const createdTask = response.data.item;
+        const newColumns = columns.map((col) => {
+          if (col.id === "todo") {
+            return { ...col, tasks: [...col.tasks, createdTask] };
+          }
+          return col;
+        });
 
-      const newColumns = columns.map((col) => {
-        if (col.id === "todo") {
-          return { ...col, tasks: [...col.tasks, createdTask] };
-        }
-        return col;
-      });
-
-      setColumns(newColumns);
-      setNewTask({});
-      setIsTaskDialogOpen(false);
-      toast({
-        title: "Tarea creada",
-        description: "La nueva tarea se ha añadido exitosamente.",
-        className: "bg-green-500 text-white",
-      });
+        setColumns(newColumns);
+        setNewTask({});
+        setIsTaskDialogOpen(false);
+        toast({
+          title: "Tarea creada",
+          description: "La nueva tarea se ha añadido exitosamente.",
+          className: "bg-green-500 text-white",
+        });
+      } else {
+        throw new Error("Invalid response format");
+      }
     } catch (error) {
       console.error("Error creating task:", error);
       toast({
@@ -234,22 +239,27 @@ export default function SprintKanbanBoard({ groupId }) {
 
   const handleEditTask = async (taskId, updatedTask) => {
     try {
-      const editedTask = await putData(`/tasks/${taskId}`, {
+      const response = await putData(`/tasks/${taskId}`, {
         ...updatedTask,
         assigned_to: updatedTask.assigned_to.map((user) => user.id),
       });
-      const updatedColumns = columns.map((col) => ({
-        ...col,
-        tasks: col.tasks.map((task) =>
-          task.id === taskId ? editedTask : task,
-        ),
-      }));
-      setColumns(updatedColumns);
-      toast({
-        title: "Tarea actualizada",
-        description: "La tarea se ha actualizado exitosamente.",
-        className: "bg-green-500 text-white",
-      });
+      if (response.success && response.data && response.data.item) {
+        const editedTask = response.data.item;
+        const updatedColumns = columns.map((col) => ({
+          ...col,
+          tasks: col.tasks.map((task) =>
+            task.id === taskId ? editedTask : task,
+          ),
+        }));
+        setColumns(updatedColumns);
+        toast({
+          title: "Tarea actualizada",
+          description: "La tarea se ha actualizado exitosamente.",
+          className: "bg-green-500 text-white",
+        });
+      } else {
+        throw new Error("Invalid response format");
+      }
     } catch (error) {
       console.error("Error editing task:", error);
       toast({

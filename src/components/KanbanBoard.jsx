@@ -7,7 +7,6 @@ import {
   Edit,
   Link,
   MoreHorizontal,
-  Paperclip,
   Trash,
   User,
 } from "lucide-react";
@@ -133,28 +132,24 @@ export default function KanbanBoard({
     [onEditTask],
   );
 
-  const renderResources = useCallback((resources) => {
-    if (!resources || resources.length === 0) return null;
+  const renderLinks = useCallback((links) => {
+    if (!links || links.length === 0) return null;
 
     return (
       <div className="mt-2 flex flex-wrap gap-1">
-        {resources.map((resource, index) => (
+        {links.map((link, index) => (
           <TooltipProvider key={index}>
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <a
-                  href={resource.url}
+                  href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs sm:text-sm text-purple-700 hover:text-purple-900 flex items-center bg-purple-100 hover:bg-purple-200 px-2 py-1 rounded-full transition-all duration-200"
                 >
-                  {resource.type === "file" ? (
-                    <Paperclip className="h-3 w-3 mr-1" />
-                  ) : (
-                    <Link className="h-3 w-3 mr-1" />
-                  )}
+                  <Link className="h-3 w-3 mr-1" />
                   <span className="truncate max-w-[80px] sm:max-w-[100px]">
-                    {resource.name}
+                    {link.description || "Enlace"}
                   </span>
                 </a>
               </TooltipTrigger>
@@ -162,11 +157,7 @@ export default function KanbanBoard({
                 side="bottom"
                 className="bg-purple-800 text-white p-2 text-xs sm:text-sm"
               >
-                <p>
-                  {resource.type === "file"
-                    ? "Archivo adjunto"
-                    : "Enlace externo"}
-                </p>
+                <p>{link.url}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -300,7 +291,7 @@ export default function KanbanBoard({
                                   )}
                                 </Button>
                               )}
-                              {renderResources(task.resources)}
+                              {renderLinks(task.links)}
                             </CardContent>
                             <CardFooter className="px-2 sm:px-3 py-1 sm:py-2">
                               <div className="text-xs sm:text-sm text-gray-600">
