@@ -166,6 +166,7 @@ export default function SprintKanbanBoard({ groupId }) {
       description: newTask.description,
       assigned_to: newTask.assigned_to.map((user) => user.id),
       status: "todo",
+      links: newTask.links,
     };
 
     try {
@@ -242,7 +243,9 @@ export default function SprintKanbanBoard({ groupId }) {
       const response = await putData(`/tasks/${taskId}`, {
         ...updatedTask,
         assigned_to: updatedTask.assigned_to.map((user) => user.id),
+        links: updatedTask.links,
       });
+
       if (response.success && response.data && response.data.item) {
         const editedTask = response.data.item;
         const updatedColumns = columns.map((col) => ({
