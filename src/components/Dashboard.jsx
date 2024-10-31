@@ -111,23 +111,19 @@ export default function Dashboard() {
 
   const fetchAnnouncements = async (managementId) => {
     try {
-      const announcementsResponse = await getData(
-        `/managements/${managementId}/announcements`,
-      );
-      if (
-        announcementsResponse &&
-        announcementsResponse.success &&
-        announcementsResponse.data
-      ) {
+      const announcementsResponse = await getData(`/management/${managementId}/announcements`);
+      console.log("Announcements response:", announcementsResponse);
+      if (announcementsResponse && announcementsResponse.data) {
         setAnnouncements(announcementsResponse.data);
       } else {
         setAnnouncements([]);
       }
     } catch (error) {
-      console.error("Error al obtener los anuncios:", error);
+      console.error("Error fetching announcements:", error);
       setAnnouncements([]);
     }
   };
+
 
   const handleJoinGroup = async () => {
     try {
