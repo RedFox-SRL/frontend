@@ -65,13 +65,13 @@ export default function ReportSummary({ groupId }) {
       setFilteredTasks(tasks);
     } else {
       setFilteredTasks(
-        tasks.filter((task) =>
-          task.assigned_to.some(
-            (assignee) =>
-              `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}` ===
-              memberName,
-          ),
-        ),
+          tasks.filter((task) =>
+              task.assigned_to.some(
+                  (assignee) =>
+                      `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}` ===
+                      memberName
+              )
+          )
       );
     }
   };
@@ -79,9 +79,9 @@ export default function ReportSummary({ groupId }) {
   const getMemberTaskCount = (name) => {
     return tasks.reduce((count, task) => {
       const assigned = task.assigned_to.some(
-        (assignee) =>
-          `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}` ===
-          name,
+          (assignee) =>
+              `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}` ===
+              name
       );
       return assigned ? count + 1 : count;
     }, 0);
@@ -89,12 +89,12 @@ export default function ReportSummary({ groupId }) {
 
   const uniqueMembers = [
     ...new Set(
-      tasks.flatMap((task) =>
-        task.assigned_to.map(
-          (assignee) =>
-            `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}`,
-        ),
-      ),
+        tasks.flatMap((task) =>
+            task.assigned_to.map(
+                (assignee) =>
+                    `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}`
+            )
+        )
     ),
   ];
 
@@ -106,111 +106,114 @@ export default function ReportSummary({ groupId }) {
   };
 
   return (
-    <div className="w-full">
-      <div className="flex flex-col lg:flex-row items-start space-y-6 lg:space-y-0 lg:space-x-6">
-        <div className="lg:w-1/4 w-full bg-white shadow-lg rounded-lg p-6 transition-all duration-300 ease-in-out">
-          <h2 className="text-xl font-semibold text-purple-700 mb-4">
-            Filtrar por Miembro
-          </h2>
-          <ul>
-            <li
-              className={`cursor-pointer mb-2 ${membersFilter === "Todos" ? "font-bold text-purple-700" : "text-gray-600"}`}
-              onClick={() => handleFilterByMember("Todos")}
-            >
-              Todos ({tasks.length})
-            </li>
-            {uniqueMembers.map((member) => (
-              <li
-                key={member}
-                className={`cursor-pointer mb-2 ${membersFilter === member ? "font-bold text-purple-700" : "text-gray-600"}`}
-                onClick={() => handleFilterByMember(member)}
-              >
-                {member} ({getMemberTaskCount(member)})
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="lg:w-3/4 w-full">
-          <div className="bg-white shadow-lg rounded-lg p-6 mb-8 transition-all duration-300 ease-in-out transform hover:shadow-xl">
+      <div className="w-full">
+        <div className="flex flex-col lg:flex-row items-start space-y-6 lg:space-y-0 lg:space-x-6">
+          <div className="lg:w-1/4 w-full bg-white shadow-lg rounded-lg p-6">
             <h2 className="text-xl font-semibold text-purple-700 mb-4">
-              Seleccionar Sprint
+              Filtrar por Miembro
             </h2>
-            <select
-              onChange={(e) => handleSprintChange(e.target.value)}
-              value={selectedSprintId || ""}
-              className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-300 ease-in-out"
-            >
-              <option value="">Seleccionar Sprint</option>
-              {sprints.map((sprint) => (
-                <option key={sprint.id} value={sprint.id}>
-                  {sprint.title}
-                </option>
+            <ul>
+              <li
+                  className={`cursor-pointer mb-2 ${
+                      membersFilter === "Todos" ? "font-bold text-purple-700" : "text-gray-600"
+                  }`}
+                  onClick={() => handleFilterByMember("Todos")}
+              >
+                Todos ({tasks.length})
+              </li>
+              {uniqueMembers.map((member) => (
+                  <li
+                      key={member}
+                      className={`cursor-pointer mb-2 ${
+                          membersFilter === member ? "font-bold text-purple-700" : "text-gray-600"
+                      }`}
+                      onClick={() => handleFilterByMember(member)}
+                  >
+                    {member} ({getMemberTaskCount(member)})
+                  </li>
               ))}
-            </select>
+            </ul>
           </div>
 
-          {isLoading && (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
+          <div className="lg:w-3/4 w-full">
+            <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+              <h2 className="text-xl font-semibold text-purple-700 mb-4">
+                Seleccionar Sprint
+              </h2>
+              <select
+                  onChange={(e) => handleSprintChange(e.target.value)}
+                  value={selectedSprintId || ""}
+                  className="w-full p-3 border border-gray-300 rounded-md"
+              >
+                <option value="">Seleccionar Sprint</option>
+                {sprints.map((sprint) => (
+                    <option key={sprint.id} value={sprint.id}>
+                      {sprint.title}
+                    </option>
+                ))}
+              </select>
             </div>
-          )}
 
-          {!isLoading && selectedSprintId && filteredTasks.length === 0 && (
-            <p className="text-center text-gray-600">{error}</p>
-          )}
-
-          {selectedSprintId && !isLoading && filteredTasks.length > 0 && (
-            <div className="space-y-6">
-              {filteredTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="bg-white shadow-md rounded-lg p-6 transition-all duration-300 ease-in-out transform hover:shadow-lg"
-                >
-                  <h3 className="text-lg font-semibold text-purple-600 mb-2">
-                    {task.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{task.description}</p>
-                  <p className="text-sm text-purple-500 mb-4">
-                    Asignado a:{" "}
-                    {task.assigned_to
-                      .map(
-                        (assignee) =>
-                          `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}`,
-                      )
-                      .join(", ") || "N/A"}
-                  </p>
-                  <div>
-                    <p className="font-bold">
-                      Calificación:{" "}
-                      <span className="font-normal">
-                        {task.evaluation?.grade || "Sin calificación"}
-                      </span>
-                    </p>
-                    <p className="font-bold">Comentario:</p>
-                    <p
-                      className={`font-normal ${expandedComments[task.id] ? "whitespace-pre-wrap break-words" : "overflow-hidden text-ellipsis whitespace-nowrap"}`}
-                    >
-                      {expandedComments[task.id]
-                        ? task.evaluation?.comment
-                        : task.evaluation?.comment?.slice(0, 100) ||
-                          "Sin comentario"}
-                    </p>
-                    {task.evaluation?.comment?.length > 100 && (
-                      <button
-                        onClick={() => toggleCommentExpansion(task.id)}
-                        className="text-blue-500"
-                      >
-                        {expandedComments[task.id] ? "Ver menos" : "Ver más"}
-                      </button>
-                    )}
-                  </div>
+            {isLoading && (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
                 </div>
-              ))}
-            </div>
-          )}
+            )}
+
+            {!isLoading && selectedSprintId && filteredTasks.length === 0 && (
+                <p className="text-center text-gray-600">{error}</p>
+            )}
+
+            {selectedSprintId && !isLoading && filteredTasks.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredTasks.map((task) => (
+                      <div
+                          key={task.id}
+                          className="bg-white shadow-md rounded-lg p-4 space-y-2"
+                      >
+                        <h3 className="text-lg font-semibold text-purple-600">{task.title}</h3>
+                        <p className="text-gray-500 text-sm">
+                          Asignado a:{" "}
+                          {task.assigned_to
+                              .map((assignee) =>
+                                  `${assignee.user?.name || ""} ${assignee.user?.last_name || ""}`
+                              )
+                              .join(", ") || "N/A"}
+                        </p>
+                        <p className="font-bold">
+                          Calificación:{" "}
+                          <span className="font-normal">
+                      {task.evaluation?.grade || "Sin calificación"}
+                    </span>
+                        </p>
+                        <div className="font-bold">Comentario:</div>
+                        <p
+                            className={`font-normal ${
+                                expandedComments[task.id]
+                                    ? "whitespace-pre-wrap break-words"
+                                    : "truncate"
+                            }`}
+                            style={{
+                              maxHeight: expandedComments[task.id] ? "none" : "4.5em",
+                              overflow: "hidden",
+                            }}
+                        >
+                          {task.evaluation?.comment || "Sin comentario"}
+                        </p>
+                        {task.evaluation?.comment?.length > 80 && (
+                            <button
+                                onClick={() => toggleCommentExpansion(task.id)}
+                                className="text-blue-500 text-sm"
+                            >
+                              {expandedComments[task.id] ? "Ver menos" : "Ver más"}
+                            </button>
+                        )}
+                      </div>
+                  ))}
+                </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
   );
 }
