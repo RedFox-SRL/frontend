@@ -56,8 +56,8 @@ export default function GroupDetailCreator({
     if (!value.trim()) {
       return "Este campo no puede estar vacío";
     }
-    if (field === "contact_phone" && !/^[67]\d{7}$/.test(value)) {
-      return "Ingrese un número válido de Bolivia (8 dígitos, comenzando con 6 o 7)";
+    if (field === "contact_phone" && !/^[467]\d{7}$/.test(value)) {
+      return "Ingrese un número válido de Bolivia (8 dígitos, comenzando con 4, 6 o 7)";
     }
     if (
       field === "contact_email" &&
