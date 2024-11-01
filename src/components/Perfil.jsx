@@ -91,14 +91,14 @@ export default function Perfil() {
     let formErrors = {};
     if (userData.nombre.trim() === "") {
       formErrors.nombre = "El nombre es obligatorio";
-    } else if (userData.nombre.trim().length > 15) {
-      formErrors.nombre = "El nombre no debe exceder 15 caracteres";
+    } else if (userData.nombre.trim().length > 30) {
+      formErrors.nombre = "El nombre no debe exceder 30 caracteres";
     }
 
     if (userData.apellido.trim() === "") {
       formErrors.apellido = "El apellido es obligatorio";
-    } else if (userData.apellido.trim().length > 15) {
-      formErrors.apellido = "El apellido no debe exceder 15 caracteres";
+    } else if (userData.apellido.trim().length > 30) {
+      formErrors.apellido = "El apellido no debe exceder 30 caracteres";
     }
 
     if (!userData.email.trim()) {
@@ -223,7 +223,7 @@ export default function Perfil() {
             onChange={handleInputChange}
             onBlur={() => handleBlur("nombre")}
             className={getInputClassName("nombre")}
-            maxLength={15}
+            maxLength={30}
           />
           {touched.nombre && error.nombre && (
             <p className="text-red-500 text-sm mt-1">{error.nombre}</p>
@@ -244,7 +244,7 @@ export default function Perfil() {
             onChange={handleInputChange}
             onBlur={() => handleBlur("apellido")}
             className={getInputClassName("apellido")}
-            maxLength={15}
+            maxLength={30}
           />
           {touched.apellido && error.apellido && (
             <p className="text-red-500 text-sm mt-1">{error.apellido}</p>
