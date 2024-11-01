@@ -56,15 +56,18 @@ export default function AnnouncementList({ announcements }) {
                           }`}
                           style={{
                             overflow: "hidden",
-                            textOverflow: "ellipsis",
                             wordWrap: "break-word",
                             whiteSpace: expandedAnnouncements.includes(announcement.id) ? "normal" : "nowrap",
                             display: "-webkit-box",
                             WebkitLineClamp: expandedAnnouncements.includes(announcement.id) ? "unset" : "3",
                             WebkitBoxOrient: "vertical",
                           }}
-                          dangerouslySetInnerHTML={{ __html: announcement.content }}
-                      />
+                      >
+                        <div
+                            dangerouslySetInnerHTML={{ __html: announcement.content }}
+                            className="prose prose-sm text-gray-800 list-disc list-inside max-w-none"
+                        />
+                      </div>
 
                       {(announcement.files?.length > 0 || announcement.links?.length > 0) && (
                           <div className="flex flex-wrap gap-2">
@@ -85,9 +88,9 @@ export default function AnnouncementList({ announcements }) {
                                   </a>
                                 </Badge>
                             ))}
-                            {announcement.links?.map((link, index) => (
+                            {announcement.links?.map((link) => (
                                 <Badge
-                                    key={index}
+                                    key={link.url}
                                     variant="outline"
                                     className="flex items-center gap-1 bg-purple-50 text-purple-700 border-purple-200"
                                 >
@@ -98,7 +101,7 @@ export default function AnnouncementList({ announcements }) {
                                       rel="noopener noreferrer"
                                       className="hover:underline text-sm"
                                   >
-                                    Enlace {index + 1}
+                                    {link.url}
                                   </a>
                                 </Badge>
                             ))}

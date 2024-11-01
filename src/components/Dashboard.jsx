@@ -33,8 +33,11 @@ export default function Dashboard() {
     checkManagement();
   }, []);
 
-  const handleAnnouncementCreated = (newAnnouncement) => {
-    setAnnouncements([newAnnouncement, ...announcements]);
+  const handleAnnouncementCreated = async () => {
+    // Recarga completa de los anuncios después de crear uno nuevo
+    if (managementDetails) {
+      await fetchAnnouncements(managementDetails.id);
+    }
   };
 
   const checkManagement = async () => {
@@ -42,10 +45,10 @@ export default function Dashboard() {
     try {
       const response = await getData("/student/management");
       if (
-        response &&
-        response.success &&
-        response.data &&
-        response.data.management
+          response &&
+          response.success &&
+          response.data &&
+          response.data.management
       ) {
         setManagementDetails(response.data.management);
         setIsInGroup(true);
@@ -68,13 +71,13 @@ export default function Dashboard() {
   const fetchGroups = async (managementId) => {
     try {
       const groupsResponse = await getData(
-        `/managements/${managementId}/groups`,
+          `/managements/${managementId}/groups`,
       );
       if (
-        groupsResponse &&
-        groupsResponse.success &&
-        groupsResponse.data &&
-        groupsResponse.data.groups
+          groupsResponse &&
+          groupsResponse.success &&
+          groupsResponse.data &&
+          groupsResponse.data.groups
       ) {
         setGroups(groupsResponse.data.groups);
       } else {
@@ -89,12 +92,12 @@ export default function Dashboard() {
   const fetchParticipants = async (managementId) => {
     try {
       const participantsResponse = await getData(
-        `/managements/${managementId}/students`,
+          `/managements/${managementId}/students`,
       );
       if (
-        participantsResponse &&
-        participantsResponse.teacher &&
-        participantsResponse.students
+          participantsResponse &&
+          participantsResponse.teacher &&
+          participantsResponse.students
       ) {
         setParticipants({
           teacher: participantsResponse.teacher,
@@ -124,7 +127,6 @@ export default function Dashboard() {
     }
   };
 
-
   const handleJoinGroup = async () => {
     try {
       const response = await postData("/managements/join", {
@@ -135,7 +137,7 @@ export default function Dashboard() {
         toast({
           title: "Éxito",
           description:
-            response.message || "Te has unido al grupo exitosamente.",
+              response.message || "Te has unido al grupo exitosamente.",
           duration: 3000,
         });
         await checkManagement();
@@ -144,11 +146,11 @@ export default function Dashboard() {
 
         if (response.code === 252) {
           errorMessage =
-            response.data?.management_code?.[0] ||
-            "Código de gestión inválido.";
+              response.data?.management_code?.[0] ||
+              "Código de gestión inválido.";
         } else if (response.code === 264) {
           errorMessage =
-            "El código de gestión aún no está activo. No puedes unirte en este momento.";
+              "El código de gestión aún no está activo. No puedes unirte en este momento.";
         }
 
         toast({
@@ -161,19 +163,19 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Error al unirse al grupo:", error);
       let errorMessage =
-        "Ocurrió un error al intentar unirse al grupo. Por favor, inténtalo de nuevo.";
+          "Ocurrió un error al intentar unirse al grupo. Por favor, inténtalo de nuevo.";
 
       if (error.response) {
         const { data, status } = error.response;
         if (status === 422 && data.code === 252) {
           errorMessage =
-            data.data?.management_code?.[0] || "Código de gestión inválido.";
+              data.data?.management_code?.[0] || "Código de gestión inválido.";
         } else if (data.code === 252) {
           errorMessage =
-            data.data?.management_code?.[0] || "Código de gestión inválido.";
+              data.data?.management_code?.[0] || "Código de gestión inválido.";
         } else if (data.code === 264) {
           errorMessage =
-            "El código de gestión aún no está activo. No puedes unirte en este momento.";
+              "El código de gestión aún no está activo. No puedes unirte en este momento.";
         } else {
           errorMessage = data.message || errorMessage;
         }
@@ -201,134 +203,134 @@ export default function Dashboard() {
   // Memoize the CourseInfo component
   const memoizedCourseInfo = useMemo(() => {
     return managementDetails ? (
-      <CourseInfo managementDetails={managementDetails} />
+        <CourseInfo managementDetails={managementDetails} />
     ) : null;
   }, [managementDetails]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        <span className="ml-2 text-lg font-medium text-purple-600">
+        <div className="flex items-center justify-center h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+          <span className="ml-2 text-lg font-medium text-purple-600">
           Cargando...
         </span>
-      </div>
+        </div>
     );
   }
 
   if (isInGroup && managementDetails) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="sm:p-4 space-y-2 sm:space-y-4"
-      >
-        {memoizedCourseInfo}
-        <Card className="w-full shadow-sm">
-          <CardHeader className="p-2 sm:p-4">
-            <CardTitle className="text-lg sm:text-xl text-purple-700">
-              Dashboard del Curso
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-1 sm:p-4">
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
-                <TabsTrigger
-                  value="announcements"
-                  className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
-                >
-                  <Megaphone className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline ml-1 sm:ml-2">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="sm:p-4 space-y-2 sm:space-y-4"
+        >
+          {memoizedCourseInfo}
+          <Card className="w-full shadow-sm">
+            <CardHeader className="p-2 sm:p-4">
+              <CardTitle className="text-lg sm:text-xl text-purple-700">
+                Dashboard del Curso
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-1 sm:p-4">
+              <Tabs
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
+                  <TabsTrigger
+                      value="announcements"
+                      className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
+                  >
+                    <Megaphone className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline ml-1 sm:ml-2">
                     Anuncios
                   </span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="groups"
-                  className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
-                >
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline ml-1 sm:ml-2">
+                  </TabsTrigger>
+                  <TabsTrigger
+                      value="groups"
+                      className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
+                  >
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline ml-1 sm:ml-2">
                     Grupos ({groups.length})
                   </span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="participants"
-                  className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
-                >
-                  <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline ml-1 sm:ml-2">
+                  </TabsTrigger>
+                  <TabsTrigger
+                      value="participants"
+                      className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
+                  >
+                    <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline ml-1 sm:ml-2">
                     Estudiantes ({participants.students.length})
                   </span>
-                </TabsTrigger>
-              </TabsList>
-              <div className="mt-2 sm:mt-4">
-                <TabsContent value="announcements">
-                  <CreateAnnouncement
-                    managementId={managementDetails.id}
-                    onAnnouncementCreated={handleAnnouncementCreated}
-                  />
-                  <AnnouncementList announcements={announcements} />
-                </TabsContent>
-                <TabsContent value="groups">
-                  <GroupList
-                    groups={groups}
-                    onSelectGroup={handleSelectGroup}
-                    getInitials={getInitials}
-                  />
-                </TabsContent>
-                <TabsContent value="participants">
-                  <ParticipantList
-                    participants={participants}
-                    getInitials={getInitials}
-                  />
-                </TabsContent>
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
-        <GroupDetails
-          group={selectedGroup}
-          onClose={() => setSelectedGroup(null)}
-          getInitials={getInitials}
-        />
-      </motion.div>
+                  </TabsTrigger>
+                </TabsList>
+                <div className="mt-2 sm:mt-4">
+                  <TabsContent value="announcements">
+                    <CreateAnnouncement
+                        managementId={managementDetails.id}
+                        onAnnouncementCreated={handleAnnouncementCreated}
+                    />
+                    <AnnouncementList announcements={announcements} />
+                  </TabsContent>
+                  <TabsContent value="groups">
+                    <GroupList
+                        groups={groups}
+                        onSelectGroup={handleSelectGroup}
+                        getInitials={getInitials}
+                    />
+                  </TabsContent>
+                  <TabsContent value="participants">
+                    <ParticipantList
+                        participants={participants}
+                        getInitials={getInitials}
+                    />
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </CardContent>
+          </Card>
+          <GroupDetails
+              group={selectedGroup}
+              onClose={() => setSelectedGroup(null)}
+              getInitials={getInitials}
+          />
+        </motion.div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="flex items-center justify-center min-h-screen p-2"
-    >
-      <Card className="w-full max-w-xs sm:max-w-sm shadow-sm">
-        <CardHeader className="p-3 sm:p-4">
-          <CardTitle className="text-center text-base sm:text-lg text-purple-700">
-            No estás inscrito en un curso
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-4">
-          <Input
-            type="text"
-            placeholder="Ingrese el código de la clase"
-            value={groupCode}
-            onChange={(e) => setGroupCode(e.target.value)}
-            className="mb-3 sm:mb-4 text-sm"
-          />
-          <Button
-            onClick={handleJoinGroup}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-sm"
-          >
-            Unirse a Clase
-          </Button>
-        </CardContent>
-      </Card>
-    </motion.div>
+      <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center justify-center min-h-screen p-2"
+      >
+        <Card className="w-full max-w-xs sm:max-w-sm shadow-sm">
+          <CardHeader className="p-3 sm:p-4">
+            <CardTitle className="text-center text-base sm:text-lg text-purple-700">
+              No estás inscrito en un curso
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-4">
+            <Input
+                type="text"
+                placeholder="Ingrese el código de la clase"
+                value={groupCode}
+                onChange={(e) => setGroupCode(e.target.value)}
+                className="mb-3 sm:mb-4 text-sm"
+            />
+            <Button
+                onClick={handleJoinGroup}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-sm"
+            >
+              Unirse a Clase
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
   );
 }

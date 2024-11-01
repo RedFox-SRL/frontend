@@ -96,22 +96,9 @@ export default function ManagementView({ management, onBack }) {
     setFormData({ ...formData, file: e.target.files[0] });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setAnnouncements((prev) => [
-      ...prev,
-      {
-        title: formData.title,
-        date: formData.date,
-        description: formData.description,
-      },
-    ]);
-    setFormData({
-      title: "",
-      date: "",
-      description: "",
-    });
-    setIsFormOpen(false);
+  const handleAnnouncementCreated = async () => {
+    // Reload announcements after creating a new one
+    await fetchAnnouncements();
   };
 
   // Calculate the progress only once, when the component loads
@@ -394,9 +381,7 @@ export default function ManagementView({ management, onBack }) {
                     <TabsContent value="announcements">
                       <CreateAnnouncement
                           managementId={management.id}
-                          onAnnouncementCreated={(announcement) =>
-                              setAnnouncements([announcement, ...announcements])
-                          }
+                          onAnnouncementCreated={handleAnnouncementCreated}
                       />
                       <AnnouncementList announcements={announcements} />
                     </TabsContent>
