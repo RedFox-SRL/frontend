@@ -41,12 +41,17 @@ export default function TaskEditDialog({
 
   const validateUrl = (url) => {
     if (!url.trim()) return false;
-    if (
-      url.startsWith("trackmaster.systems") ||
-      url.startsWith("http://trackmaster.systems") ||
-      url.startsWith("https://trackmaster.systems")
-    ) {
-      return true;
+    try {
+      const parsedUrl = new URL(url);
+      const allowedHosts = [
+        'trackmaster.systems',
+        'www.trackmaster.systems'
+      ];
+      if (allowedHosts.includes(parsedUrl.host)) {
+        return true;
+      }
+    } catch (e) {
+      return false;
     }
     const pattern = new RegExp(
       "^(https?:\\/\\/)?" +
