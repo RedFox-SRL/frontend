@@ -207,7 +207,7 @@ export default function LayoutTeacher({ children, setCurrentView }) {
   const menuItems = [
     { icon: Home, label: "Inicio", view: "inicio" },
     { icon: User, label: "Perfil", view: "perfil" },
-    { icon: History, label: "Gestiones", view: "grupo" },
+    { icon: History, label: "Gestiones", view: "gestiones" },
     { icon: Building2, label: "FundEmpresa", view: "empresas" },
   ];
 
