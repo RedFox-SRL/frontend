@@ -336,7 +336,7 @@ export default function ManagementView({ management, onBack }) {
                 </div>
               </div>
 
-              <Card className="bg-white shadow-md p-6 rounded-lg mb-8">
+              <Card className="bg-white shadow-md w-full rounded-lg mb-8">
                 <CardHeader className="p-2 sm:p-4">
                   <CardTitle className="text-lg sm:text-xl text-purple-700">
                     Gestión
@@ -346,7 +346,6 @@ export default function ManagementView({ management, onBack }) {
                   <Tabs
                       value={activeTab}
                       onValueChange={setActiveTab}
-                      className="w-full"
                   >
                     <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
                       <TabsTrigger
