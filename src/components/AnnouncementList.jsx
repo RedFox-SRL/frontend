@@ -15,7 +15,7 @@ export default function AnnouncementList({ announcements }) {
   };
 
   return (
-      <div className="container mx-auto p-0">
+      <div className=" mx-auto p-0">
         {announcements.length > 0 ? (
             announcements.map((announcement) => {
               const isExpandable = announcement.content.length > 100;

@@ -110,12 +110,12 @@ export default function EvaluationView({ groupId, onBack }) {
           )}
           {activeTab === "weekly-evaluation" && (
             <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
-              <WeeklyEvaluation />
+              <WeeklyEvaluation groupId={groupId} sprints={sprints}/>
             </div>
           )}
           {activeTab === "sprint-evaluation" && (
             <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 w-full h-full">
-              <SprintEvaluation />
+              <SprintEvaluation groupId={groupId} sprints={sprints} />
             </div>
           )}
         </div>

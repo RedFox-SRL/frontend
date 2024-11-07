@@ -48,15 +48,15 @@ const formats = {
   weekdayFormat: "dd",
   dayFormat: "D",
   dayRangeHeaderFormat: ({ start, end }) =>
-    `${moment(start).format("D MMM")} - ${moment(end).format("D MMM YYYY")}`,
+      `${moment(start).format("D MMM")} - ${moment(end).format("D MMM YYYY")}`,
   dayHeaderFormat: "dddd D",
   eventTimeRangeFormat: ({ start, end }) =>
-    `${moment(start).format("D MMM")} - ${moment(end).format("D MMM")}`,
+      `${moment(start).format("D MMM")} - ${moment(end).format("D MMM")}`,
   timeGutterFormat: "D",
   agendaDateFormat: "D MMM",
   agendaTimeFormat: "HH:mm",
   agendaTimeRangeFormat: ({ start, end }) =>
-    `${moment(start).format("HH:mm")} - ${moment(end).format("HH:mm")}`,
+      `${moment(start).format("HH:mm")} - ${moment(end).format("HH:mm")}`,
 };
 
 export default function CalendarioSprints({ groupId }) {
@@ -66,6 +66,7 @@ export default function CalendarioSprints({ groupId }) {
     start: "",
     end: "",
     features: "",
+    percentage: "",  // Añadir campo de porcentaje
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -79,12 +80,12 @@ export default function CalendarioSprints({ groupId }) {
     try {
       const response = await getData(`/sprints?group_id=${groupId}`);
       setEvents(
-        response.map((sprint) => ({
-          ...sprint,
-          start: new Date(sprint.start_date),
-          end: new Date(sprint.end_date),
-          featureCount: sprint.features.split("\n").filter(Boolean).length,
-        })),
+          response.map((sprint) => ({
+            ...sprint,
+            start: new Date(sprint.start_date),
+            end: new Date(sprint.end_date),
+            featureCount: sprint.features.split("\n").filter(Boolean).length,
+          })),
       );
     } catch (error) {
       console.error("Error fetching sprints:", error);
@@ -99,44 +100,29 @@ export default function CalendarioSprints({ groupId }) {
   }, [fetchSprints]);
 
   const validateSprintForm = useCallback(
-    (sprint) => {
-      const errors = {};
-      if (!sprint.title.trim())
-        errors.title = "El título del sprint es requerido";
-      if (!sprint.start) errors.start = "La fecha de inicio es requerida";
-      if (!sprint.end) errors.end = "La fecha de fin es requerida";
-      if (!sprint.features.trim())
-        errors.features = "Debe agregar al menos una característica";
-      if (
-        sprint.start &&
-        sprint.end &&
-        moment(sprint.start).isAfter(moment(sprint.end))
-      ) {
-        errors.end = "La fecha de fin debe ser posterior a la fecha de inicio";
-      }
+      (sprint) => {
+        const errors = {};
+        if (!sprint.title.trim())
+          errors.title = "El título del sprint es requerido";
+        if (!sprint.start) errors.start = "La fecha de inicio es requerida";
+        if (!sprint.end) errors.end = "La fecha de fin es requerida";
+        if (!sprint.features.trim())
+          errors.features = "Debe agregar al menos una característica";
+        if (
+            sprint.start &&
+            sprint.end &&
+            moment(sprint.start).isAfter(moment(sprint.end))
+        ) {
+          errors.end = "La fecha de fin debe ser posterior a la fecha de inicio";
+        }
+        if (sprint.percentage === "" || sprint.percentage < 0 || sprint.percentage > 100) {
+          errors.percentage = "El porcentaje debe estar entre 0 y 100";
+        }
 
-      const overlappingSprint = events.find(
-        (event) =>
-          event.id !== sprint.id &&
-          (moment(sprint.start).isBetween(event.start, event.end, null, "[]") ||
-            moment(sprint.end).isBetween(event.start, event.end, null, "[]") ||
-            moment(event.start).isBetween(
-              sprint.start,
-              sprint.end,
-              null,
-              "[]",
-            ) ||
-            moment(event.end).isBetween(sprint.start, sprint.end, null, "[]")),
-      );
-
-      if (overlappingSprint) {
-        errors.dateOverlap = `Este sprint se superpone con "${overlappingSprint.title}"`;
-      }
-
-      setFormErrors(errors);
-      return Object.keys(errors).length === 0;
-    },
-    [events],
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+      },
+      [events],
   );
 
   const handleAddEvent = async () => {
@@ -148,6 +134,7 @@ export default function CalendarioSprints({ groupId }) {
           start_date: currentEvent.start,
           end_date: currentEvent.end,
           group_id: groupId,
+          percentage: currentEvent.percentage,  // Añadir el porcentaje al enviar los datos
         });
         const newEvent = {
           ...response,
@@ -173,6 +160,7 @@ export default function CalendarioSprints({ groupId }) {
           features: currentEvent.features,
           start_date: currentEvent.start,
           end_date: currentEvent.end,
+          percentage: currentEvent.percentage,  // Añadir el porcentaje en la actualización
         });
         const updatedEvent = {
           ...response,
@@ -181,7 +169,7 @@ export default function CalendarioSprints({ groupId }) {
           featureCount: response.features.split("\n").filter(Boolean).length,
         };
         setEvents((prevEvents) =>
-          prevEvents.map((e) => (e.id === currentEvent.id ? updatedEvent : e)),
+            prevEvents.map((e) => (e.id === currentEvent.id ? updatedEvent : e)),
         );
         resetForm();
         showToast("Sprint actualizado exitosamente", false);
@@ -193,7 +181,7 @@ export default function CalendarioSprints({ groupId }) {
   };
 
   const resetForm = () => {
-    setCurrentEvent({ title: "", start: "", end: "", features: "" });
+    setCurrentEvent({ title: "", start: "", end: "", features: "", percentage: "" });
     setIsDialogOpen(false);
     setIsEditing(false);
     setFormErrors({});
@@ -215,6 +203,7 @@ export default function CalendarioSprints({ groupId }) {
       start: start.toISOString().slice(0, 10),
       end: end.toISOString().slice(0, 10),
       features: "",
+      percentage: "",  // Añadir el campo de porcentaje al seleccionar el slot
     });
     setIsEditing(false);
     setIsDialogOpen(true);
@@ -226,6 +215,7 @@ export default function CalendarioSprints({ groupId }) {
       ...event,
       start: event.start.toISOString().slice(0, 10),
       end: event.end.toISOString().slice(0, 10),
+      percentage: event.percentage || "",  // Asegurarse de que el porcentaje esté presente en la edición
     });
     setIsEditing(true);
     setIsDialogOpen(true);
@@ -247,239 +237,265 @@ export default function CalendarioSprints({ groupId }) {
   });
 
   const CustomEvent = ({ event }) => (
-    <div className="text-xs sm:text-sm">
-      <strong>{event.title}</strong>
-      <br />
-      <span>{event.featureCount} caract.</span>
-    </div>
+      <div className="text-xs sm:text-sm">
+        <strong>{event.title}</strong>
+        <br />
+        <span>{event.featureCount} caract.</span>
+      </div>
   );
 
   const CustomToolbar = ({ label, onNavigate, onView }) => (
-    <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-2 bg-purple-100 rounded-lg space-y-2 sm:space-y-0">
-      <div className="flex space-x-2">
-        <Button
-          onClick={() => onNavigate("PREV")}
-          variant="outline"
-          size="sm"
-          className="text-purple-600 border-purple-600 text-xs sm:text-sm"
-        >
-          {"<"}
-        </Button>
-        <Button
-          onClick={() => onNavigate("NEXT")}
-          variant="outline"
-          size="sm"
-          className="text-purple-600 border-purple-600 text-xs sm:text-sm"
-        >
-          {">"}
-        </Button>
-        <Button
-          onClick={() => onNavigate("TODAY")}
-          variant="outline"
-          size="sm"
-          className="text-purple-600 border-purple-600 text-xs sm:text-sm"
-        >
-          Hoy
-        </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-2 bg-purple-100 rounded-lg space-y-2 sm:space-y-0">
+        <div className="flex space-x-2">
+          <Button
+              onClick={() => onNavigate("PREV")}
+              variant="outline"
+              size="sm"
+              className="text-purple-600 border-purple-600 text-xs sm:text-sm"
+          >
+            {"<"}
+          </Button>
+          <Button
+              onClick={() => onNavigate("NEXT")}
+              variant="outline"
+              size="sm"
+              className="text-purple-600 border-purple-600 text-xs sm:text-sm"
+          >
+            {">"}
+          </Button>
+          <Button
+              onClick={() => onNavigate("TODAY")}
+              variant="outline"
+              size="sm"
+              className="text-purple-600 border-purple-600 text-xs sm:text-sm"
+          >
+            Hoy
+          </Button>
+        </div>
+        <h2 className="text-lg sm:text-xl font-semibold text-purple-800">
+          {label}
+        </h2>
+        <div className="flex space-x-2">
+          <Button
+              onClick={() => onView("month")}
+              variant="outline"
+              size="sm"
+              className="text-purple-600 border-purple-600 text-xs sm:text-sm"
+          >
+            Mes
+          </Button>
+          <Button
+              onClick={() => onView("agenda")}
+              variant="outline"
+              size="sm"
+              className="text-purple-600 border-purple-600 text-xs sm:text-sm"
+          >
+            Agenda
+          </Button>
+        </div>
       </div>
-      <h2 className="text-lg sm:text-xl font-semibold text-purple-800">
-        {label}
-      </h2>
-      <div className="flex space-x-2">
-        <Button
-          onClick={() => onView("month")}
-          variant="outline"
-          size="sm"
-          className="text-purple-600 border-purple-600 text-xs sm:text-sm"
-        >
-          Mes
-        </Button>
-        <Button
-          onClick={() => onView("agenda")}
-          variant="outline"
-          size="sm"
-          className="text-purple-600 border-purple-600 text-xs sm:text-sm"
-        >
-          Agenda
-        </Button>
-      </div>
-    </div>
   );
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-white shadow-lg">
-        <CardHeader className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-          <CardTitle className="text-xl sm:text-2xl font-bold text-purple-800">
-            Calendario de Sprints
-          </CardTitle>
-          <Button
-            onClick={() => {
-              setCurrentEvent({ title: "", start: "", end: "", features: "" });
-              setIsEditing(false);
-              setIsDialogOpen(true);
-              setFeatureCount(0);
-            }}
-            className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto text-sm sm:text-base"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Agregar Sprint
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-[500px]">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-              <span className="ml-2 text-lg font-medium text-purple-600">
+      <div className="space-y-6">
+        <Card className="bg-white shadow-lg">
+          <CardHeader className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-purple-800">
+              Calendario de Sprints
+            </CardTitle>
+            <Button
+                onClick={() => {
+                  setCurrentEvent({ title: "", start: "", end: "", features: "", percentage: "" });
+                  setIsEditing(false);
+                  setIsDialogOpen(true);
+                  setFeatureCount(0);
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto text-sm sm:text-base"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Sprint
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0 overflow-x-auto">
+            {isLoading ? (
+                <div className="flex items-center justify-center h-[500px]">
+                  <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+                  <span className="ml-2 text-lg font-medium text-purple-600">
                 Cargando sprints...
               </span>
-            </div>
-          ) : (
-            <div className="min-w-full" style={{ overflowX: "auto" }}>
-              <Calendar
-                localizer={localizer}
-                events={events}
-                startAccessor="start"
-                endAccessor="end"
-                messages={messages}
-                formats={formats}
-                culture="es"
-                style={{ height: 500, minWidth: "100%" }}
-                onSelectEvent={handleSelectEvent}
-                onSelectSlot={handleSelectSlot}
-                selectable
-                views={["month", "agenda"]}
-                defaultView="month"
-                eventPropGetter={eventStyleGetter}
-                components={{
-                  toolbar: CustomToolbar,
-                  event: CustomEvent,
-                }}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      <Dialog
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            resetForm();
-          }
-          setIsDialogOpen(open);
-        }}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>
-              {isEditing ? "Editar Sprint" : "Agregar Nuevo Sprint"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <label htmlFor="title" className="text-sm font-medium">
-                Título
-              </label>
-              <Input
-                id="title"
-                placeholder="Título del sprint"
-                value={currentEvent.title}
-                onChange={(e) =>
-                  setCurrentEvent({ ...currentEvent, title: e.target.value })
-                }
-                className={formErrors.title ? "border-red-500" : ""}
-              />
-              {formErrors.title && (
-                <p className="text-red-500 text-sm">{formErrors.title}</p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="start" className="text-sm font-medium">
-                Inicio
-              </label>
-              <div className="relative">
-                <Input
-                  id="start"
-                  type="date"
-                  value={currentEvent.start}
-                  onChange={(e) =>
-                    setCurrentEvent({ ...currentEvent, start: e.target.value })
-                  }
-                  className={`pl-10  ${formErrors.start ? "border-red-500" : ""}`}
-                />
-                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-              {formErrors.start && (
-                <p className="text-red-500 text-sm">{formErrors.start}</p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <label htmlFor="end" className="text-sm font-medium">
-                Fin
-              </label>
-              <div className="relative">
-                <Input
-                  id="end"
-                  type="date"
-                  value={currentEvent.end}
-                  onChange={(e) =>
-                    setCurrentEvent({ ...currentEvent, end: e.target.value })
-                  }
-                  className={`pl-10 ${formErrors.end ? "border-red-500" : ""}`}
-                />
-                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-              {formErrors.end && (
-                <p className="text-red-500 text-sm">{formErrors.end}</p>
-              )}
-            </div>
-            {formErrors.dateOverlap && (
-              <div className="flex items-center gap-2 text-red-500">
-                <AlertCircle className="h-5 w-5" />
-                <p className="text-sm">{formErrors.dateOverlap}</p>
-              </div>
+                </div>
+            ) : (
+                <div className="min-w-full" style={{ overflowX: "auto" }}>
+                  <Calendar
+                      localizer={localizer}
+                      events={events}
+                      startAccessor="start"
+                      endAccessor="end"
+                      messages={messages}
+                      formats={formats}
+                      culture="es"
+                      style={{ height: 500, minWidth: "100%" }}
+                      onSelectEvent={handleSelectEvent}
+                      onSelectSlot={handleSelectSlot}
+                      selectable
+                      views={["month", "agenda"]}
+                      defaultView="month"
+                      eventPropGetter={eventStyleGetter}
+                      components={{
+                        toolbar: CustomToolbar,
+                        event: CustomEvent,
+                      }}
+                      className="text-xs sm:text-sm"
+                  />
+                </div>
             )}
-            <div className="grid gap-2">
-              <label htmlFor="features" className="text-sm font-medium">
-                Características ({featureCount})
-              </label>
-              <Textarea
-                id="features"
-                placeholder="Características a trabajar (una por línea)"
-                value={currentEvent.features}
-                onChange={(e) => {
-                  setCurrentEvent({
-                    ...currentEvent,
-                    features: e.target.value,
-                  });
-                  setFeatureCount(
-                    e.target.value.split("\n").filter(Boolean).length,
-                  );
-                }}
-                className={formErrors.features ? "border-red-500" : ""}
-                rows={5}
-              />
-              {formErrors.features && (
-                <p className="text-red-500 text-sm">{formErrors.features}</p>
+          </CardContent>
+        </Card>
+        <Dialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              if (!open) {
+                resetForm();
+              }
+              setIsDialogOpen(open);
+            }}
+        >
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {isEditing ? "Editar Sprint" : "Agregar Nuevo Sprint"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <label htmlFor="title" className="text-sm font-medium">
+                  Título
+                </label>
+                <Input
+                    id="title"
+                    placeholder="Título del sprint"
+                    value={currentEvent.title}
+                    onChange={(e) =>
+                        setCurrentEvent({ ...currentEvent, title: e.target.value })
+                    }
+                    className={formErrors.title ? "border-red-500" : ""}
+                />
+                {formErrors.title && (
+                    <p className="text-red-500 text-sm">{formErrors.title}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="start" className="text-sm font-medium">
+                  Inicio
+                </label>
+                <div className="relative">
+                  <Input
+                      id="start"
+                      type="date"
+                      value={currentEvent.start}
+                      onChange={(e) =>
+                          setCurrentEvent({ ...currentEvent, start: e.target.value })
+                      }
+                      className={`pl-10  ${formErrors.start ? "border-red-500" : ""}`}
+                  />
+                  <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+                {formErrors.start && (
+                    <p className="text-red-500 text-sm">{formErrors.start}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="end" className="text-sm font-medium">
+                  Fin
+                </label>
+                <div className="relative">
+                  <Input
+                      id="end"
+                      type="date"
+                      value={currentEvent.end}
+                      onChange={(e) =>
+                          setCurrentEvent({ ...currentEvent, end: e.target.value })
+                      }
+                      className={`pl-10 ${formErrors.end ? "border-red-500" : ""}`}
+                  />
+                  <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+                {formErrors.end && (
+                    <p className="text-red-500 text-sm">{formErrors.end}</p>
+                )}
+              </div>
+              {formErrors.dateOverlap && (
+                  <div className="flex items-center gap-2 text-red-500">
+                    <AlertCircle className="h-5 w-5" />
+                    <p className="text-sm">{formErrors.dateOverlap}</p>
+                  </div>
               )}
+              <div className="grid gap-2">
+                <label htmlFor="features" className="text-sm font-medium">
+                  Características ({featureCount})
+                </label>
+                <Textarea
+                    id="features"
+                    placeholder="Características a trabajar (una por línea)"
+                    value={currentEvent.features}
+                    onChange={(e) => {
+                      setCurrentEvent({
+                        ...currentEvent,
+                        features: e.target.value,
+                      });
+                      setFeatureCount(
+                          e.target.value.split("\n").filter(Boolean).length,
+                      );
+                    }}
+                    className={formErrors.features ? "border-red-500" : ""}
+                    rows={5}
+                />
+                {formErrors.features && (
+                    <p className="text-red-500 text-sm">{formErrors.features}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="percentage" className="text-sm font-medium">
+                  Porcentaje
+                </label>
+                <Input
+                    id="percentage"
+                    type="number"
+                    placeholder="Porcentaje de avance"
+                    min="0"
+                    max="100"
+                    value={currentEvent.percentage}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || (value >= 0 && value <= 100)) {
+                        setCurrentEvent({
+                          ...currentEvent,
+                          percentage: value,
+                        });
+                      }
+                    }}
+                    className={formErrors.percentage ? "border-red-500" : ""}
+                />
+                {formErrors.percentage && (
+                    <p className="text-red-500 text-sm">{formErrors.percentage}</p>
+                )}
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={isEditing ? handleUpdateEvent : handleAddEvent}
-              className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
-            >
-              {isEditing ? (
-                <Edit2 className="h-4 w-4 mr-2" />
-              ) : (
-                <Plus className="h-4 w-4 mr-2" />
-              )}
-              {isEditing ? "Actualizar Sprint" : "Agregar Sprint"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <DialogFooter>
+              <Button
+                  onClick={isEditing ? handleUpdateEvent : handleAddEvent}
+                  className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
+              >
+                {isEditing ? (
+                    <Edit2 className="h-4 w-4 mr-2" />
+                ) : (
+                    <Plus className="h-4 w-4 mr-2" />
+                )}
+                {isEditing ? "Actualizar Sprint" : "Agregar Sprint"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
   );
 }
