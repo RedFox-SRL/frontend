@@ -15,7 +15,7 @@ export default function AnnouncementList({ announcements }) {
   };
 
   return (
-      <div className=" mx-auto p-0">
+      <div className="container mx-auto p-0">
         {announcements.length > 0 ? (
             announcements.map((announcement) => {
               const isExpandable = announcement.content.length > 100;
@@ -53,9 +53,10 @@ export default function AnnouncementList({ announcements }) {
                       <div
                           className={`text-sm text-gray-600 mb-2 ${
                               isExpandable && !expandedAnnouncements.includes(announcement.id) ? "line-clamp-3" : ""
-                          }`}
+                          } prose prose-purple`}
                           style={{
                             overflow: "hidden",
+                            textOverflow: "ellipsis",
                             wordWrap: "break-word",
                             whiteSpace: expandedAnnouncements.includes(announcement.id) ? "normal" : "nowrap",
                             display: "-webkit-box",
@@ -64,8 +65,8 @@ export default function AnnouncementList({ announcements }) {
                           }}
                       >
                         <div
+                            className="prose dark:text-gray-800 prose-li:text-black" // This sets list item color to black
                             dangerouslySetInnerHTML={{ __html: announcement.content }}
-                            className="prose prose-sm text-gray-800 list-disc list-inside max-w-none"
                         />
                       </div>
 
@@ -88,9 +89,9 @@ export default function AnnouncementList({ announcements }) {
                                   </a>
                                 </Badge>
                             ))}
-                            {announcement.links?.map((link) => (
+                            {announcement.links?.map((link, index) => (
                                 <Badge
-                                    key={link.url}
+                                    key={index}
                                     variant="outline"
                                     className="flex items-center gap-1 bg-purple-50 text-purple-700 border-purple-200"
                                 >
@@ -101,7 +102,7 @@ export default function AnnouncementList({ announcements }) {
                                       rel="noopener noreferrer"
                                       className="hover:underline text-sm"
                                   >
-                                    {link.url}
+                                    Enlace {index + 1}
                                   </a>
                                 </Badge>
                             ))}
@@ -116,9 +117,13 @@ export default function AnnouncementList({ announcements }) {
                               className="mt-2 text-sm text-purple-600 hover:text-purple-800"
                           >
                             {expandedAnnouncements.includes(announcement.id) ? (
-                                <>Menos <ChevronUp className="ml-1 h-4 w-4" /></>
+                                <>
+                                  Menos <ChevronUp className="ml-1 h-4 w-4" />
+                                </>
                             ) : (
-                                <>Más <ChevronDown className="ml-1 h-4 w-4" /></>
+                                <>
+                                  Más <ChevronDown className="ml-1 h-4 w-4" />
+                                </>
                             )}
                           </Button>
                       )}
