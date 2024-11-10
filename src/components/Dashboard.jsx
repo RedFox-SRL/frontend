@@ -27,6 +27,14 @@ export default function Dashboard() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
   const [activeTab, setActiveTab] = useState("announcements");
+  const [nextPageUrl, setNextPageUrl] = useState(null);
+
+  const loadMoreAnnouncements = () => {
+    if (nextPageUrl) {
+      fetchAnnouncements(managementDetails.id, nextPageUrl);
+    }
+  };
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -112,12 +120,14 @@ export default function Dashboard() {
     }
   };
 
-  const fetchAnnouncements = async (managementId) => {
+  const fetchAnnouncements = async (managementId, url = `/management/${managementId}/announcements`) => {
     try {
-      const announcementsResponse = await getData(`/management/${managementId}/announcements`);
+      const announcementsResponse = await getData(url);
       console.log("Announcements response:", announcementsResponse);
+
       if (announcementsResponse && announcementsResponse.data) {
-        setAnnouncements(announcementsResponse.data);
+        setAnnouncements((prev) => [...prev, ...announcementsResponse.data]);
+        setNextPageUrl(announcementsResponse.next_page_url);
       } else {
         setAnnouncements([]);
       }
@@ -270,10 +280,7 @@ export default function Dashboard() {
                 </TabsList>
                 <div className="mt-2 sm:mt-4">
                   <TabsContent value="announcements">
-                    <CreateAnnouncement
-                        managementId={managementDetails.id}
-                        onAnnouncementCreated={handleAnnouncementCreated}
-                    />
+
                     <AnnouncementList announcements={announcements} />
                   </TabsContent>
                   <TabsContent value="groups">

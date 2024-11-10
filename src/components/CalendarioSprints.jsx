@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { getData, postData, putData } from "../api/apiService";
+import { getData, postData, putData, deleteData} from "../api/apiService";
 import {
   AlertCircle,
   Calendar as CalendarIcon,
@@ -66,7 +66,7 @@ export default function CalendarioSprints({ groupId }) {
     start: "",
     end: "",
     features: "",
-    percentage: "",  // Añadir campo de porcentaje
+    percentage: "",
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -75,6 +75,14 @@ export default function CalendarioSprints({ groupId }) {
   const [featureCount, setFeatureCount] = useState(0);
   const { toast } = useToast();
 
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+
+
+  const openConfirmDialog = () => {
+    setIsConfirmDialogOpen(true);
+  };
+
+
   const fetchSprints = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -82,10 +90,10 @@ export default function CalendarioSprints({ groupId }) {
       setEvents(
           response.map((sprint) => ({
             ...sprint,
-            start: new Date(sprint.start_date),
-            end: new Date(sprint.end_date),
+            start: moment(sprint.start_date).startOf('day').toDate(),
+            end: moment(sprint.end_date).endOf('day').toDate(),
             featureCount: sprint.features.split("\n").filter(Boolean).length,
-          })),
+          }))
       );
     } catch (error) {
       console.error("Error fetching sprints:", error);
@@ -108,21 +116,23 @@ export default function CalendarioSprints({ groupId }) {
         if (!sprint.end) errors.end = "La fecha de fin es requerida";
         if (!sprint.features.trim())
           errors.features = "Debe agregar al menos una característica";
-        if (
-            sprint.start &&
-            sprint.end &&
-            moment(sprint.start).isAfter(moment(sprint.end))
-        ) {
-          errors.end = "La fecha de fin debe ser posterior a la fecha de inicio";
-        }
-        if (sprint.percentage === "" || sprint.percentage < 0 || sprint.percentage > 100) {
-          errors.percentage = "El porcentaje debe estar entre 0 y 100";
-        }
+        if (sprint.start && sprint.end && moment(sprint.start).isAfter(moment(sprint.end))) {
+          errors.end = "La fecha de fin debe ser posterior o igual a la fecha de inicio";
+        } else {
+          const hasOverlap = events.some((event) =>
+              moment(sprint.start).isBefore(moment(event.end)) &&
+              moment(sprint.end).isAfter(moment(event.start)) &&
+              event.id !== sprint.id
+          );
 
+          if (hasOverlap) {
+            errors.dateOverlap = "Las fechas del sprint se solapan con otro sprint existente.";
+          }
+        }
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
       },
-      [events],
+      [events]
   );
 
   const handleAddEvent = async () => {
@@ -134,15 +144,17 @@ export default function CalendarioSprints({ groupId }) {
           start_date: currentEvent.start,
           end_date: currentEvent.end,
           group_id: groupId,
-          percentage: currentEvent.percentage,  // Añadir el porcentaje al enviar los datos
+          percentage: currentEvent.percentage,
         });
         const newEvent = {
           ...response,
-          start: new Date(response.start_date),
-          end: new Date(response.end_date),
+          start: moment(response.start_date).startOf('day').toDate(),
+          end: moment(response.end_date).endOf('day').toDate(),
           featureCount: response.features.split("\n").filter(Boolean).length,
         };
+
         setEvents((prevEvents) => [...prevEvents, newEvent]);
+        await fetchSprints();
         resetForm();
         showToast("Sprint creado exitosamente", false);
       } catch (error) {
@@ -160,17 +172,20 @@ export default function CalendarioSprints({ groupId }) {
           features: currentEvent.features,
           start_date: currentEvent.start,
           end_date: currentEvent.end,
-          percentage: currentEvent.percentage,  // Añadir el porcentaje en la actualización
+          percentage: currentEvent.percentage,
         });
         const updatedEvent = {
           ...response,
-          start: new Date(response.start_date),
-          end: new Date(response.end_date),
+          start: moment(response.start_date).startOf('day').toDate(),
+          end: moment(response.end_date).endOf('day').toDate(),
           featureCount: response.features.split("\n").filter(Boolean).length,
         };
         setEvents((prevEvents) =>
-            prevEvents.map((e) => (e.id === currentEvent.id ? updatedEvent : e)),
+            prevEvents.map((event) =>
+                event.id === currentEvent.id ? updatedEvent : event
+            )
         );
+
         resetForm();
         showToast("Sprint actualizado exitosamente", false);
       } catch (error) {
@@ -179,6 +194,24 @@ export default function CalendarioSprints({ groupId }) {
       }
     }
   };
+
+  const handleDeleteEvent = async () => {
+    if (!currentEvent.id) return;
+
+    try {
+      await deleteData(`/sprints/${currentEvent.id}`);
+      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== currentEvent.id));
+      showToast("Sprint eliminado exitosamente", false);
+      resetForm();
+    } catch (error) {
+      console.error("Error al eliminar el sprint:", error);
+      showToast("Error al eliminar el sprint", true);
+    } finally {
+      setIsConfirmDialogOpen(false); // Cierra el modal de confirmación
+    }
+  };
+
+
 
   const resetForm = () => {
     setCurrentEvent({ title: "", start: "", end: "", features: "", percentage: "" });
@@ -203,7 +236,7 @@ export default function CalendarioSprints({ groupId }) {
       start: start.toISOString().slice(0, 10),
       end: end.toISOString().slice(0, 10),
       features: "",
-      percentage: "",  // Añadir el campo de porcentaje al seleccionar el slot
+      percentage: "",
     });
     setIsEditing(false);
     setIsDialogOpen(true);
@@ -215,7 +248,7 @@ export default function CalendarioSprints({ groupId }) {
       ...event,
       start: event.start.toISOString().slice(0, 10),
       end: event.end.toISOString().slice(0, 10),
-      percentage: event.percentage || "",  // Asegurarse de que el porcentaje esté presente en la edición
+      percentage: event.percentage || "",
     });
     setIsEditing(true);
     setIsDialogOpen(true);
@@ -486,16 +519,38 @@ export default function CalendarioSprints({ groupId }) {
                   onClick={isEditing ? handleUpdateEvent : handleAddEvent}
                   className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
               >
-                {isEditing ? (
-                    <Edit2 className="h-4 w-4 mr-2" />
-                ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                )}
+                {isEditing ? <Edit2 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
                 {isEditing ? "Actualizar Sprint" : "Agregar Sprint"}
+              </Button>
+              {isEditing && (
+                  <Button
+                      onClick={openConfirmDialog}
+                      className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto mt-2 sm:mt-0"
+                  >
+                    Eliminar Sprint
+                  </Button>
+              )}
+            </DialogFooter>
+
+          </DialogContent>
+        </Dialog>
+        <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirmar Eliminación</DialogTitle>
+            </DialogHeader>
+            <p>¿Estás seguro de que deseas eliminar este sprint? Esta acción no se puede deshacer.</p>
+            <DialogFooter>
+              <Button onClick={() => setIsConfirmDialogOpen(false)} variant="outline">
+                Cancelar
+              </Button>
+              <Button onClick={handleDeleteEvent} variant="destructive">
+                Confirmar
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
       </div>
   );
 }
