@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getData, postData } from "../api/apiService";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Star, CheckCircle, XCircle } from "lucide-react"; // Importa algunos iconos para mejorar la UI
+import { Star, CheckCircle, XCircle } from "lucide-react";
 
 const COLORS = ["#8b5cf6", "#a78bfa", "#c4b5fd"];
 
@@ -58,7 +58,7 @@ export default function SprintEvaluation({ groupId }) {
             student_grades: Object.keys(grades).map((studentId) => ({
                 student_id: parseInt(studentId),
                 grade: grades[studentId],
-                comments: "" // Agrega comentarios si es necesario
+                comments: ""
             })),
             strengths,
             weaknesses
