@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarCheck, CheckSquare } from "lucide-react";
 import WeeklyReport from "./WeeklyReport";
-import SprintReport from "./SprintReport";
+import SprintEvaluationView from "./SprintEvaluationView";
 
 export default function ReportView({ groupId }) {
   const [activeTab, setActiveTab] = useState("weekly-report");
@@ -54,7 +54,7 @@ export default function ReportView({ groupId }) {
             )}
             {activeTab === "sprint-report" && (
                 <div className="bg-white shadow-lg rounded-lg p-2 sm:p-4 w-full">
-                  <SprintReport groupId={groupId} />
+                  <SprintEvaluationView groupId={groupId} />
                 </div>
             )}
           </div>

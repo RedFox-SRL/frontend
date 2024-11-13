@@ -159,6 +159,8 @@ export default function ManagementView({ management, onBack }) {
     setSelectedGroupDetails(group);
   };
 
+  const getInitials = (name, lastName) => `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+
   return (
       <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -194,7 +196,11 @@ export default function ManagementView({ management, onBack }) {
         {isEvaluating ? (
             <EvaluationView groupId={selectedGroupId} onBack={() => setIsEvaluating(false)} />
         ) : isSpecialEvaluationsView ? (
-            <SpecialEvaluationsView onBack={() => setIsSpecialEvaluationsView(false)} />
+            <SpecialEvaluationsView
+                onBack={() => setIsSpecialEvaluationsView(false)}
+                managementId={management.id}
+            />
+
         ) : (
             <>
               {/* Información General de Gestión */}
@@ -294,20 +300,20 @@ export default function ManagementView({ management, onBack }) {
                               groups={groups}
                               handleEvaluateClick={handleEvaluateClick}
                               handleViewDetails={handleViewDetails}
-                              getInitials={(name, lastName) => `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase()}
+                              getInitials={getInitials}
                           />
                       )}
                     </TabsContent>
 
                     <TabsContent value="participants">
-                      <ParticipantList participants={participants} getInitials={(name, lastName) => `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase()} />
+                      <ParticipantList participants={participants} getInitials={getInitials} />
                     </TabsContent>
                   </Tabs>
                 </CardContent>
               </Card>
 
               {selectedGroupDetails && (
-                  <GroupDetails group={selectedGroupDetails} onClose={() => setSelectedGroupDetails(null)} />
+                  <GroupDetails group={selectedGroupDetails} onClose={() => setSelectedGroupDetails(null)} getInitials={getInitials} />
               )}
             </>
         )}
