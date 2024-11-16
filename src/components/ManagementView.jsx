@@ -72,13 +72,17 @@ export default function ManagementView({ management, onBack }) {
   const [activeTab, setActiveTab] = useState("announcements");
   const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+  });
 
   const toggleSettingsDropdown = () => {
     setIsSettingsDropdownOpen(!isSettingsDropdownOpen);
   };
 
   const handleAnnouncementCreated = async () => {
-    await fetchAnnouncements();
+    await fetchAnnouncements(1);
   };
 
   const progress = useMemo(() => {
@@ -101,7 +105,7 @@ export default function ManagementView({ management, onBack }) {
     if (management) {
       fetchGroups();
       fetchParticipants();
-      fetchAnnouncements();
+      fetchAnnouncements(1);
     }
   }, [management]);
 
@@ -134,12 +138,16 @@ export default function ManagementView({ management, onBack }) {
     }
   };
 
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = async (page) => {
     setIsLoading(true);
     try {
-      const response = await getData(`/management/${management.id}/announcements`);
+      const response = await getData(`/management/${management.id}/announcements?page=${page}`);
       if (response && response.data) {
         setAnnouncements(response.data);
+        setPagination({ currentPage: response.current_page, lastPage: response.last_page });
+        if (page !== 1) {
+          document.getElementById("topPagination").scrollIntoView({ behavior: "smooth" });
+        }
       } else {
         console.error("Error en la respuesta de los anuncios:", response);
       }
@@ -150,6 +158,61 @@ export default function ManagementView({ management, onBack }) {
     }
   };
 
+  const renderPagination = (position) => {
+    const getPageRange = () => {
+      const totalVisible = window.innerWidth <= 768 ? 3 : 7;
+      const half = Math.floor(totalVisible / 2);
+      let start = Math.max(1, pagination.currentPage - half);
+      let end = Math.min(pagination.lastPage, pagination.currentPage + half);
+
+      if (pagination.currentPage <= half) {
+        end = Math.min(totalVisible, pagination.lastPage);
+      } else if (pagination.currentPage > pagination.lastPage - half) {
+        start = Math.max(1, pagination.lastPage - totalVisible + 1);
+      }
+
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    };
+
+    const pages = getPageRange();
+
+    return (
+        <div
+            id={position === "top" ? "topPagination" : undefined}
+            className={`flex justify-center ${position === "top" ? "mb-4" : "mt-4"} gap-2`}
+        >
+          <Button
+              onClick={() => fetchAnnouncements(pagination.currentPage - 1)}
+              disabled={pagination.currentPage === 1}
+              className="bg-purple-100 hover:bg-purple-300 text-purple-700"
+          >
+            {"<"}
+          </Button>
+          {pages.map((page) => (
+              <Button
+                  key={page}
+                  onClick={() => fetchAnnouncements(page)}
+                  className={`${
+                      pagination.currentPage === page
+                          ? "bg-purple-500 text-white"
+                          : "bg-purple-100 hover:bg-purple-300 text-purple-700"
+                  }`}
+              >
+                {page}
+              </Button>
+          ))}
+          <Button
+              onClick={() => fetchAnnouncements(pagination.currentPage + 1)}
+              disabled={pagination.currentPage === pagination.lastPage}
+              className="bg-purple-100 hover:bg-purple-300 text-purple-700"
+          >
+            {">"}
+          </Button>
+        </div>
+    );
+  };
+
+
   const handleEvaluateClick = (groupId) => {
     setIsEvaluating(true);
     setSelectedGroupId(groupId);
@@ -159,23 +222,27 @@ export default function ManagementView({ management, onBack }) {
     setSelectedGroupDetails(group);
   };
 
-  const getInitials = (name, lastName) => `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (name, lastName) =>
+      `${name.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 
   return (
       <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="sm:p-4 p-0 max-w-7xl mx-auto"
+          className="sm:p-4 p-2 max-w-7xl mx-auto"
       >
         {!isEvaluating && !isSpecialEvaluationsView && (
-            <div className="flex justify-between mb-4">
+            <div className="flex flex-wrap justify-between mb-4 items-center gap-2">
               <Button onClick={onBack} className="bg-transparent hover:bg-purple-200 p-2 rounded-full">
                 <ArrowLeft className="text-purple-600 hover:text-purple-700" />
               </Button>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-2 justify-end items-center">
                 <div className="relative">
-                  <Button onClick={toggleSettingsDropdown} className="flex items-center bg-purple-600 hover:bg-purple-700 text-white">
+                  <Button
+                      onClick={toggleSettingsDropdown}
+                      className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
+                  >
                     <Settings className="mr-2" />
                     Configuración
                   </Button>
@@ -185,7 +252,10 @@ export default function ManagementView({ management, onBack }) {
                       </div>
                   )}
                 </div>
-                <Button onClick={() => setIsSpecialEvaluationsView(true)} className="flex items-center bg-purple-500 text-white hover:bg-purple-600">
+                <Button
+                    onClick={() => setIsSpecialEvaluationsView(true)}
+                    className="flex items-center bg-purple-500 text-white hover:bg-purple-600 w-full sm:w-auto"
+                >
                   <Star className="mr-2" />
                   Evaluaciones Especiales
                 </Button>
@@ -200,15 +270,13 @@ export default function ManagementView({ management, onBack }) {
                 onBack={() => setIsSpecialEvaluationsView(false)}
                 managementId={management.id}
             />
-
         ) : (
             <>
-              {/* Información General de Gestión */}
               <div className="bg-white shadow-md p-6 rounded-lg mb-8">
                 <h1 className="text-3xl font-bold mb-4 text-purple-700">
-                  Gestión {management.semester === "first" ? "1" : "2"}/{new Date(management.start_date).getFullYear()}
+                  Gestión {management.semester === "first" ? "1" : "2"}/
+                  {new Date(management.start_date).getFullYear()}
                 </h1>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex items-center">
                     <Calendar className="h-6 w-6 text-purple-600 mr-3" />
@@ -239,7 +307,6 @@ export default function ManagementView({ management, onBack }) {
                     </div>
                   </div>
                 </div>
-
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center">
@@ -254,7 +321,6 @@ export default function ManagementView({ management, onBack }) {
                 </div>
               </div>
 
-              {/* Tabs de Gestión */}
               <Card className="bg-white shadow-md w-full rounded-lg mb-8">
                 <CardHeader className="p-2 sm:p-4">
                   <CardTitle className="text-lg sm:text-xl text-purple-700">Gestión</CardTitle>
@@ -282,14 +348,19 @@ export default function ManagementView({ management, onBack }) {
                       >
                         <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span className="hidden sm:inline ml-1 sm:ml-2">
-                      Estudiantes ({participants && participants.students ? participants.students.length : 0})
+                      Estudiantes ({participants?.students?.length || 0})
                     </span>
                       </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="announcements">
-                      <CreateAnnouncement managementId={management.id} onAnnouncementCreated={handleAnnouncementCreated} />
+                      <CreateAnnouncement
+                          managementId={management.id}
+                          onAnnouncementCreated={fetchAnnouncements}
+                      />
+                      {renderPagination("top")}
                       <AnnouncementList announcements={announcements} />
+                      {renderPagination("bottom")}
                     </TabsContent>
 
                     <TabsContent value="groups">
@@ -313,7 +384,11 @@ export default function ManagementView({ management, onBack }) {
               </Card>
 
               {selectedGroupDetails && (
-                  <GroupDetails group={selectedGroupDetails} onClose={() => setSelectedGroupDetails(null)} getInitials={getInitials} />
+                  <GroupDetails
+                      group={selectedGroupDetails}
+                      onClose={() => setSelectedGroupDetails(null)}
+                      getInitials={getInitials}
+                  />
               )}
             </>
         )}

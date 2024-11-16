@@ -12,7 +12,7 @@ import GroupList from "./GroupList";
 import ParticipantList from "./ParticipantList";
 import GroupDetails from "./GroupDetail";
 import AnnouncementList from "./AnnouncementList";
-import CreateAnnouncement from "./CreateAnnouncement";
+import InvitationModal from "./InvitationModal";
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -26,14 +26,11 @@ export default function Dashboard() {
   });
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [announcements, setAnnouncements] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+  });
   const [activeTab, setActiveTab] = useState("announcements");
-  const [nextPageUrl, setNextPageUrl] = useState(null);
-
-  const loadMoreAnnouncements = () => {
-    if (nextPageUrl) {
-      fetchAnnouncements(managementDetails.id, nextPageUrl);
-    }
-  };
 
   const { toast } = useToast();
 
@@ -42,9 +39,8 @@ export default function Dashboard() {
   }, []);
 
   const handleAnnouncementCreated = async () => {
-    // Recarga completa de los anuncios después de crear uno nuevo
     if (managementDetails) {
-      await fetchAnnouncements(managementDetails.id);
+      await fetchAnnouncements(managementDetails.id, 1);
     }
   };
 
@@ -63,7 +59,7 @@ export default function Dashboard() {
         await Promise.all([
           fetchGroups(response.data.management.id),
           fetchParticipants(response.data.management.id),
-          fetchAnnouncements(response.data.management.id),
+          fetchAnnouncements(response.data.management.id, 1),
         ]);
       } else {
         setIsInGroup(false);
@@ -79,7 +75,7 @@ export default function Dashboard() {
   const fetchGroups = async (managementId) => {
     try {
       const groupsResponse = await getData(
-          `/managements/${managementId}/groups`,
+          `/managements/${managementId}/groups`
       );
       if (
           groupsResponse &&
@@ -100,7 +96,7 @@ export default function Dashboard() {
   const fetchParticipants = async (managementId) => {
     try {
       const participantsResponse = await getData(
-          `/managements/${managementId}/students`,
+          `/managements/${managementId}/students`
       );
       if (
           participantsResponse &&
@@ -120,21 +116,77 @@ export default function Dashboard() {
     }
   };
 
-  const fetchAnnouncements = async (managementId, url = `/management/${managementId}/announcements`) => {
+  const fetchAnnouncements = async (managementId, page = 1) => {
     try {
+      const url = `/management/${managementId}/announcements?page=${page}`;
       const announcementsResponse = await getData(url);
-      console.log("Announcements response:", announcementsResponse);
 
       if (announcementsResponse && announcementsResponse.data) {
-        setAnnouncements((prev) => [...prev, ...announcementsResponse.data]);
-        setNextPageUrl(announcementsResponse.next_page_url);
+        setAnnouncements(announcementsResponse.data);
+        setPagination({
+          currentPage: announcementsResponse.current_page,
+          lastPage: announcementsResponse.last_page,
+        });
       } else {
         setAnnouncements([]);
+        setPagination({ currentPage: 1, lastPage: 1 });
       }
     } catch (error) {
       console.error("Error fetching announcements:", error);
       setAnnouncements([]);
+      setPagination({ currentPage: 1, lastPage: 1 });
     }
+  };
+
+  const renderPagination = () => {
+    const getPageRange = () => {
+      const totalVisible = window.innerWidth <= 768 ? 3 : 7; // Muestra 3 páginas en móviles, 7 en pantallas más grandes
+      const half = Math.floor(totalVisible / 2);
+      let start = Math.max(1, pagination.currentPage - half);
+      let end = Math.min(pagination.lastPage, pagination.currentPage + half);
+
+      if (pagination.currentPage <= half) {
+        end = Math.min(totalVisible, pagination.lastPage);
+      } else if (pagination.currentPage > pagination.lastPage - half) {
+        start = Math.max(1, pagination.lastPage - totalVisible + 1);
+      }
+
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    };
+
+    const pages = getPageRange();
+
+    return (
+        <div className="flex justify-center mt-4 gap-2">
+          <Button
+              onClick={() => fetchAnnouncements(managementDetails.id, pagination.currentPage - 1)}
+              disabled={pagination.currentPage === 1}
+              className="bg-purple-100 hover:bg-purple-300 text-purple-700"
+          >
+            {"<"}
+          </Button>
+          {pages.map((page) => (
+              <Button
+                  key={page}
+                  onClick={() => fetchAnnouncements(managementDetails.id, page)}
+                  className={`${
+                      pagination.currentPage === page
+                          ? "bg-purple-500 text-white"
+                          : "bg-purple-100 hover:bg-purple-300 text-purple-700"
+                  }`}
+              >
+                {page}
+              </Button>
+          ))}
+          <Button
+              onClick={() => fetchAnnouncements(managementDetails.id, pagination.currentPage + 1)}
+              disabled={pagination.currentPage === pagination.lastPage}
+              className="bg-purple-100 hover:bg-purple-300 text-purple-700"
+          >
+            {">"}
+          </Button>
+        </div>
+    );
   };
 
   const handleJoinGroup = async () => {
@@ -210,7 +262,6 @@ export default function Dashboard() {
     setSelectedGroup(group);
   };
 
-  // Memoize the CourseInfo component
   const memoizedCourseInfo = useMemo(() => {
     return managementDetails ? (
         <CourseInfo managementDetails={managementDetails} />
@@ -236,6 +287,14 @@ export default function Dashboard() {
             transition={{ duration: 0.5 }}
             className="sm:p-4 space-y-2 sm:space-y-4"
         >
+          <InvitationModal />
+          <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="sm:p-4 space-y-2 sm:space-y-4"
+          >
+          </motion.div>
           {memoizedCourseInfo}
           <Card className="w-full shadow-sm">
             <CardHeader className="p-2 sm:p-4">
@@ -280,8 +339,9 @@ export default function Dashboard() {
                 </TabsList>
                 <div className="mt-2 sm:mt-4">
                   <TabsContent value="announcements">
-
+                    {renderPagination()}
                     <AnnouncementList announcements={announcements} />
+                    {renderPagination()}
                   </TabsContent>
                   <TabsContent value="groups">
                     <GroupList
