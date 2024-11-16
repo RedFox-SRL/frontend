@@ -52,13 +52,58 @@ const InvitationList = forwardRef(({ groupId }, ref) => {
             }
         } catch (error) {
             console.error("Error fetching invitations:", error);
-            toast({
-                title: "Error",
-                description: "Ocurrió un error al cargar las invitaciones.",
-                variant: "destructive",
-            });
+            handleBackendError(error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleBackendError = (error) => {
+        const errorCode = error.response?.data?.code;
+
+        switch (errorCode) {
+            case 313: // STUDENT_NOT_FOUND
+                toast({
+                    title: "Error",
+                    description: "El estudiante invitado no fue encontrado.",
+                    variant: "destructive",
+                });
+                break;
+            case 268: // GROUP_FULL
+                toast({
+                    title: "Error",
+                    description: "El grupo ya está lleno. No se pueden enviar más invitaciones.",
+                    variant: "destructive",
+                });
+                break;
+            case 310: // INVITATION_ALREADY_SENT
+                toast({
+                    title: "Error",
+                    description: "Ya se envió una invitación pendiente a este estudiante.",
+                    variant: "destructive",
+                });
+                break;
+            case 309: // MAX_INVITATIONS_REACHED
+                toast({
+                    title: "Error",
+                    description: "Se ha alcanzado el número máximo de invitaciones pendientes.",
+                    variant: "destructive",
+                });
+                break;
+            case 314: // STUDENT_NOT_IN_SAME_MANAGEMENT
+                toast({
+                    title: "Error",
+                    description: "El estudiante no pertenece a la misma gestión que el grupo.",
+                    variant: "destructive",
+                });
+                break;
+            default:
+                toast({
+                    title: "Error",
+                    description: "Ocurrió un error al cargar las invitaciones.",
+                    variant: "destructive",
+                });
+                break;
         }
     };
 
@@ -100,6 +145,19 @@ const InvitationList = forwardRef(({ groupId }, ref) => {
         filter === "all" ? true : invitation.status === filter
     );
 
+    const getFilterLabel = () => {
+        switch (filter) {
+            case "pending":
+                return "pendiente";
+            case "accepted":
+                return "aceptada";
+            case "rejected":
+                return "rechazada";
+            default:
+                return "";
+        }
+    };
+
     return (
         <Card className="w-full bg-white rounded-lg shadow-lg mt-6">
             <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-800 py-3 px-6 rounded-t-lg">
@@ -123,7 +181,7 @@ const InvitationList = forwardRef(({ groupId }, ref) => {
                     <div className="flex justify-center items-center h-32">
                         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
                     </div>
-                ) : (
+                ) : filteredInvitations.length > 0 ? (
                     <ul className="space-y-4">
                         {filteredInvitations.map((invitation, index) => (
                             <li
@@ -166,6 +224,12 @@ const InvitationList = forwardRef(({ groupId }, ref) => {
                             </li>
                         ))}
                     </ul>
+                ) : (
+                    <div className="text-center text-gray-500">
+                        {filter === "all"
+                            ? "No hay ninguna invitación enviada."
+                            : `No hay ninguna invitación ${getFilterLabel()} actualmente.`}
+                    </div>
                 )}
             </CardContent>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
