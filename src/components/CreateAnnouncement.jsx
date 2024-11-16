@@ -28,9 +28,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES = 5;
 
 export default function CreateAnnouncement({
-  managementId,
-  onAnnouncementCreated,
-}) {
+                                             managementId,
+                                             onAnnouncementCreated,
+                                           }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [attachments, setAttachments] = useState([]);
@@ -38,6 +38,7 @@ export default function CreateAnnouncement({
   const [isYoutubeDialogOpen, setIsYoutubeDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
+  const [isGlobal, setIsGlobal] = useState(false);
   const fileInputRef = useRef(null);
   const quillRef = useRef(null);
   const { toast } = useToast();
@@ -70,71 +71,71 @@ export default function CreateAnnouncement({
   const handleExpand = () => setIsExpanded(true);
 
   const handleAnnouncementChange = useCallback(
-    (content) => {
-      if (content.length <= MAX_CHAR_LIMIT) {
-        setAnnouncement(content);
-      } else {
-        toast({
-          title: "Límite de caracteres alcanzado",
-          description: `Los anuncios no pueden exceder ${MAX_CHAR_LIMIT} caracteres.`,
-          variant: "warning",
-        });
-      }
-    },
-    [toast],
+      (content) => {
+        if (content.length <= MAX_CHAR_LIMIT) {
+          setAnnouncement(content);
+        } else {
+          toast({
+            title: "Límite de caracteres alcanzado",
+            description: `Los anuncios no pueden exceder ${MAX_CHAR_LIMIT} caracteres.`,
+            variant: "warning",
+          });
+        }
+      },
+      [toast],
   );
 
   const handleFileAttachment = useCallback(
-    async (event) => {
-      const files = Array.from(event.target.files);
-      if (
-        attachments.filter((a) => a.type === "file").length + files.length >
-        MAX_FILES
-      ) {
-        toast({
-          title: "Límite de archivos alcanzado",
-          description: `No puedes adjuntar más de ${MAX_FILES} archivos.`,
-          variant: "warning",
-        });
-        return;
-      }
-      const newAttachments = await Promise.all(
-        files.map(async (file) => {
-          if (file.size > MAX_FILE_SIZE) {
-            toast({
-              title: "Archivo demasiado grande",
-              description: `El archivo ${file.name} excede el tamaño máximo de ${formatFileSize(MAX_FILE_SIZE)}.`,
-              variant: "warning",
-            });
-            return null;
-          }
-          try {
-            const preview = await getFilePreview(file);
-            return {
-              type: "file",
-              name: file.name,
-              fileType: getFileType(file),
-              size: file.size,
-              file: file,
-              preview: preview,
-            };
-          } catch (error) {
-            console.error("Error al procesar el archivo:", error);
-            toast({
-              title: "Error de archivo",
-              description: `No se pudo procesar el archivo ${file.name}.`,
-              variant: "destructive",
-            });
-            return null;
-          }
-        }),
-      );
-      setAttachments((prev) => [
-        ...prev,
-        ...newAttachments.filter((a) => a !== null),
-      ]);
-    },
-    [attachments, toast],
+      async (event) => {
+        const files = Array.from(event.target.files);
+        if (
+            attachments.filter((a) => a.type === "file").length + files.length >
+            MAX_FILES
+        ) {
+          toast({
+            title: "Límite de archivos alcanzado",
+            description: `No puedes adjuntar más de ${MAX_FILES} archivos.`,
+            variant: "warning",
+          });
+          return;
+        }
+        const newAttachments = await Promise.all(
+            files.map(async (file) => {
+              if (file.size > MAX_FILE_SIZE) {
+                toast({
+                  title: "Archivo demasiado grande",
+                  description: `El archivo ${file.name} excede el tamaño máximo de ${formatFileSize(MAX_FILE_SIZE)}.`,
+                  variant: "warning",
+                });
+                return null;
+              }
+              try {
+                const preview = await getFilePreview(file);
+                return {
+                  type: "file",
+                  name: file.name,
+                  fileType: getFileType(file),
+                  size: file.size,
+                  file: file,
+                  preview: preview,
+                };
+              } catch (error) {
+                console.error("Error al procesar el archivo:", error);
+                toast({
+                  title: "Error de archivo",
+                  description: `No se pudo procesar el archivo ${file.name}.`,
+                  variant: "destructive",
+                });
+                return null;
+              }
+            }),
+        );
+        setAttachments((prev) => [
+          ...prev,
+          ...newAttachments.filter((a) => a !== null),
+        ]);
+      },
+      [attachments, toast],
   );
 
   const handleLinkAttachment = useCallback((linkData) => {
@@ -165,6 +166,7 @@ export default function CreateAnnouncement({
     const formData = new FormData();
     formData.append("management_id", managementId);
     formData.append("announcement", announcement);
+    formData.append("is_global", isGlobal ? 1 : 0);
 
     const links = [];
     const youtubeVideos = [];
@@ -193,9 +195,9 @@ export default function CreateAnnouncement({
     try {
       const response = await postData("/announcements", formData);
       if (
-        response &&
-        response.message === "Anuncio creado con éxito" &&
-        response.announcement
+          response &&
+          response.message === "Anuncio creado con éxito" &&
+          response.announcement
       ) {
         onAnnouncementCreated(response.announcement);
         setAnnouncement("");
@@ -213,11 +215,11 @@ export default function CreateAnnouncement({
     } catch (error) {
       console.error("Error al crear el anuncio:", error);
       let errorMessage =
-        "Hubo un problema al crear el anuncio. Por favor, inténtalo de nuevo.";
+          "Hubo un problema al crear el anuncio. Por favor, inténtalo de nuevo.";
       if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
+          error.response &&
+          error.response.data &&
+          error.response.data.message
       ) {
         errorMessage = error.response.data.message;
       }
@@ -229,162 +231,177 @@ export default function CreateAnnouncement({
     } finally {
       setIsLoading(false);
     }
-  }, [announcement, attachments, managementId, onAnnouncementCreated, toast]);
+  }, [announcement, attachments, managementId, onAnnouncementCreated, toast, isGlobal]);
 
   const modules = {
     toolbar: [["bold", "italic", "underline"], [{ list: "bullet" }], ["clean"]],
   };
 
   return (
-    <Card className="w-full mb-4 shadow-sm">
-      <CardContent className="p-4">
-        {!isExpanded ? (
-          <div
-            className="flex items-center space-x-4 cursor-pointer"
-            onClick={handleExpand}
-          >
-            <Avatar className="w-10 h-10 border-2 border-purple-200">
-              <AvatarImage
-                src={
-                  user?.profilePicture ||
-                  getAvatarUrl(user?.name, user?.last_name)
-                }
-                alt={user ? `${user.name} ${user.last_name}` : "Usuario"}
-              />
-              <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
-                {user
-                  ? `${user.name.charAt(0)}${user.last_name.charAt(0)}`
-                  : "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-grow bg-gray-100 rounded-full px-4 py-2 text-gray-500">
-              Anuncia algo a tu clase...
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4">
-              <Avatar className="w-10 h-10 border-2 border-purple-200">
-                <AvatarImage
-                  src={
-                    user?.profilePicture ||
-                    getAvatarUrl(user?.name, user?.last_name)
-                  }
-                  alt={user ? `${user.name} ${user.last_name}` : "Usuario"}
-                />
-                <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
-                  {user
-                    ? `${user.name.charAt(0)}${user.last_name.charAt(0)}`
-                    : "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-grow">
-                <ReactQuill
-                  ref={quillRef}
-                  value={announcement}
-                  onChange={handleAnnouncementChange}
-                  modules={modules}
-                  placeholder="Anuncia algo a tu clase"
-                  className="bg-white"
-                />
-                <div className="text-right text-sm text-gray-500 mt-1">
-                  {announcement.length}/{MAX_CHAR_LIMIT}
+      <Card className="w-full mb-4 shadow-sm">
+        <CardContent className="p-4">
+          {!isExpanded ? (
+              <div
+                  className="flex items-center space-x-4 cursor-pointer"
+                  onClick={handleExpand}
+              >
+                <Avatar className="w-10 h-10 border-2 border-purple-200">
+                  <AvatarImage
+                      src={
+                          user?.profilePicture ||
+                          getAvatarUrl(user?.name, user?.last_name)
+                      }
+                      alt={user ? `${user.name} ${user.last_name}` : "Usuario"}
+                  />
+                  <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
+                    {user
+                        ? `${user.name.charAt(0)}${user.last_name.charAt(0)}`
+                        : "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-grow bg-gray-100 rounded-full px-4 py-2 text-gray-500">
+                  Anuncia algo a tu clase...
                 </div>
               </div>
-            </div>
-            {attachments.length > 0 && (
-              <AttachmentList
-                attachments={attachments}
-                onRemoveAttachment={removeAttachment}
-              />
-            )}
-            <div className="flex flex-wrap justify-between items-center gap-2">
-              <div className="flex flex-wrap gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={
-                          attachments.filter((a) => a.type === "file").length >=
-                          MAX_FILES
+          ) : (
+              <div className="space-y-4">
+                <div className="flex items-start space-x-4">
+                  <Avatar className="w-10 h-10 border-2 border-purple-200">
+                    <AvatarImage
+                        src={
+                            user?.profilePicture ||
+                            getAvatarUrl(user?.name, user?.last_name)
                         }
-                      >
-                        <Paperclip className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Adjuntar archivo (máx. {MAX_FILES})</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setIsYoutubeDialogOpen(true)}
-                      >
-                        <Youtube className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Añadir video de YouTube</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setIsLinkDialogOpen(true)}
-                      >
-                        <LinkIcon className="w-4 h-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Añadir enlace</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                        alt={user ? `${user.name} ${user.last_name}` : "Usuario"}
+                    />
+                    <AvatarFallback className="bg-purple-100 text-purple-600 text-lg font-bold">
+                      {user
+                          ? `${user.name.charAt(0)}${user.last_name.charAt(0)}`
+                          : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-grow">
+                    <ReactQuill
+                        ref={quillRef}
+                        value={announcement}
+                        onChange={handleAnnouncementChange}
+                        modules={modules}
+                        placeholder="Anuncia algo a tu clase"
+                        className="bg-white"
+                    />
+                    <div className="flex items-center justify-between mt-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-700">Anuncio Global:</span>
+                        <div
+                            className={`w-10 h-5 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer transition-colors duration-200 ${isGlobal ? "bg-purple-600" : ""
+                            }`}
+                            onClick={() => setIsGlobal((prev) => !prev)}
+                        >
+                          <div
+                              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${isGlobal ? "translate-x-5" : ""
+                              }`}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-right text-sm text-gray-500">
+                        {announcement.length}/{MAX_CHAR_LIMIT}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {attachments.length > 0 && (
+                    <AttachmentList
+                        attachments={attachments}
+                        onRemoveAttachment={removeAttachment}
+                    />
+                )}
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={
+                                  attachments.filter((a) => a.type === "file").length >=
+                                  MAX_FILES
+                              }
+                          >
+                            <Paperclip className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Adjuntar archivo (máx. {MAX_FILES})</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => setIsYoutubeDialogOpen(true)}
+                          >
+                            <Youtube className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Añadir video de YouTube</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => setIsLinkDialogOpen(true)}
+                          >
+                            <LinkIcon className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Añadir enlace</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <Button
+                      onClick={handleSubmit}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                      disabled={
+                          isLoading ||
+                          (!announcement.trim() && attachments.length === 0)
+                      }
+                  >
+                    {isLoading ? "Publicando..." : "Publicar"}
+                  </Button>
+                </div>
               </div>
-              <Button
-                onClick={handleSubmit}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-                disabled={
-                  isLoading ||
-                  (!announcement.trim() && attachments.length === 0)
-                }
-              >
-                {isLoading ? "Publicando..." : "Publicar"}
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        onChange={handleFileAttachment}
-        multiple
-        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-      />
-      <LinkDialog
-        isOpen={isLinkDialogOpen}
-        onClose={() => setIsLinkDialogOpen(false)}
-        onSubmit={handleLinkAttachment}
-      />
-      <YouTubeDialog
-        isOpen={isYoutubeDialogOpen}
-        onClose={() => setIsYoutubeDialogOpen(false)}
-        onSelect={handleYoutubeAttachment}
-      />
-    </Card>
+          )}
+        </CardContent>
+        <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleFileAttachment}
+            multiple
+            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+        />
+        <LinkDialog
+            isOpen={isLinkDialogOpen}
+            onClose={() => setIsLinkDialogOpen(false)}
+            onSubmit={handleLinkAttachment}
+        />
+        <YouTubeDialog
+            isOpen={isYoutubeDialogOpen}
+            onClose={() => setIsYoutubeDialogOpen(false)}
+            onSelect={handleYoutubeAttachment}
+        />
+      </Card>
   );
 }

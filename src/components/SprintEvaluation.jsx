@@ -212,9 +212,13 @@ export default function SprintEvaluation({ groupId }) {
                                     ))}
                                 </Pie>
                                 <Tooltip />
-                                <Legend />
                             </PieChart>
                         </ResponsiveContainer>
+                        <div className="flex justify-around mt-4">
+                            <p>Por hacer: {template.overall_progress.todo_tasks}</p>
+                            <p>En progreso: {template.overall_progress.in_progress_tasks}</p>
+                            <p>Hecho: {template.overall_progress.completed_tasks}</p>
+                        </div>
                     </div>
 
                     <div className="space-y-4 mt-6">
@@ -248,71 +252,35 @@ export default function SprintEvaluation({ groupId }) {
                                     {showTaskList[student.id] ? "Ocultar listado de tareas" : "Ver listado de tareas"}
                                 </button>
                                 {showTaskList[student.id] && (
-                                    <ul className="mt-2 space-y-1">
-                                        {Object.values(student.task_details).map((task) => (
-                                            <li key={task.id} className="border-b p-2">
-                                                <strong>{task.title}</strong> - {task.status} - Satisfacción: {task.satisfaction_level || "N/A"}
-                                                {task.comments && <p>{task.comments}</p>}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    <>
+                                        <ResponsiveContainer width="100%" height={200}>
+                                            <PieChart>
+                                                <Pie
+                                                    data={taskData}
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    {taskData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <ul className="mt-2 space-y-1">
+                                            {Object.values(student.task_details).map((task) => (
+                                                <li key={task.id} className="border-b p-2">
+                                                    <strong>{task.title}</strong> - {task.status} - Satisfacción: {task.satisfaction_level || "N/A"}
+                                                    {task.comments && <p>{task.comments}</p>}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </>
                                 )}
                             </div>
                         ))}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
-                        <div>
-                            <h2 className="text-purple-600 mb-4">Fortalezas</h2>
-                            <div className="space-y-2">
-                                {strengths.map((strength, index) => (
-                                    <div key={index} className="flex items-center space-x-2">
-                                        <span>{strength}</span>
-                                        <Trash
-                                            className="text-red-500 cursor-pointer"
-                                            onClick={() => setStrengths(strengths.filter((_, i) => i !== index))}
-                                        />
-                                    </div>
-                                ))}
-                                <input
-                                    type="text"
-                                    value={newStrength}
-                                    onChange={(e) => setNewStrength(e.target.value)}
-                                    onKeyDown={(e) => handleKeyPress(e, "strength")}
-                                    placeholder="Agregar fortaleza"
-                                    className="border border-gray-300 rounded-md p-2 w-full mt-2"
-                                />
-                                <button onClick={handleAddStrength} className="text-purple-600 flex items-center mt-2">
-                                    <PlusCircle className="mr-2" /> Añadir Fortaleza
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h2 className="text-purple-600 mb-4">Debilidades</h2>
-                            <div className="space-y-2">
-                                {weaknesses.map((weakness, index) => (
-                                    <div key={index} className="flex items-center space-x-2">
-                                        <span>{weakness}</span>
-                                        <Trash
-                                            className="text-red-500 cursor-pointer"
-                                            onClick={() => setWeaknesses(weaknesses.filter((_, i) => i !== index))}
-                                        />
-                                    </div>
-                                ))}
-                                <input
-                                    type="text"
-                                    value={newWeakness}
-                                    onChange={(e) => setNewWeakness(e.target.value)}
-                                    onKeyDown={(e) => handleKeyPress(e, "weakness")}
-                                    placeholder="Agregar debilidad"
-                                    className="border border-gray-300 rounded-md p-2 w-full mt-2"
-                                />
-                                <button onClick={handleAddWeakness} className="text-purple-600 flex items-center mt-2">
-                                    <PlusCircle className="mr-2" /> Añadir Debilidad
-                                </button>
-                            </div>
-                        </div>
                     </div>
 
                     <button
