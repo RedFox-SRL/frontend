@@ -114,6 +114,29 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
         setEvaluationData({ ...evaluationData, sections: updatedSections });
     };
 
+    // Handle remove section
+    const handleRemoveSection = (sectionIndex) => {
+        const updatedSections = evaluationData.sections.filter((_, index) => index !== sectionIndex);
+        setEvaluationData({ ...evaluationData, sections: updatedSections });
+        toast({
+            title: "Sección Eliminada",
+            description: "La sección ha sido eliminada con éxito.",
+            status: "success",
+        });
+    };
+
+    // Handle remove criteria
+    const handleRemoveCriteria = (sectionIndex, criteriaIndex) => {
+        const updatedSections = evaluationData.sections ? [...evaluationData.sections] : [];
+        updatedSections[sectionIndex].criteria.splice(criteriaIndex, 1);
+        setEvaluationData({ ...evaluationData, sections: updatedSections });
+        toast({
+            title: "Criterio Eliminado",
+            description: "El criterio ha sido eliminado con éxito.",
+            status: "success",
+        });
+    };
+
     return (
         <div className="mt-4 p-4 border rounded-lg shadow-lg bg-white space-y-6">
             <button onClick={onBack} className="flex items-center text-purple-600 mb-4">
@@ -148,7 +171,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     <div className="flex justify-between items-center">
                         <input
                             type="text"
-                            value={section.title}
+                            value={section.title || ""}
                             onChange={(e) => {
                                 const updatedSections = evaluationData.sections ? [...evaluationData.sections] : [];
                                 updatedSections[sectionIndex].title = e.target.value;
@@ -159,6 +182,12 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                         />
                         <button onClick={() => handleAddCriteria(sectionIndex)} className="text-green-500">
                             <PlusCircle className="inline mr-1" /> Añadir Criterio
+                        </button>
+                        <button
+                            onClick={() => handleRemoveSection(sectionIndex)}
+                            className="text-red-500"
+                        >
+                            <Trash className="inline mr-1" /> Eliminar Sección
                         </button>
                     </div>
 
@@ -188,11 +217,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                             <div className="flex justify-end mt-2">
                                 <button
                                     className="text-red-500"
-                                    onClick={() => {
-                                        const updatedSections = evaluationData.sections ? [...evaluationData.sections] : [];
-                                        updatedSections[sectionIndex].criteria.splice(criteriaIndex, 1);
-                                        setEvaluationData({ ...evaluationData, sections: updatedSections });
-                                    }}
+                                    onClick={() => handleRemoveCriteria(sectionIndex, criteriaIndex)}
                                 >
                                     <Trash className="mr-1" /> Eliminar
                                 </button>
@@ -202,6 +227,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                 </section>
             ))}
 
+            {/* Button to Add Section */}
             <div className="flex justify-between mt-6">
                 <button onClick={handleAddSection} className="text-blue-500">
                     <PlusCircle className="inline mr-1" /> Añadir Sección

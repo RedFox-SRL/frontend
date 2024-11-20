@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { getData, postData } from "../api/apiService";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Trash, PlusCircle, Eye, EyeOff } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getData, postData } from "../api/apiService";
 
 const COLORS = ["#a78bfa", "#c4b5fd", "#8b5cf6"];
 
@@ -16,7 +16,7 @@ export default function SprintEvaluation({ groupId }) {
     const [newWeakness, setNewWeakness] = useState("");
     const [grades, setGrades] = useState({});
     const [comments, setComments] = useState({});
-    const [showTaskList, setShowTaskList] = useState({});
+    const [summary, setSummary] = useState("");
     const { toast } = useToast();
 
     useEffect(() => {
@@ -45,65 +45,11 @@ export default function SprintEvaluation({ groupId }) {
         }
     }, [selectedSprintId]);
 
-    const handleAddStrength = () => {
-        if (strengths.length < 10 && newStrength) {
-            setStrengths([...strengths, newStrength]);
-            setNewStrength("");
-        } else {
-            toast({
-                title: "Error",
-                description: "Máximo de 10 fortalezas alcanzado o campo vacío.",
-                status: "error",
-                style: { backgroundColor: 'red', color: 'white' }
-            });
-        }
-    };
-
-    const handleAddWeakness = () => {
-        if (weaknesses.length < 10 && newWeakness) {
-            setWeaknesses([...weaknesses, newWeakness]);
-            setNewWeakness("");
-        } else {
-            toast({
-                title: "Error",
-                description: "Máximo de 10 debilidades alcanzado o campo vacío.",
-                status: "error",
-                style: { backgroundColor: 'red', color: 'white' }
-            });
-        }
-    };
-
-    const handleKeyPress = (e, type) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            if (type === "strength") handleAddStrength();
-            else if (type === "weakness") handleAddWeakness();
-        }
-    };
-
-    const handleGradeChange = (studentId, value) => {
-        const maxPercentage = parseFloat(template.percentage);
-        if (/^\d{1,3}$/.test(value) && value <= maxPercentage) {
-            setGrades({ ...grades, [studentId]: value });
-        } else {
-            toast({
-                title: "Error",
-                description: `La calificación no puede exceder el ${maxPercentage}% del sprint.`,
-                status: "error",
-                style: { backgroundColor: 'red', color: 'white' }
-            });
-        }
-    };
-
-    const handleCommentChange = (studentId, value) => {
-        setComments({ ...comments, [studentId]: value });
-    };
-
     const handleSaveEvaluation = async () => {
-        if (!template || Object.keys(grades).length === 0 || Object.keys(comments).length === 0) {
+        if (!template || Object.keys(grades).length === 0 || Object.keys(comments).length === 0 || !summary) {
             toast({
                 title: "Error",
-                description: "Todos los campos de evaluación deben estar completos.",
+                description: "Todos los campos de evaluación deben estar completos, incluyendo el resumen.",
                 status: "error",
                 style: { backgroundColor: 'red', color: 'white' }
             });
@@ -117,7 +63,7 @@ export default function SprintEvaluation({ groupId }) {
         }));
 
         const postDataPayload = {
-            summary: "Resumen del sprint",
+            summary,
             student_grades: studentGrades,
             strengths,
             weaknesses
@@ -132,38 +78,56 @@ export default function SprintEvaluation({ groupId }) {
                 style: { backgroundColor: 'green', color: 'white' }
             });
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                const message = error.response.data.message;
-                toast({
-                    title: "Error",
-                    description: message,
-                    status: "error",
-                    style: { backgroundColor: 'red', color: 'white' }
-                });
-            } else {
-                toast({
-                    title: "Error",
-                    description: "Ocurrió un error al guardar la evaluación.",
-                    status: "error",
-                    style: { backgroundColor: 'red', color: 'white' }
-                });
-            }
+            toast({
+                title: "Error",
+                description: "Ocurrió un error al guardar la evaluación.",
+                status: "error",
+                style: { backgroundColor: 'red', color: 'white' }
+            });
         }
     };
 
-    const taskData = template
-        ? [
-            { name: "Hecho", value: template.overall_progress.completed_tasks },
-            { name: "En progreso", value: template.overall_progress.in_progress_tasks },
-            { name: "Por hacer", value: template.overall_progress.todo_tasks },
-        ]
-        : [];
+    const addStrength = () => {
+        if (newStrength && newStrength.length <= 80 && strengths.length < 10) {
+            setStrengths([...strengths, newStrength]);
+            setNewStrength("");
+        } else {
+            toast({
+                title: "Error",
+                description: "El texto supera los 80 caracteres, está vacío o se alcanzó el límite de 10 fortalezas.",
+                status: "error",
+                style: { backgroundColor: 'red', color: 'white' }
+            });
+        }
+    };
 
-    const toggleTaskList = (studentId) => {
-        setShowTaskList((prevState) => ({
-            ...prevState,
-            [studentId]: !prevState[studentId]
-        }));
+    const addWeakness = () => {
+        if (newWeakness && newWeakness.length <= 80 && weaknesses.length < 10) {
+            setWeaknesses([...weaknesses, newWeakness]);
+            setNewWeakness("");
+        } else {
+            toast({
+                title: "Error",
+                description: "El texto supera los 80 caracteres, está vacío o se alcanzó el límite de 10 debilidades.",
+                status: "error",
+                style: { backgroundColor: 'red', color: 'white' }
+            });
+        }
+    };
+
+    const removeStrength = (index) => {
+        setStrengths(strengths.filter((_, i) => i !== index));
+    };
+
+    const removeWeakness = (index) => {
+        setWeaknesses(weaknesses.filter((_, i) => i !== index));
+    };
+
+    const handleKeyPress = (e, type) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            type === "strength" ? addStrength() : addWeakness();
+        }
     };
 
     return (
@@ -188,99 +152,244 @@ export default function SprintEvaluation({ groupId }) {
 
             {template && (
                 <>
+                    {/* Información sobre el Sprint */}
                     <div className="bg-white rounded-lg shadow-md p-4 space-y-2">
                         <h2 className="text-purple-700 text-lg font-semibold">{template.sprint_title}</h2>
                         <p><strong>Fecha de inicio:</strong> {new Date(template.start_date.item).toLocaleDateString()}</p>
                         <p><strong>Fecha de fin:</strong> {new Date(template.end_date.item).toLocaleDateString()}</p>
                         <p><strong>Porcentaje Planeado:</strong> {template.percentage}%</p>
-                        <p><strong>Progreso General:</strong> {template.overall_progress.completion_percentage}%</p>
+                        <p><strong>Funcionalidades Planeadas:</strong></p>
+                        <ul className="list-disc ml-4">
+                            {template.planned_features.split("\n").map((feature, index) => (
+                                <li key={index}>{feature.trim()}</li>
+                            ))}
+                        </ul>
                     </div>
 
+                    {/* Progreso General de Tareas */}
                     <div className="mt-4">
                         <h2 className="text-purple-600 mb-4">Progreso General de Tareas</h2>
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie
-                                    data={taskData}
+                                    data={[{ name: "Hecho", value: template.overall_progress.completed_tasks }, { name: "En progreso", value: template.overall_progress.in_progress_tasks }, { name: "Por hacer", value: template.overall_progress.todo_tasks }]}
                                     innerRadius={60}
                                     outerRadius={80}
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {taskData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    {COLORS.map((color, index) => (
+                                        <Cell key={`cell-${index}`} fill={color} />
                                     ))}
                                 </Pie>
                                 <Tooltip />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div className="flex justify-around mt-4">
-                            <p>Por hacer: {template.overall_progress.todo_tasks}</p>
-                            <p>En progreso: {template.overall_progress.in_progress_tasks}</p>
-                            <p>Hecho: {template.overall_progress.completed_tasks}</p>
+                        <div className="mt-4 text-center">
+                            <div className="flex justify-around">
+                                <div className="flex items-center">
+                                    <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[0] }}></div>
+                                    <span>Hecho: {template.overall_progress.completed_tasks}</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[1] }}></div>
+                                    <span>En progreso: {template.overall_progress.in_progress_tasks}</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[2] }}></div>
+                                    <span>Por hacer: {template.overall_progress.todo_tasks}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    {/* Resumen de Evaluaciones Semanales */}
+                    <div className="mt-4">
+                        <h2 className="text-purple-600 mb-4">Resumen de Evaluaciones Semanales</h2>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <PieChart>
+                                <Pie
+                                    data={[{ name: "Min Satisfacción", value: template.weekly_evaluations_summary[0].min_satisfaction }, { name: "Max Satisfacción", value: template.weekly_evaluations_summary[0].max_satisfaction }]}
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {COLORS.map((color, index) => (
+                                        <Cell key={`cell-${index}`} fill={color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                        <div className="mt-4 text-center">
+                            <p className="text-purple-600">Tareas Evaluadas: {template.weekly_evaluations_summary[0].tasks_evaluated}</p>
+                            <p className="text-purple-600">Satisfacción Promedio: {template.weekly_evaluations_summary[0].average_satisfaction}</p>
+                            <p className="text-purple-600">Fecha de Evaluación: {new Date(template.weekly_evaluations_summary[0].evaluation_date).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+
+                    {/* Evaluación de Estudiantes */}
                     <div className="space-y-4 mt-6">
                         <h2 className="text-purple-600 mb-4">Ponderación y Calificación de Estudiantes</h2>
-                        {template.student_summaries.map((student) => (
-                            <div key={student.id} className="bg-gray-100 rounded-lg p-4 mb-4">
-                                <h3 className="text-purple-700 font-semibold">{student.name} {student.last_name}</h3>
-                                <p>Tareas completadas: {student.tasks_summary.completed} de {student.tasks_summary.total}</p>
-                                <p>Calificación Promedio: {student.satisfaction_levels.average} / 5</p>
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="number"
-                                        placeholder={`Ponderación (0-${template.percentage})`}
-                                        value={grades[student.id] || ""}
-                                        onChange={(e) => handleGradeChange(student.id, e.target.value)}
-                                        className="border border-gray-300 rounded-md p-2 w-24"
-                                    />
-                                    <span className="text-gray-500">/ {template.percentage}</span>
-                                </div>
-                                <textarea
-                                    placeholder="Comentarios sobre el rendimiento"
-                                    value={comments[student.id] || ""}
-                                    onChange={(e) => handleCommentChange(student.id, e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md p-2 mt-2"
+                        {template.student_summaries.length > 0 ? (
+                            template.student_summaries.map((student) => {
+                                const noParticipationMessage = student.tasks_summary.completed === 0 ? "Este miembro no participó en el sprint" : null;
+
+                                return (
+                                    <div key={student.id} className="bg-gray-100 rounded-lg p-4 mb-4">
+                                        <h3 className="text-purple-700 font-semibold">{student.name} {student.last_name}</h3>
+                                        {noParticipationMessage ? (
+                                            <p className="text-black">{noParticipationMessage}</p>
+                                        ) : (
+                                            <>
+                                                <p>Tareas completadas: {student.tasks_summary.completed} de {student.tasks_summary.total}</p>
+                                                <p>Calificación Promedio: {student.satisfaction_levels.average || "N/A"} / 5</p>
+                                                <ResponsiveContainer width="100%" height={200}>
+                                                    <PieChart>
+                                                        <Pie
+                                                            data={[{ name: "Hecho", value: student.tasks_summary.completed }, { name: "En progreso", value: student.tasks_summary.in_progress }, { name: "Por hacer", value: student.tasks_summary.todo }]}
+                                                            innerRadius={60}
+                                                            outerRadius={80}
+                                                            paddingAngle={5}
+                                                            dataKey="value"
+                                                        >
+                                                            {COLORS.map((color, index) => (
+                                                                <Cell key={`cell-${index}`} fill={color} />
+                                                            ))}
+                                                        </Pie>
+                                                        <Tooltip />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </>
+                                        )}
+                                        <div className="flex justify-around mt-2 text-sm">
+                                            <div className="flex items-center">
+                                                <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[0] }}></div>
+                                                <span>Hecho: {student.tasks_summary.completed}</span>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[1] }}></div>
+                                                <span>En progreso: {student.tasks_summary.in_progress}</span>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[2] }}></div>
+                                                <span>Por hacer: {student.tasks_summary.todo}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col mt-4 space-y-2">
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="text" // Cambié el tipo a "text" para evitar problemas con el tipo numérico
+                                                    placeholder={`Ponderación (Máx: ${template.percentage})`}
+                                                    value={grades[student.id] || ""}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+
+                                                        if (/^\d*\.?\d*$/.test(value) && (value === "" || parseFloat(value) <= template.percentage)) {
+                                                            setGrades((prevGrades) => ({
+                                                                ...prevGrades,
+                                                                [student.id]: value,
+                                                            }));
+                                                        }
+                                                    }}
+                                                    className="border border-gray-300 rounded-md p-2 w-24"
+                                                />
+                                                <span
+                                                    className="ml-2 text-sm text-gray-500">/{template.percentage}</span>
+                                            </div>
+
+                                            <textarea
+                                                placeholder="Comentarios sobre el rendimiento"
+                                                value={comments[student.id] || ""}
+                                                onChange={(e) => setComments({
+                                                    ...comments,
+                                                    [student.id]: e.target.value
+                                                })}
+                                                className="w-full border border-gray-300 rounded-md p-2"
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <p className="text-center text-purple-600">Este miembro no participó en el sprint</p>
+                        )}
+                    </div>
+
+                    {/* Fortalezas y Debilidades */}
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                        <div>
+                            <h2 className="text-purple-600 mb-4">Fortalezas</h2>
+                            <ul className="list-disc ml-4 space-y-2">
+                                {strengths.map((strength, index) => (
+                                    <li key={index} className="flex justify-between items-center">
+                                        <span>{strength}</span>
+                                        <Trash2
+                                            className="text-red-600 cursor-pointer"
+                                            onClick={() => removeStrength(index)}
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="flex items-center mt-2">
+                                <input
+                                    type="text"
+                                    value={newStrength}
+                                    maxLength={80}
+                                    onChange={(e) => setNewStrength(e.target.value)}
+                                    onKeyPress={(e) => handleKeyPress(e, "strength")}
+                                    placeholder="Añadir fortaleza"
+                                    className="w-full border border-gray-300 rounded-md p-2"
                                 />
-                                <button
-                                    className="text-purple-600 flex items-center mt-2"
-                                    onClick={() => toggleTaskList(student.id)}
-                                >
-                                    {showTaskList[student.id] ? <EyeOff className="mr-2" /> : <Eye className="mr-2" />}
-                                    {showTaskList[student.id] ? "Ocultar listado de tareas" : "Ver listado de tareas"}
-                                </button>
-                                {showTaskList[student.id] && (
-                                    <>
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <PieChart>
-                                                <Pie
-                                                    data={taskData}
-                                                    innerRadius={60}
-                                                    outerRadius={80}
-                                                    paddingAngle={5}
-                                                    dataKey="value"
-                                                >
-                                                    {taskData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <Tooltip />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                        <ul className="mt-2 space-y-1">
-                                            {Object.values(student.task_details).map((task) => (
-                                                <li key={task.id} className="border-b p-2">
-                                                    <strong>{task.title}</strong> - {task.status} - Satisfacción: {task.satisfaction_level || "N/A"}
-                                                    {task.comments && <p>{task.comments}</p>}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </>
-                                )}
+                                <Plus
+                                    className="text-purple-600 cursor-pointer ml-2"
+                                    onClick={addStrength}
+                                />
                             </div>
-                        ))}
+                        </div>
+
+                        <div>
+                            <h2 className="text-purple-600 mb-4">Debilidades</h2>
+                            <ul className="list-disc ml-4 space-y-2">
+                                {weaknesses.map((weakness, index) => (
+                                    <li key={index} className="flex justify-between items-center">
+                                        <span>{weakness}</span>
+                                        <Trash2
+                                            className="text-red-600 cursor-pointer"
+                                            onClick={() => removeWeakness(index)}
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="flex items-center mt-2">
+                                <input
+                                    type="text"
+                                    value={newWeakness}
+                                    maxLength={80}
+                                    onChange={(e) => setNewWeakness(e.target.value)}
+                                    onKeyPress={(e) => handleKeyPress(e, "weakness")}
+                                    placeholder="Añadir debilidad"
+                                    className="w-full border border-gray-300 rounded-md p-2"
+                                />
+                                <Plus
+                                    className="text-purple-600 cursor-pointer ml-2"
+                                    onClick={addWeakness}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Resumen del Sprint */}
+                    <div className="mt-4">
+                        <h2 className="text-purple-600 mb-4">Resumen del Sprint</h2>
+                        <textarea
+                            placeholder="Escribe un resumen del sprint"
+                            value={summary}
+                            onChange={(e) => setSummary(e.target.value)}
+                            className="w-full border border-gray-300 rounded-md p-2"
+                        />
                     </div>
 
                     <button
