@@ -280,10 +280,10 @@ export default function Layout({ children, setCurrentView }) {
         initial={isMobile ? { x: "-100%" } : { x: 0 }}
         animate={isSidebarOpen || !isMobile ? { x: 0 } : { x: "-100%" }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        className={`w-full max-w-[280px] lg:w-64 bg-gradient-to-br from-purple-900 via-purple-800 to-purple-700 text-white p-6 fixed inset-y-0 left-0 z-50 lg:relative overflow-y-auto`}
+        className={`w-full max-w-[280px] lg:w-64 bg-gradient-to-br from-fuchsia-950 via-purple-900 to-fuchsia-950 text-white p-6 fixed inset-y-0 left-0 z-50 lg:relative overflow-y-auto`}
       >
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-pink-300">
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-200 to-purple-300">
             TRACKMASTER
           </h1>
           {isMobile && (
