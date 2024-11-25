@@ -12,6 +12,9 @@ import {
   Users,
   Settings,
   Star,
+  BarChart2,
+  Lightbulb,
+  Folder,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +26,9 @@ import GroupDetails from "./GroupDetail";
 import GroupListComponent from "./GroupListComponent";
 import ManagementSettingsView from "./ManagementSettingsView";
 import SpecialEvaluationsView from "./SpecialEvaluationsView";
+import EvaluationReports from "./EvaluationReports";
+import ProposalsView from "./ProposalsView.jsx";
+import RatingsView from "./RatingsView.jsx";
 
 const AnimatedProgressBar = ({ value }) => (
     <div className="relative pt-1">
@@ -62,7 +68,10 @@ const AnimatedPercentage = ({ value }) => {
 
 export default function ManagementView({ management, onBack }) {
   const [groups, setGroups] = useState([]);
-  const [participants, setParticipants] = useState(null);
+  const [participants, setParticipants] = useState({
+    teacher: null,
+    students: [],
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -72,6 +81,8 @@ export default function ManagementView({ management, onBack }) {
   const [activeTab, setActiveTab] = useState("announcements");
   const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
+  const [isProposalView, setIsProposalView] = useState(false); // Estado para controlar la vista de Propuestas
+  const [isRatingsView, setIsRatingsView] = useState(false); // Estado para controlar la vista de Propuestas
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
@@ -130,8 +141,8 @@ export default function ManagementView({ management, onBack }) {
   const fetchParticipants = async () => {
     try {
       const response = await getData(`/managements/${management.id}/students`);
-      if (response && response.teacher && response.students) {
-        setParticipants(response);
+      if (response && response.success && response.data) {
+        setParticipants(response.data); // Usa `response.data` en lugar de `response`.
       }
     } catch (error) {
       console.error("Error al cargar los participantes:", error);
@@ -159,6 +170,11 @@ export default function ManagementView({ management, onBack }) {
   };
 
   const renderPagination = (position) => {
+    // Mostrar paginación solo si hay más de una página
+    if (pagination.lastPage <= 1) {
+      return null;
+    }
+
     const getPageRange = () => {
       const totalVisible = window.innerWidth <= 768 ? 3 : 7;
       const half = Math.floor(totalVisible / 2);
@@ -179,7 +195,7 @@ export default function ManagementView({ management, onBack }) {
     return (
         <div
             id={position === "top" ? "topPagination" : undefined}
-            className={`flex justify-center ${position === "top" ? "mb-4" : "mt-4"} gap-2`}
+            className={`flex justify-center ${position === "top" ? "mb-4" : "mt-6"} gap-2`} // Cambiamos "mt-4" a "mt-6" para mayor espacio
         >
           <Button
               onClick={() => fetchAnnouncements(pagination.currentPage - 1)}
@@ -254,11 +270,26 @@ export default function ManagementView({ management, onBack }) {
                 </div>
                 <Button
                     onClick={() => setIsSpecialEvaluationsView(true)}
-                    className="flex items-center bg-purple-500 text-white hover:bg-purple-600 w-full sm:w-auto"
+                    className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
                 >
                   <Star className="mr-2" />
                   Evaluaciones Especiales
                 </Button>
+                <Button
+                    onClick={() => setIsRatingsView(true)}
+                    className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
+                >
+                  <Lightbulb className="mr-2" />
+                  Calificaciones
+                </Button>
+                <Button
+                    onClick={() => setIsProposalView(true)}
+                    className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
+                >
+                  <Folder className="mr-2" />
+                  Propuestas
+                </Button>
+
               </div>
             </div>
         )}
@@ -270,7 +301,12 @@ export default function ManagementView({ management, onBack }) {
                 onBack={() => setIsSpecialEvaluationsView(false)}
                 managementId={management.id}
             />
+        ) : isRatingsView ? (
+            <RatingsView onBack={() => setIsRatingsView(false)} />
+        ) : isProposalView ? (
+            <ProposalsView onBack={() => setIsProposalView(false)} />
         ) : (
+
             <>
               <div className="bg-white shadow-md p-6 rounded-lg mb-8">
                 <h1 className="text-3xl font-bold mb-4 text-purple-700">
@@ -327,7 +363,7 @@ export default function ManagementView({ management, onBack }) {
                 </CardHeader>
                 <CardContent className="p-1 sm:p-4">
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-3 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
+                    <TabsList className="grid w-full grid-cols-4 mb-2 sm:mb-4 bg-purple-100 p-0.5 sm:p-1 rounded-md">
                       <TabsTrigger
                           value="announcements"
                           className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
@@ -347,9 +383,14 @@ export default function ManagementView({ management, onBack }) {
                           className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                       >
                         <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="hidden sm:inline ml-1 sm:ml-2">
-                      Estudiantes ({participants?.students?.length || 0})
-                    </span>
+                        <span className="hidden sm:inline ml-1 sm:ml-2">Estudiantes ({participants?.students?.length || 0})</span>
+                      </TabsTrigger>
+                      <TabsTrigger
+                          value="evaluationReports"
+                          className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
+                      >
+                        <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="hidden sm:inline ml-1 sm:ml-2">Reportes</span>
                       </TabsTrigger>
                     </TabsList>
 
@@ -378,6 +419,9 @@ export default function ManagementView({ management, onBack }) {
 
                     <TabsContent value="participants">
                       <ParticipantList participants={participants} getInitials={getInitials} />
+                    </TabsContent>
+                    <TabsContent value="evaluationReports">
+                      <EvaluationReports /> {/* Aquí se muestra el nuevo componente */}
                     </TabsContent>
                   </Tabs>
                 </CardContent>
