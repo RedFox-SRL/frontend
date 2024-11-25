@@ -118,22 +118,37 @@ export default function Dashboard() {
       const url = `/management/${managementId}/announcements?page=${page}`;
       const announcementsResponse = await getData(url);
 
+      console.log("Respuesta completa de la API:", announcementsResponse);
+
       if (announcementsResponse && announcementsResponse.data) {
-        setAnnouncements(announcementsResponse.data);
+        const rawData = announcementsResponse.data;
+
+        console.log("Datos crudos obtenidos:", rawData);
+
+        // Transforma el objeto en un array si es necesario
+        const announcementsArray =
+            Array.isArray(rawData) ? rawData : Object.values(rawData);
+
+        console.log("Anuncios transformados en array:", announcementsArray);
+
+        // Actualiza el estado
+        setAnnouncements(announcementsArray);
         setPagination({
-          currentPage: announcementsResponse.current_page,
-          lastPage: announcementsResponse.last_page,
+          currentPage: announcementsResponse.current_page || 1,
+          lastPage: announcementsResponse.last_page || 1,
         });
       } else {
+        console.warn("No se encontraron datos válidos en la respuesta.");
         setAnnouncements([]);
         setPagination({ currentPage: 1, lastPage: 1 });
       }
     } catch (error) {
-      console.error("Error fetching announcements:", error);
+      console.error("Error al obtener los anuncios:", error);
       setAnnouncements([]);
       setPagination({ currentPage: 1, lastPage: 1 });
     }
   };
+
 
   const renderPagination = () => {
     // Verifica si hay más de una página antes de renderizar la paginación
@@ -341,8 +356,10 @@ export default function Dashboard() {
                 </TabsList>
                 <div className="mt-2 sm:mt-4">
                   <TabsContent value="announcements">
-                    {renderPagination()}
-                    <AnnouncementList announcements={announcements} />
+                    <div className="mb-4">{renderPagination()}</div>
+                    <div className="mb-4">
+                      <AnnouncementList announcements={announcements} />
+                    </div>
                     {renderPagination()}
                   </TabsContent>
                   <TabsContent value="groups">
