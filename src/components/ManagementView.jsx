@@ -153,21 +153,43 @@ export default function ManagementView({ management, onBack }) {
     setIsLoading(true);
     try {
       const response = await getData(`/management/${management.id}/announcements?page=${page}`);
+      console.log("Respuesta completa de la API:", response);
+
       if (response && response.data) {
-        setAnnouncements(response.data);
-        setPagination({ currentPage: response.current_page, lastPage: response.last_page });
+        const rawData = response.data;
+
+        console.log("Datos crudos obtenidos:", rawData);
+
+        // Convertimos los datos a un array si no lo son
+        const announcementsArray =
+            Array.isArray(rawData) ? rawData : Object.values(rawData);
+
+        console.log("Anuncios transformados en array:", announcementsArray);
+
+        setAnnouncements(announcementsArray);
+        setPagination({
+          currentPage: response.current_page || 1,
+          lastPage: response.last_page || 1,
+        });
+
+        // Scroll al inicio si no es la primera página
         if (page !== 1) {
           document.getElementById("topPagination").scrollIntoView({ behavior: "smooth" });
         }
       } else {
         console.error("Error en la respuesta de los anuncios:", response);
+        setAnnouncements([]);
+        setPagination({ currentPage: 1, lastPage: 1 });
       }
     } catch (error) {
       console.error("Error al cargar los anuncios:", error);
+      setAnnouncements([]);
+      setPagination({ currentPage: 1, lastPage: 1 });
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const renderPagination = (position) => {
     // Mostrar paginación solo si hay más de una página
