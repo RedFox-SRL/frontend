@@ -95,17 +95,13 @@ export default function Dashboard() {
 
   const fetchParticipants = async (managementId) => {
     try {
-      const participantsResponse = await getData(
-          `/managements/${managementId}/students`
-      );
-      if (
-          participantsResponse &&
-          participantsResponse.teacher &&
-          participantsResponse.students
-      ) {
+      const participantsResponse = await getData(`/managements/${managementId}/students`);
+      if (participantsResponse && participantsResponse.success && participantsResponse.data) {
+        const { teacher, students } = participantsResponse.data;
+
         setParticipants({
-          teacher: participantsResponse.teacher,
-          students: participantsResponse.students,
+          teacher,
+          students,
         });
       } else {
         setParticipants({ teacher: null, students: [] });
@@ -115,6 +111,7 @@ export default function Dashboard() {
       setParticipants({ teacher: null, students: [] });
     }
   };
+
 
   const fetchAnnouncements = async (managementId, page = 1) => {
     try {
@@ -139,6 +136,11 @@ export default function Dashboard() {
   };
 
   const renderPagination = () => {
+    // Verifica si hay más de una página antes de renderizar la paginación
+    if (pagination.lastPage <= 1) {
+      return null; // No renderiza nada si solo hay una página
+    }
+
     const getPageRange = () => {
       const totalVisible = window.innerWidth <= 768 ? 3 : 7; // Muestra 3 páginas en móviles, 7 en pantallas más grandes
       const half = Math.floor(totalVisible / 2);
@@ -157,7 +159,7 @@ export default function Dashboard() {
     const pages = getPageRange();
 
     return (
-        <div className="flex justify-center mt-4 gap-2">
+        <div className="flex justify-center mt-6 gap-2"> {/* Cambiamos el margen superior */}
           <Button
               onClick={() => fetchAnnouncements(managementDetails.id, pagination.currentPage - 1)}
               disabled={pagination.currentPage === 1}

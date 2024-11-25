@@ -22,6 +22,8 @@ import { useUser } from "../context/UserContext";
 import { AnimatePresence, motion } from "framer-motion";
 import NotificationButton from "./NotificationButton";
 import StarWarsIntro from "./starwars";
+import EvaluationModal from "./EvaluationModal"; // Importa el modal
+import EvaluationForm from "./EvaluationForm"; // Importa el formulario
 
 const useTypingAnimation = (text, speed = 100) => {
   const [displayedText, setDisplayedText] = useState("");
@@ -133,9 +135,12 @@ export default function Layout({ children, setCurrentView }) {
     "a",
   ];
 
+  const [view, setView] = useState("evaluations");
+  const [currentEvaluation, setCurrentEvaluation] = useState(null);
+
   const { displayedText, isTypingComplete } = useTypingAnimation(
-    "Taller De Ingeniería en Software",
-    100,
+      "Taller De Ingeniería en Software",
+      100
   );
 
   const toggleSidebar = useCallback(() => {
@@ -178,7 +183,7 @@ export default function Layout({ children, setCurrentView }) {
       konamiCode.current = konamiCode.current.slice(-10);
 
       if (
-        JSON.stringify(konamiCode.current) === JSON.stringify(konamiSequence)
+          JSON.stringify(konamiCode.current) === JSON.stringify(konamiSequence)
       ) {
         setShowStarWarsIntro(true);
       }
@@ -202,14 +207,14 @@ export default function Layout({ children, setCurrentView }) {
   };
 
   const handleMenuItemClick = useCallback(
-    (view) => {
-      setCurrentView(view);
-      setActiveView(view);
-      if (isMobile) {
-        setIsSidebarOpen(false);
-      }
-    },
-    [setCurrentView, isMobile],
+      (view) => {
+        setCurrentView(view);
+        setActiveView(view);
+        if (isMobile) {
+          setIsSidebarOpen(false);
+        }
+      },
+      [setCurrentView, isMobile]
   );
 
   const handleTitleClick = () => {
@@ -222,7 +227,6 @@ export default function Layout({ children, setCurrentView }) {
       return newCount;
     });
 
-    // Add this line to trigger the title animation
     const titleElement = document.querySelector(".title-text");
     if (titleElement) {
       titleElement.classList.add("animate-title");
@@ -235,160 +239,179 @@ export default function Layout({ children, setCurrentView }) {
   };
 
   const UserSkeleton = () => (
-    <div className="mb-8">
-      <Skeleton className="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4" />
-      <Skeleton className="h-6 w-3/4 mx-auto mb-2" />
-      <Skeleton className="h-4 w-1/2 mx-auto" />
-    </div>
+      <div className="mb-8">
+        <Skeleton className="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4" />
+        <Skeleton className="h-6 w-3/4 mx-auto mb-2" />
+        <Skeleton className="h-4 w-1/2 mx-auto" />
+      </div>
   );
 
   const getAvatarUrl = (name, lastName) => {
-    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + " " + lastName)}&backgroundColor=F3E8FF&textColor=6B21A8`;
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(
+        name + " " + lastName
+    )}&backgroundColor=F3E8FF&textColor=6B21A8`;
   };
 
   const menuItems = [
     { icon: Home, label: "Inicio", view: "inicio" },
-    {
-      icon: User,
-      label: "Perfil",
-      view: "perfil",
-    },
+    { icon: User, label: "Perfil", view: "perfil" },
     { icon: Users, label: "Grupo", view: "grupo" },
     { icon: Building2, label: "FundEmpresa", view: "empresas" },
   ];
 
+  const handleEvaluationSelect = (evaluation) => {
+    setCurrentEvaluation(evaluation);
+    setView("form");
+  };
+
   return (
-    <div className="flex h-screen bg-purple-50">
-      {showMatrixRain && <MatrixRain onComplete={handleMatrixRainComplete} />}
-      {showStarWarsIntro && (
-        <StarWarsIntro onClose={() => setShowStarWarsIntro(false)} />
-      )}
-      <AnimatePresence>
-        {(isSidebarOpen || !isMobile) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-            onClick={toggleSidebar}
-          />
+      <div className="flex h-screen bg-purple-50">
+        {showMatrixRain && <MatrixRain onComplete={handleMatrixRainComplete} />}
+        {showStarWarsIntro && (
+            <StarWarsIntro onClose={() => setShowStarWarsIntro(false)} />
         )}
-      </AnimatePresence>
-
-      <motion.aside
-        initial={isMobile ? { x: "-100%" } : { x: 0 }}
-        animate={isSidebarOpen || !isMobile ? { x: 0 } : { x: "-100%" }}
-        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        className={`w-full max-w-[280px] lg:w-64 bg-gradient-to-br from-fuchsia-950 via-purple-900 to-fuchsia-950 text-white p-6 fixed inset-y-0 left-0 z-50 lg:relative overflow-y-auto`}
-      >
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-200 to-purple-300">
-            TRACKMASTER
-          </h1>
-          {isMobile && (
-            <button
-              onClick={toggleSidebar}
-              className="text-purple-200 hover:text-white transition-colors"
-            >
-              <ChevronRight size={24} />
-            </button>
+        <AnimatePresence>
+          {(isSidebarOpen || !isMobile) && (
+              <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                  onClick={toggleSidebar}
+              />
           )}
-        </div>
-        {isLoading ? (
-          <UserSkeleton />
-        ) : (
-          user && (
-            <div className="mb-8">
-              <div className="w-24 h-24 lg:w-32 lg:h-32  mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
-                <Avatar className="w-full h-full border-4 border-white rounded-full">
-                  <AvatarImage
-                    src={
-                      user.profilePicture ||
-                      getAvatarUrl(user.name, user.last_name)
-                    }
-                    alt={`${user.name} ${user.last_name}`}
-                  />
-                  <AvatarFallback className="bg-purple-200 text-purple-800 text-2xl font-bold">
-                    {user.name.charAt(0)}
-                    {user.last_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              <p className="text-center font-semibold text-xl text-purple-100">
-                {user.name} {user.last_name}
-              </p>
-              <p className="text-center text-sm text-purple-300 mt-1">
-                {user.role}
-              </p>
-            </div>
-          )
-        )}
-        <nav className="space-y-2">
-          {menuItems.map(({ icon: Icon, label, view }) => (
-            <button
-              key={view}
-              onClick={() => handleMenuItemClick(view)}
-              className={`flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 ${activeView === view ? "bg-purple-600 text-white shadow-md" : "text-purple-200 hover:bg-purple-700/50"}`}
-            >
-              <Icon className="mr-3 h-5 w-5" />
-              {label}
-            </button>
-          ))}
-          <button
-            onClick={() => {
-              handleLogout();
-              if (isMobile) setIsSidebarOpen(false);
-            }}
-            className="flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 text-purple-200 hover:bg-purple-700/50 mt-8"
-          >
-            <LogOut className="mr-3 h-5 w-5" /> Cerrar Sesión
-          </button>
-        </nav>
-      </motion.aside>
+        </AnimatePresence>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-md p-4 flex justify-between items-center relative z-30">
-          <button
-            className="lg:hidden text-purple-800 hover:text-purple-600 transition-colors"
-            onClick={toggleSidebar}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          <h2
-            className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 cursor-pointer select-none title-text"
-            onClick={handleTitleClick}
-          >
-            {displayedText}
-            {!isTypingComplete && <span className="animate-blink">|</span>}
-          </h2>
-          <div
-            className={`${isMobile && isSidebarOpen ? "pointer-events-none opacity-50" : ""} transition-opacity duration-300`}
-          >
-            <NotificationButton isMobile={isMobile} />
+        <motion.aside
+            initial={isMobile ? { x: "-100%" } : { x: 0 }}
+            animate={isSidebarOpen || !isMobile ? { x: 0 } : { x: "-100%" }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="w-full max-w-[280px] lg:w-64 bg-gradient-to-br from-fuchsia-950 via-purple-900 to-fuchsia-950 text-white p-6 fixed inset-y-0 left-0 z-50 lg:relative overflow-y-auto"
+        >
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-200 to-purple-300">
+              TRACKMASTER
+            </h1>
+            {isMobile && (
+                <button
+                    onClick={toggleSidebar}
+                    className="text-purple-200 hover:text-white transition-colors"
+                >
+                  <ChevronRight size={24} />
+                </button>
+            )}
           </div>
-        </header>
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50">
-          {children}
-        </main>
-      </div>
-      <style jsx global>{`
-        @keyframes titlePop {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
+          {isLoading ? (
+              <UserSkeleton />
+          ) : (
+              user && (
+                  <div className="mb-8">
+                    <div className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
+                      <Avatar className="w-full h-full border-4 border-white rounded-full">
+                        <AvatarImage
+                            src={
+                                user.profilePicture ||
+                                getAvatarUrl(user.name, user.last_name)
+                            }
+                            alt={`${user.name} ${user.last_name}`}
+                        />
+                        <AvatarFallback className="bg-purple-200 text-purple-800 text-2xl font-bold">
+                          {user.name.charAt(0)}
+                          {user.last_name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <p className="text-center font-semibold text-xl text-purple-100">
+                      {user.name} {user.last_name}
+                    </p>
+                    <p className="text-center text-sm text-purple-300 mt-1">
+                      {user.role}
+                    </p>
+                  </div>
+              )
+          )}
+          <nav className="space-y-2">
+            {menuItems.map(({ icon: Icon, label, view }) => (
+                <button
+                    key={view}
+                    onClick={() => handleMenuItemClick(view)}
+                    className={`flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 ${
+                        activeView === view
+                            ? "bg-purple-600 text-white shadow-md"
+                            : "text-purple-200 hover:bg-purple-700/50"
+                    }`}
+                >
+                  <Icon className="mr-3 h-5 w-5" />
+                  {label}
+                </button>
+            ))}
+            <button
+                onClick={() => {
+                  handleLogout();
+                  if (isMobile) setIsSidebarOpen(false);
+                }}
+                className="flex items-center py-3 px-4 rounded-lg w-full text-left transition-colors duration-200 text-purple-200 hover:bg-purple-700/50 mt-8"
+            >
+              <LogOut className="mr-3 h-5 w-5" /> Cerrar Sesión
+            </button>
+          </nav>
+        </motion.aside>
 
-        .animate-title {
-          animation: titlePop 0.5s ease-in-out;
-        }
-      `}</style>
-    </div>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <header className="bg-white shadow-md p-4 flex justify-between items-center relative z-30">
+            <button
+                className="lg:hidden text-purple-800 hover:text-purple-600 transition-colors"
+                onClick={toggleSidebar}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <h2
+                className="text-lg sm:text-xl md:text-2xl font-bold text-center flex-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 cursor-pointer select-none title-text"
+                onClick={handleTitleClick}
+            >
+              {displayedText}
+              {!isTypingComplete && <span className="animate-blink">|</span>}
+            </h2>
+            <div
+                className={`${
+                    isMobile && isSidebarOpen ? "pointer-events-none opacity-50" : ""
+                } transition-opacity duration-300`}
+            >
+              <NotificationButton isMobile={isMobile} />
+            </div>
+          </header>
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50">
+            {view === "evaluations" && (
+                <EvaluationModal onEvaluationSelect={handleEvaluationSelect} />
+            )}
+            {view === "form" && currentEvaluation ? (
+                <EvaluationForm
+                    evaluationData={currentEvaluation}
+                    onBack={() => setView("evaluations")}
+                />
+            ) : (
+                view !== "form" && children
+            )}
+          </main>
+        </div>
+        <style jsx global>{`
+          @keyframes titlePop {
+            0% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.05);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+
+          .animate-title {
+            animation: titlePop 0.5s ease-in-out;
+          }
+        `}</style>
+      </div>
   );
 }
