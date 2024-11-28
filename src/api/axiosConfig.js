@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://trackmaster-ct62m.ondigitalocean.app/api',
+  baseURL: 'https://trackmaster-avw68.ondigitalocean.app/api',
 });
 
 api.interceptors.request.use(
