@@ -21,6 +21,7 @@ import {
   Settings,
   Star,
   X,
+  Link,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { postData, putData } from "../api/apiService";
@@ -33,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import RankingModal from "@/components/RankingModal";
+import LinksManagerModal from "./LinksManagerModal";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -47,6 +49,7 @@ export default function GroupDetailCreator({
   const [croppedImage, setCroppedImage] = useState(null);
   const [isRankingDialogOpen, setIsRankingDialogOpen] = useState(false);
   const { toast } = useToast();
+  const [isLinksModalOpen, setIsLinksModalOpen] = useState(false);
 
   useEffect(() => {
     setGroupData(initialGroupData);
@@ -352,12 +355,18 @@ export default function GroupDetailCreator({
             </p>
             <div className="space-y-2">
               <Button
-                variant="outline"
-                className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
+                  variant="outline"
+                  className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
+                  onClick={() => setIsLinksModalOpen(true)}
               >
-                <Settings className="w-4 h-4 mr-2" />
-                Configuración
+                <Link className="w-4 h-4 mr-2" />
+                Links
               </Button>
+
+              <LinksManagerModal
+                  isOpen={isLinksModalOpen}
+                  onClose={() => setIsLinksModalOpen(false)}
+              />
 
               <Button
                 variant="outline"
