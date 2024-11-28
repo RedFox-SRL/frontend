@@ -1,205 +1,173 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { postData } from "../api/apiService";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CheckCircle, AlertCircle } from "lucide-react";
 
 export default function CreateManagement({ onManagementCreated, onCancel }) {
     const [newManagement, setNewManagement] = useState({
         semester: "",
-        start_date: "",
-        end_date: "",
-        group_limit: "",
+        year: "",
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [errors, setErrors] = useState({});
+    const [message, setMessage] = useState(null); // Maneja tanto errores como éxito
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     useEffect(() => {
-        const startMonth = new Date(newManagement.start_date).getMonth() + 1;
-        if (startMonth >= 1 && startMonth <= 6) {
-            setNewManagement((prevState) => ({ ...prevState, semester: "first" }));
-        } else if (startMonth >= 7 && startMonth <= 12) {
-            setNewManagement((prevState) => ({ ...prevState, semester: "second" }));
-        }
-    }, [newManagement.start_date]);
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
 
-    const validateForm = () => {
-        const errors = {};
-        const startDate = new Date(newManagement.start_date);
-        const endDate = new Date(newManagement.end_date);
-
-        if (!newManagement.start_date) {
-            errors.start_date = "La fecha de inicio es obligatoria.";
-        }
-        if (!newManagement.end_date) {
-            errors.end_date = "La fecha de fin es obligatoria.";
-        } else if (startDate >= endDate) {
-            errors.end_date = "La fecha de fin debe ser posterior a la de inicio.";
-        } else if ((endDate - startDate) / (1000 * 60 * 60 * 24 * 30) > 7) {
-            errors.end_date = "La duración no puede ser mayor a 7 meses.";
-        }
-
-        if (!newManagement.group_limit) {
-            errors.group_limit = "El límite de grupos es obligatorio.";
-        } else if (
-            isNaN(newManagement.group_limit) ||
-            newManagement.group_limit < 1 ||
-            newManagement.group_limit > 100
-        ) {
-            errors.group_limit = "El límite de grupos debe estar entre 1 y 100.";
-        }
-
-        setErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
+        setNewManagement({
+            semester: currentMonth <= 6 ? "first" : "second",
+            year: currentYear.toString(),
+        });
+    }, []);
 
     const handleCreateManagement = async () => {
-        if (!validateForm()) return;
-
         setIsLoading(true);
-        const managementData = {
-            ...newManagement,
-            group_limit: parseInt(newManagement.group_limit, 10),
-        };
+        setMessage(null); // Limpia mensajes previos
 
         try {
-            const response = await postData("/managements", managementData);
-            if (response && response.success) {
-                onManagementCreated(response.data);
+            const response = await postData("/managements", newManagement);
+            if (response?.success) {
+                setMessage({
+                    type: "success",
+                    text: `Gestión creada exitosamente: ${
+                        newManagement.semester === "first" ? "Primer semestre" : "Segundo semestre"
+                    } del año ${newManagement.year}.`,
+                });
+
+                setTimeout(() => {
+                    onManagementCreated(response.data.management); // Informar al padre de la nueva gestión creada
+                    onCancel(); // Volver al listado de gestiones
+                }, 500);
             } else {
-                setErrors({ general: "Error al crear la gestión." });
+                handleServerError(response);
             }
         } catch (error) {
-            setErrors({ general: "Error al crear la gestión." });
+            handleServerError(error.response?.data || {});
         } finally {
             setIsLoading(false);
+            setIsDialogOpen(false);
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-
-        if (name === "group_limit") {
-            const sanitizedValue = value.replace(/[^0-9]/g, "");
-
-            let numericValue = parseInt(sanitizedValue, 10);
-            if (isNaN(numericValue)) {
-                numericValue = "";
-            } else if (numericValue > 100) {
-                numericValue = "100";
-            } else if (numericValue < 1) {
-                numericValue = "";
-            }
-
-            setNewManagement({
-                ...newManagement,
-                [name]: numericValue.toString(),
-            });
-        } else {
-            setNewManagement({
-                ...newManagement,
-                [name]: value,
-            });
+    const handleServerError = (response) => {
+        const { code, message } = response;
+        switch (code) {
+            case 261:
+                setMessage({
+                    type: "error",
+                    text: "Ya existe una gestión con el mismo semestre y año para este docente.",
+                });
+                break;
+            case 321:
+                setMessage({
+                    type: "error",
+                    text: "La fecha de la gestión está en el pasado. Por favor, elige un año válido.",
+                });
+                break;
+            case 322:
+                setMessage({
+                    type: "error",
+                    text: "La fecha de la gestión está en el futuro. Solo se permiten gestiones para el año actual o próximos años.",
+                });
+                break;
+            default:
+                setMessage({
+                    type: "error",
+                    text: message || "Error desconocido al crear la gestión.",
+                });
         }
     };
-
 
     return (
         <div className="p-6 max-w-lg mx-auto relative">
-            <div className="flex justify-start mb-4">
-                <Button
-                    onClick={onCancel}
-                    className="bg-purple-600 hover:bg-purple-700 text-white sm:relative sm:top-0 sm:left-0 md:fixed md:top-4 md:left-4"
-                >
-                    Volver al Listado
-                </Button>
-            </div>
+            <h1 className="text-2xl font-bold mb-4 text-purple-700">Crear una nueva gestión</h1>
 
-            <h1 className="text-2xl font-bold mb-4 text-purple-700">
-                Crear una nueva gestión
-            </h1>
-
+            {/* Semestre */}
             <label className="block text-sm font-medium text-purple-700 mb-2">
-                Fecha de inicio
+                Semestre <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-                <Input
-                    name="start_date"
-                    type="date"
-                    value={newManagement.start_date}
-                    onChange={handleInputChange}
-                    className={`mb-1 ${errors.start_date ? "border-red-500" : ""}`}
-                />
-                {errors.start_date && (
-                    <p className="text-red-500 text-xs mb-4 flex items-center">
-                        <AlertCircle className="mr-1" /> {errors.start_date}
-                    </p>
-                )}
-            </div>
-
-            <label className="block text-sm font-medium text-purple-700 mb-2">
-                Fecha de fin
-            </label>
-            <div className="relative">
-                <Input
-                    name="end_date"
-                    type="date"
-                    value={newManagement.end_date}
-                    onChange={handleInputChange}
-                    className={`mb-1 ${errors.end_date ? "border-red-500" : ""}`}
-                />
-                {errors.end_date && (
-                    <p className="text-red-500 text-xs mb-4 flex items-center">
-                        <AlertCircle className="mr-1" /> {errors.end_date}
-                    </p>
-                )}
-            </div>
-
-            <label className="block text-sm font-medium text-purple-700 mb-2">
-                Límite de grupos
-            </label>
-            <div className="relative">
-                <Input
-                    name="group_limit"
-                    type="number"
-                    placeholder="Límite de grupos (1-100)"
-                    value={newManagement.group_limit}
-                    onChange={handleInputChange}
-                    className={`mb-1 ${errors.group_limit ? "border-red-500" : ""}`}
-                />
-                {errors.group_limit && (
-                    <p className="text-red-500 text-xs mb-4 flex items-center">
-                        <AlertCircle className="mr-1" /> {errors.group_limit}
-                    </p>
-                )}
-            </div>
-
-            <label className="block text-sm font-medium text-purple-700 mb-2">
-                Semestre
-            </label>
-            <Input
-                name="semester"
-                placeholder="Semestre"
-                value={
-                    newManagement.semester === "first"
-                        ? "Primer semestre"
-                        : "Segundo semestre"
-                }
+            <input
+                type="text"
+                value={newManagement.semester === "first" ? "Primer semestre" : "Segundo semestre"}
                 disabled
-                className="mb-4 bg-gray-100"
+                className="w-full bg-gray-100 border border-gray-300 rounded px-4 py-2 mb-4"
             />
 
+            {/* Año */}
+            <label className="block text-sm font-medium text-purple-700 mb-2">
+                Año <span className="text-red-500">*</span>
+            </label>
+            <input
+                type="text"
+                value={newManagement.year}
+                disabled
+                className="w-full bg-gray-100 border border-gray-300 rounded px-4 py-2 mb-4"
+            />
+
+            {/* Botón de Crear Gestión */}
             <Button
-                onClick={handleCreateManagement}
+                onClick={() => setIsDialogOpen(true)}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                 disabled={isLoading}
             >
                 {isLoading ? "Creando..." : "Crear Gestión"}
             </Button>
 
-            {errors.general && (
-                <p className="text-red-500 text-center mt-4">{errors.general}</p>
+            {/* Mensaje de éxito o error */}
+            {message && (
+                <p
+                    className={`text-center mt-4 flex items-center justify-center ${
+                        message.type === "success" ? "text-green-500" : "text-red-500"
+                    }`}
+                >
+                    {message.type === "success" ? <CheckCircle className="mr-2" /> : <AlertCircle className="mr-2" />}
+                    {message.text}
+                </p>
             )}
+
+            {/* Diálogo de Confirmación */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="text-purple-700 font-bold text-lg">
+                            Confirmar creación de gestión
+                        </DialogTitle>
+                    </DialogHeader>
+                    <p className="text-purple-700 text-sm mb-4">
+                        <strong>Nota:</strong> El primer semestre cubre del 1 de enero al 30 de junio, y el segundo semestre
+                        del 1 de julio al 31 de diciembre.
+                    </p>
+                    <p className="text-gray-700">
+                        Se creará una gestión correspondiente al{" "}
+                        <span className="font-semibold text-purple-600">
+                            {newManagement.semester === "first" ? "Primer semestre" : "Segundo semestre"} del año{" "}
+                            {newManagement.year}.
+                        </span>
+                    </p>
+                    <p className="text-gray-600 mt-2 italic">
+                        Si cree que hay un error, comuníquese con los administradores.
+                    </p>
+                    <DialogFooter>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setIsDialogOpen(false)}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={handleCreateManagement}
+                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                            Confirmar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
