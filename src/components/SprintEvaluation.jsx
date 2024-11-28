@@ -75,14 +75,14 @@ export default function SprintEvaluation({ groupId }) {
                 title: "Éxito",
                 description: "Evaluación guardada con éxito.",
                 status: "success",
-                style: { backgroundColor: 'green', color: 'white' }
+                className: "bg-green-500 text-white",
             });
         } catch (error) {
             toast({
                 title: "Error",
                 description: "Ocurrió un error al guardar la evaluación.",
                 status: "error",
-                style: { backgroundColor: 'red', color: 'white' }
+                variant: "destructive",
             });
         }
     };
