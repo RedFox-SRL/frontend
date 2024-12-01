@@ -50,8 +50,7 @@ export default function SprintEvaluation({ groupId }) {
             toast({
                 title: "Error",
                 description: "Todos los campos de evaluación deben estar completos, incluyendo el resumen.",
-                status: "error",
-                style: { backgroundColor: 'red', color: 'white' }
+                variant: "destructive", // Toast para errores
             });
             return;
         }
@@ -95,8 +94,7 @@ export default function SprintEvaluation({ groupId }) {
             toast({
                 title: "Error",
                 description: "El texto supera los 80 caracteres, está vacío o se alcanzó el límite de 10 fortalezas.",
-                status: "error",
-                style: { backgroundColor: 'red', color: 'white' }
+                variant: "destructive", // Toast para errores
             });
         }
     };
@@ -109,8 +107,7 @@ export default function SprintEvaluation({ groupId }) {
             toast({
                 title: "Error",
                 description: "El texto supera los 80 caracteres, está vacío o se alcanzó el límite de 10 debilidades.",
-                status: "error",
-                style: { backgroundColor: 'red', color: 'white' }
+                variant: "destructive", // Toast para errores
             });
         }
     };
@@ -134,6 +131,7 @@ export default function SprintEvaluation({ groupId }) {
         <div className="p-4 mx-auto space-y-6 max-w-full">
             <h1 className="text-2xl font-bold text-center mb-4 text-purple-600">Evaluación de Sprint</h1>
 
+            {/* Selección de Sprint */}
             <div>
                 <h2 className="text-purple-600 mb-2">Seleccionar Sprint</h2>
                 <select
@@ -150,7 +148,17 @@ export default function SprintEvaluation({ groupId }) {
                 </select>
             </div>
 
-            {template && (
+            {/* Mostrar mensaje o contenido del Sprint */}
+            {template && (!template.weekly_evaluations_summary || template.weekly_evaluations_summary.length === 0) ? (
+                <div className="p-6 bg-red-100 border border-red-400 text-red-800 rounded-lg shadow-md">
+                    <h1 className="text-2xl font-bold">No se realizaron evaluaciones semanales este sprint</h1>
+                    <p className="mt-2 text-sm">
+                        Es necesario registrar evaluaciones semanales para habilitar este módulo. Por favor, regrese y
+                        complete las evaluaciones semanales para continuar.
+                    </p>
+                </div>
+            ) : (
+                template && (
                 <>
                     {/* Información sobre el Sprint */}
                     <div className="bg-white rounded-lg shadow-md p-4 space-y-2">
@@ -279,10 +287,11 @@ export default function SprintEvaluation({ groupId }) {
                                         </div>
 
                                         <div className="flex flex-col mt-4 space-y-2">
+                                            <label className="text-sm font-medium text-gray-700">Ponderación</label>
                                             <div className="flex items-center">
                                                 <input
                                                     type="text" // Cambié el tipo a "text" para evitar problemas con el tipo numérico
-                                                    placeholder={`Ponderación (Máx: ${template.percentage})`}
+                                                    placeholder={`(${template.percentage})`}
                                                     value={grades[student.id] || ""}
                                                     onChange={(e) => {
                                                         const value = e.target.value;
@@ -321,7 +330,7 @@ export default function SprintEvaluation({ groupId }) {
                     {/* Fortalezas y Debilidades */}
                     <div className="mt-4 grid grid-cols-2 gap-4">
                         <div>
-                            <h2 className="text-purple-600 mb-4">Fortalezas</h2>
+                            <h2 className="text-purple-600 mb-4">Fortalezas*</h2>
                             <ul className="list-disc ml-4 space-y-2">
                                 {strengths.map((strength, index) => (
                                     <li key={index} className="flex justify-between items-center">
@@ -351,7 +360,7 @@ export default function SprintEvaluation({ groupId }) {
                         </div>
 
                         <div>
-                            <h2 className="text-purple-600 mb-4">Debilidades</h2>
+                            <h2 className="text-purple-600 mb-4">Debilidades*</h2>
                             <ul className="list-disc ml-4 space-y-2">
                                 {weaknesses.map((weakness, index) => (
                                     <li key={index} className="flex justify-between items-center">
@@ -399,6 +408,7 @@ export default function SprintEvaluation({ groupId }) {
                         Guardar evaluación
                     </button>
                 </>
+                )
             )}
         </div>
     );

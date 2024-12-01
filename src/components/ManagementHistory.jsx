@@ -10,13 +10,25 @@ export default function ManagementHistory({ onSelectManagement }) {
     const [managements, setManagements] = useState([]);
     const [selectedManagement, setSelectedManagement] = useState(null);
 
-    // Función para obtener todas las gestiones (historial completo)
+    // Función para obtener la gestión actual
+    const isCurrentManagement = (management) => {
+        const now = new Date();
+        const startDate = new Date(management.start_date);
+        const endDate = new Date(management.end_date);
+
+        return now >= startDate && now <= endDate;
+    };
+
+    // Función para obtener todas las gestiones (excluyendo la actual)
     const fetchManagements = async () => {
         setIsLoading(true);
         try {
             const response = await getData("/managements");
             if (response && response.success && Array.isArray(response.data.items)) {
-                setManagements(response.data.items);
+                const filteredManagements = response.data.items.filter(
+                    (management) => !isCurrentManagement(management)
+                );
+                setManagements(filteredManagements);
             } else {
                 setManagements([]);
             }
@@ -93,7 +105,7 @@ export default function ManagementHistory({ onSelectManagement }) {
                         </Card>
                     ))
                 ) : (
-                    <p className="text-center text-gray-500">No se encontraron gestiones en el historial.</p>
+                    <p className="text-center text-gray-500">No tiene gestiones previas.</p>
                 )}
             </div>
         </div>
