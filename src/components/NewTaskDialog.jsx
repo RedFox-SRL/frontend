@@ -330,54 +330,63 @@ function AssigneeSection({ teamMembers, assignedTo, onChange, error }) {
 }
 
 function LinksSection({ links, onAddLink, onRemoveLink, maxLinks }) {
+  const MAX_LINK_LENGTH = 30; // Longitud máxima para mostrar
+
+  const truncateLink = (url) => {
+    if (url.length > MAX_LINK_LENGTH) {
+      return `${url.slice(0, MAX_LINK_LENGTH)}...`;
+    }
+    return url;
+  };
+
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-medium text-purple-700 dark:text-purple-300 block mb-1">
-        Enlaces ({links?.length || 0}/{maxLinks})
-      </Label>
       <div className="space-y-2">
-        <AnimatePresence>
-          {links &&
-            links.map((link, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-2"
-              >
-                <Badge
-                  variant="secondary"
-                  className="px-2 py-1 text-xs bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100 flex items-center max-w-full"
-                >
-                  <LinkIcon className="h-3 w-3 mr-1 flex-shrink-0" />
-                  <span className="truncate flex-grow" title={link.url}>
-                    {link.url}
+        <Label className="text-sm font-medium text-purple-700 dark:text-purple-300 block mb-1">
+          Enlaces ({links?.length || 0}/{maxLinks})
+        </Label>
+        <div className="space-y-2">
+          <AnimatePresence>
+            {links &&
+                links.map((link, index) => (
+                    <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-center gap-2"
+                    >
+                      <Badge
+                          variant="secondary"
+                          className="px-2 py-1 text-xs bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100 flex items-center max-w-full"
+                      >
+                        <LinkIcon className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <span className="truncate flex-grow" title={link.url}>
+                    {truncateLink(link.url)}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-1 p-0 h-auto text-purple-800 hover:text-purple-900 dark:text-purple-100 dark:hover:text-purple-200 flex-shrink-0"
-                    onClick={() => onRemoveLink(index)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              </motion.div>
-            ))}
-        </AnimatePresence>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-1 p-0 h-auto text-purple-800 hover:text-purple-900 dark:text-purple-100 dark:hover:text-purple-200 flex-shrink-0"
+                            onClick={() => onRemoveLink(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    </motion.div>
+                ))}
+          </AnimatePresence>
+        </div>
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={onAddLink}
+            className="w-full mt-2 text-purple-600 border-purple-600 hover:bg-purple-50 dark:text-purple-300 dark:border-purple-300 dark:hover:bg-purple-900"
+            disabled={links && links.length >= maxLinks}
+        >
+          <Plus className="h-4 w-4 mr-2" /> Agregar enlace
+        </Button>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onAddLink}
-        className="w-full mt-2 text-purple-600 border-purple-600 hover:bg-purple-50 dark:text-purple-300 dark:border-purple-300 dark:hover:bg-purple-900"
-        disabled={links && links.length >= maxLinks}
-      >
-        <Plus className="h-4 w-4 mr-2" /> Agregar enlace
-      </Button>
-    </div>
   );
 }
 

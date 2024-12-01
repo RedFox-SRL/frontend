@@ -159,7 +159,28 @@ export default function CalendarioSprints({ groupId }) {
         showToast("Sprint creado exitosamente", false);
       } catch (error) {
         console.error("Error adding sprint:", error);
-        showToast("Error al crear el sprint", true);
+
+        // Traducción de mensajes del backend
+        const translateMessage = (message) => {
+          const translations = {
+            "The sum of the percentages of the tasks exceeds 100%.":
+                "La suma de los porcentajes de las tareas supera el 100%.",
+            "The start date must be before the end date.":
+                "La fecha de inicio debe ser anterior a la fecha de finalización.",
+            "The title field is required.":
+                "El campo del título es obligatorio.",
+          };
+          return translations[message] || message;
+        };
+
+        // Manejo específico del error
+        if (error.response && error.response.status === 400 && error.response.data) {
+          const serverMessage = error.response.data.message || "Error desconocido.";
+          const translatedMessage = translateMessage(serverMessage);
+          showToast(translatedMessage, true);
+        } else {
+          showToast("Error al crear el sprint. Por favor, inténtalo de nuevo.", true);
+        }
       }
     }
   };
@@ -195,24 +216,6 @@ export default function CalendarioSprints({ groupId }) {
     }
   };
 
-  const handleDeleteEvent = async () => {
-    if (!currentEvent.id) return;
-
-    try {
-      await deleteData(`/sprints/${currentEvent.id}`);
-      setEvents((prevEvents) => prevEvents.filter((event) => event.id !== currentEvent.id));
-      showToast("Sprint eliminado exitosamente", false);
-      resetForm();
-    } catch (error) {
-      console.error("Error al eliminar el sprint:", error);
-      showToast("Error al eliminar el sprint", true);
-    } finally {
-      setIsConfirmDialogOpen(false); // Cierra el modal de confirmación
-    }
-  };
-
-
-
   const resetForm = () => {
     setCurrentEvent({ title: "", start: "", end: "", features: "", percentage: "" });
     setIsDialogOpen(false);
@@ -246,8 +249,8 @@ export default function CalendarioSprints({ groupId }) {
   const handleSelectEvent = (event) => {
     setCurrentEvent({
       ...event,
-      start: event.start.toISOString().slice(0, 10),
-      end: event.end.toISOString().slice(0, 10),
+      start: moment(event.start).format("YYYY-MM-DD"), // Convertir la fecha de inicio correctamente
+      end: moment(event.end).format("YYYY-MM-DD"), // Convertir la fecha de fin correctamente
       percentage: event.percentage || "",
     });
     setIsEditing(true);
@@ -491,30 +494,40 @@ export default function CalendarioSprints({ groupId }) {
                 <label htmlFor="percentage" className="text-sm font-medium">
                   Porcentaje
                 </label>
-                <Input
-                    id="percentage"
-                    type="number"
-                    placeholder="Porcentaje de avance"
-                    min="0"
-                    max="100"
-                    value={currentEvent.percentage}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === "" || (value >= 0 && value <= 100)) {
-                        setCurrentEvent({
-                          ...currentEvent,
-                          percentage: value,
-                        });
-                      }
-                    }}
-                    className={formErrors.percentage ? "border-red-500" : ""}
-                />
+                <div className="relative group">
+                  <Input
+                      id="percentage"
+                      type="number"
+                      placeholder="Porcentaje de avance"
+                      min="0"
+                      max="100"
+                      value={currentEvent.percentage}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (!isEditing && (value === "" || (value >= 0 && value <= 100))) {
+                          setCurrentEvent({
+                            ...currentEvent,
+                            percentage: value,
+                          });
+                        }
+                      }}
+                      className={`${formErrors.percentage ? "border-red-500" : ""} ${
+                          isEditing ? "cursor-not-allowed bg-gray-200" : ""
+                      }`}
+                      disabled={isEditing} // Bloquear si está en modo de edición
+                  />
+                  {isEditing && (
+                      <div className="absolute left-0 top-full mt-1 w-full p-2 bg-white text-purple text-xs rounded shadow-lg opacity-0 group-hover:opacity-100">
+                        No puedes editar el porcentaje en el modo de edición.
+                      </div>
+                  )}
+                </div>
                 {formErrors.percentage && (
                     <p className="text-red-500 text-sm">{formErrors.percentage}</p>
                 )}
+                </div>
               </div>
-            </div>
-            <DialogFooter>
+              <DialogFooter>
               <Button
                   onClick={isEditing ? handleUpdateEvent : handleAddEvent}
                   className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
@@ -522,35 +535,10 @@ export default function CalendarioSprints({ groupId }) {
                 {isEditing ? <Edit2 className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
                 {isEditing ? "Actualizar Sprint" : "Agregar Sprint"}
               </Button>
-              {isEditing && (
-                  <Button
-                      onClick={openConfirmDialog}
-                      className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto mt-2 sm:mt-0"
-                  >
-                    Eliminar Sprint
-                  </Button>
-              )}
             </DialogFooter>
 
           </DialogContent>
         </Dialog>
-        <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirmar Eliminación</DialogTitle>
-            </DialogHeader>
-            <p>¿Estás seguro de que deseas eliminar este sprint? Esta acción no se puede deshacer.</p>
-            <DialogFooter>
-              <Button onClick={() => setIsConfirmDialogOpen(false)} variant="outline">
-                Cancelar
-              </Button>
-              <Button onClick={handleDeleteEvent} variant="destructive">
-                Confirmar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
       </div>
   );
 }
