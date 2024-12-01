@@ -26,7 +26,7 @@ export default function LinksManagerModal({ isOpen, onClose }) {
     const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
     const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
     const [linkToDelete, setLinkToDelete] = useState(null);
-    const [filterCategory, setFilterCategory] = useState(""); // Filtro de categorías
+    const [filterCategory, setFilterCategory] = useState("");
     const { toast } = useToast();
 
     const fetchLinks = async () => {
@@ -154,20 +154,22 @@ export default function LinksManagerModal({ isOpen, onClose }) {
                 <DialogHeader>
                     <DialogTitle className="text-purple-700">Gestión de Enlaces del Proyecto</DialogTitle>
                 </DialogHeader>
-                <div className="mb-4">
-                    <select
-                        value={filterCategory}
-                        onChange={(e) => setFilterCategory(e.target.value)}
-                        className="w-full p-2 border border-purple-300 rounded focus:ring-purple-500 focus:border-purple-500"
-                    >
-                        <option value="">Todas las Categorías</option>
-                        {CATEGORIES.map(({ value, label }) => (
-                            <option key={value} value={value}>
-                                {label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                {links.length > 0 && !isAdding && (
+                    <div className="mb-4">
+                        <select
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="w-full p-2 border border-purple-300 rounded focus:ring-purple-500 focus:border-purple-500"
+                        >
+                            <option value="">Todas las Categorías</option>
+                            {CATEGORIES.map(({ value, label }) => (
+                                <option key={value} value={value}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 {links.length === 0 || isAdding ? (
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-purple-800">
@@ -214,7 +216,6 @@ export default function LinksManagerModal({ isOpen, onClose }) {
                 ) : (
                     <div>
                         <h3 className="text-lg font-semibold text-purple-800 mb-4">Enlaces Existentes</h3>
-                        {/* SCROLL PARA LISTA DE ENLACES */}
                         <div className="max-h-64 overflow-y-auto">
                             {filteredLinks.length > 0 ? (
                                 <ul className="space-y-2">
@@ -224,7 +225,6 @@ export default function LinksManagerModal({ isOpen, onClose }) {
                                             className="flex justify-between items-center bg-purple-50 p-3 rounded-lg shadow"
                                         >
                                             <div>
-                                                {/* LIMITAR LONGITUD DE URL CON "..." */}
                                                 <a
                                                     href={link.url}
                                                     target="_blank"
@@ -263,7 +263,6 @@ export default function LinksManagerModal({ isOpen, onClose }) {
                                     ))}
                                 </ul>
                             ) : (
-                                /* MENSAJE SI NO HAY ENLACES EN UNA CATEGORÍA */
                                 <p className="text-sm text-purple-600">No hay enlaces disponibles.</p>
                             )}
                         </div>
@@ -280,7 +279,6 @@ export default function LinksManagerModal({ isOpen, onClose }) {
                 )}
             </DialogContent>
 
-            {/* Confirmación de Cancelar */}
             <Dialog open={isCancelConfirmationOpen} onOpenChange={setIsCancelConfirmationOpen}>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
@@ -306,7 +304,6 @@ export default function LinksManagerModal({ isOpen, onClose }) {
                 </DialogContent>
             </Dialog>
 
-            {/* Confirmación de Eliminar */}
             <Dialog open={isDeleteConfirmationOpen} onOpenChange={setIsDeleteConfirmationOpen}>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
