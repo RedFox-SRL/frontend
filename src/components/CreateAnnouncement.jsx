@@ -295,6 +295,11 @@ export default function CreateAnnouncement({
                   modules={modules}
                   placeholder="Anuncia algo a tu clase"
                   className="bg-white"
+                  style={{
+                    wordBreak: "break-word", // Corta palabras largas para evitar desbordamiento
+                    overflowWrap: "break-word", // Maneja palabras largas para ajustarlas automáticamente
+                    whiteSpace: "pre-wrap", // Mantiene espacios en blanco y saltos de línea
+                  }}
                 />
                 <div className="flex items-center justify-between mt-1">
                   <div className="flex items-center space-x-2">

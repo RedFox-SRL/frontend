@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { putData } from "../api/apiService";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@headlessui/react";
@@ -8,9 +8,22 @@ export default function ManagementSettingsView({ management }) {
     const [newGroupLimit, setNewGroupLimit] = useState(management.group_limit);
     const [isCodeActive, setIsCodeActive] = useState(management.is_code_active);
     const [newDeliveryDate, setNewDeliveryDate] = useState(
-        management.project_delivery_date.slice(0, 16)
-    ); // Compatible con el input datetime-local
+        management.project_delivery_date
+            ? management.project_delivery_date.slice(0, 16)
+            : "" // Maneja null como cadena vacía
+    );
     const { toast } = useToast();
+
+    // Sincronizar el estado con las props cada vez que management cambie
+    useEffect(() => {
+        setNewGroupLimit(management.group_limit);
+        setIsCodeActive(management.is_code_active);
+        setNewDeliveryDate(
+            management.project_delivery_date
+                ? management.project_delivery_date.slice(0, 16)
+                : "" // Maneja null como cadena vacía
+        );
+    }, [management]);
 
     const formatDateTime = (datetime) => {
         // Convierte el valor del input al formato Y-m-d H:i:s

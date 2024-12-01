@@ -51,8 +51,8 @@ export default function EvaluationForm({ evaluationData, onBack }) {
                 description: "Evaluación enviada correctamente.",
             });
 
-            setIsDialogOpen(false); // Cerrar el dialog
-            onBack(); // Volver a la vista anterior
+            setIsDialogOpen(false);
+            onBack();
         } catch (error) {
             console.error("Error al enviar evaluación:", error);
             toast({
@@ -64,7 +64,7 @@ export default function EvaluationForm({ evaluationData, onBack }) {
     };
 
     const confirmSubmit = () => {
-        setIsDialogOpen(true); // Abrir el diálogo de confirmación
+        setIsDialogOpen(true);
     };
 
     return (
@@ -76,7 +76,7 @@ export default function EvaluationForm({ evaluationData, onBack }) {
                 >
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h2 className="ml-4 text-2xl font-bold text-purple-800">
+                <h2 className="ml-4 text-3xl font-bold text-purple-800">
                     {evaluationData.evaluation_period.evaluation_template.name}
                 </h2>
             </div>
@@ -84,20 +84,23 @@ export default function EvaluationForm({ evaluationData, onBack }) {
                 {sections.map((section) => (
                     <div
                         key={section.id}
-                        className="p-4 bg-white bg-opacity-50 rounded-lg shadow space-y-6"
+                        className="p-5 bg-white bg-opacity-50 rounded-lg shadow space-y-4"
                     >
-                        <h3 className="text-lg font-semibold text-purple-600">
+                        <h3 className="text-xl font-semibold text-purple-700">
                             {section.title}
                         </h3>
                         {section.criteria.map((criterion) => (
-                            <div key={criterion.id} className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
+                            <div
+                                key={criterion.id}
+                                className="space-y-2 border-b pb-4 last:border-none last:pb-0"
+                            >
+                                <label className="block text-base font-medium text-gray-800">
                                     {criterion.name}
                                 </label>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-sm text-gray-600">
                                     {criterion.description}
                                 </p>
-                                <div className="flex justify-between">
+                                <div className="flex justify-between mt-2">
                                     {[0, 1, 2, 3, 4, 5].map((value) => (
                                         <label
                                             key={value}
@@ -111,10 +114,10 @@ export default function EvaluationForm({ evaluationData, onBack }) {
                                                 onChange={() => handleInputChange(criterion.id, value)}
                                             />
                                             <span
-                                                className={`w-8 h-8 flex items-center justify-center rounded-full border-2 ${
+                                                className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-sm font-semibold ${
                                                     responses[criterion.id] === value
                                                         ? "bg-purple-700 text-white border-purple-700"
-                                                        : "border-gray-300"
+                                                        : "border-gray-300 text-gray-700"
                                                 }`}
                                             >
                                                 {value}
@@ -126,15 +129,16 @@ export default function EvaluationForm({ evaluationData, onBack }) {
                         ))}
                     </div>
                 ))}
-            </div>
-            <div className="flex justify-end mt-4">
-                <Button
-                    onClick={confirmSubmit}
-                    className="flex items-center bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-lg shadow-md"
-                >
-                    <Send className="w-5 h-5 mr-2" />
-                    Enviar Evaluación
-                </Button>
+                {/* Botón de enviar al final */}
+                <div className="flex justify-end mt-8">
+                    <Button
+                        onClick={confirmSubmit}
+                        className="flex items-center bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-lg shadow-md"
+                    >
+                        <Send className="w-5 h-5 mr-2" />
+                        Enviar Evaluación
+                    </Button>
+                </div>
             </div>
 
             {/* Dialogo de confirmación */}

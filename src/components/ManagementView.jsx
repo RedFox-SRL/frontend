@@ -92,8 +92,8 @@ export default function ManagementView({ management, onBack }) {
     setIsSettingsDropdownOpen(!isSettingsDropdownOpen);
   };
 
-  const handleAnnouncementCreated = async () => {
-    await fetchAnnouncements(1);
+  const handleAnnouncementCreated = (newAnnouncement) => {
+    setAnnouncements((prev) => [newAnnouncement, ...prev]); // Agregar el nuevo anuncio al inicio del listado
   };
 
   const progress = useMemo(() => {
@@ -272,9 +272,6 @@ export default function ManagementView({ management, onBack }) {
       >
         {!isEvaluating && !isSpecialEvaluationsView && (
             <div className="flex flex-wrap justify-between mb-4 items-center gap-2">
-              <Button onClick={onBack} className="bg-transparent hover:bg-purple-200 p-2 rounded-full">
-                <ArrowLeft className="text-purple-600 hover:text-purple-700" />
-              </Button>
               <div className="flex flex-wrap gap-2 justify-end items-center">
                 <div className="relative">
                   <Button
@@ -285,7 +282,7 @@ export default function ManagementView({ management, onBack }) {
                     Configuración
                   </Button>
                   {isSettingsDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
+                      <div className="absolute left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
                         <ManagementSettingsView management={management} />
                       </div>
                   )}
@@ -419,7 +416,7 @@ export default function ManagementView({ management, onBack }) {
                     <TabsContent value="announcements">
                       <CreateAnnouncement
                           managementId={management.id}
-                          onAnnouncementCreated={fetchAnnouncements}
+                          onAnnouncementCreated={handleAnnouncementCreated}
                       />
                       {renderPagination("top")}
                       <AnnouncementList announcements={announcements} />

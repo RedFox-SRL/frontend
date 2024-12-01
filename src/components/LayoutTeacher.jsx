@@ -270,13 +270,13 @@ export default function LayoutTeacher({ children, setCurrentView }) {
                 {user.name} {user.last_name}
               </p>
               <p className="text-center text-sm text-purple-300 mt-1">
-                {user.role}
+                {user.role === "teacher" ? "Docente" : user.role}
               </p>
             </div>
           )
         )}
         <nav className="space-y-2">
-          {menuItems.map(({ icon: Icon, label, view }) => (
+          {menuItems.map(({icon: Icon, label, view }) => (
             <button
               key={view}
               onClick={() => handleMenuItemClick(view)}

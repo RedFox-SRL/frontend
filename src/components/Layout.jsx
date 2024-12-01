@@ -326,7 +326,7 @@ export default function Layout({ children, setCurrentView }) {
                       {user.name} {user.last_name}
                     </p>
                     <p className="text-center text-sm text-purple-300 mt-1">
-                      {user.role}
+                      {user.role === "student" ? "Estudiante" : user.role}
                     </p>
                   </div>
               )
