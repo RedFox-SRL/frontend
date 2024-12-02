@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getData } from "../api/apiService"; // Suponiendo que getData es la función para hacer peticiones GET
+import { ArrowLeft } from "lucide-react"; // Importar el ícono de Lucide React
 
 const RatingView2 = ({ onBack, managementId }) => {
     const [expandedGroup, setExpandedGroup] = useState(null);
@@ -47,9 +48,16 @@ const RatingView2 = ({ onBack, managementId }) => {
 
     return (
         <div className="bg-purple-50 min-h-screen p-6">
-            <Button variant="outline" className="mb-4" onClick={onBack}>
-                ← Volver
+            {/* Botón de Retroceder con la flecha de Lucide React */}
+            <Button
+                variant="outline"
+                className="mb-4 text-purple-600 hover:bg-purple-100 flex items-center space-x-2"
+                onClick={onBack}
+            >
+                <ArrowLeft className="w-5 h-5 text-purple-600" /> {/* Flecha morada */}
+                <span className="text-purple-600">Retroceder</span> {/* Texto morado */}
             </Button>
+
             <h1 className="text-purple-700 font-bold text-2xl mb-6">Resumen de Calificaciones</h1>
 
             {groups.map((group) => (
