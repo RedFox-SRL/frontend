@@ -73,6 +73,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     title: "Éxito",
                     description: "Evaluación actualizada exitosamente.",
                     status: "success",
+                    className: "bg-green-500 text-white",
                 });
             } else {
                 await postData("/evaluation-templates", dataToSave);
@@ -80,6 +81,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     title: "Éxito",
                     description: "Evaluación creada exitosamente.",
                     status: "success",
+                    className: "bg-green-500 text-white",
                 });
             }
 
@@ -97,7 +99,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
 
     const handleAddSection = () => {
         const newSection = {
-            title: "Nueva Sección",
+            title: "",
             criteria: [{ name: "", description: "" }],
         };
         setEvaluationData((prevData) => ({
@@ -114,7 +116,6 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
         setEvaluationData({ ...evaluationData, sections: updatedSections });
     };
 
-    // Handle remove section
     const handleRemoveSection = (sectionIndex) => {
         const updatedSections = evaluationData.sections.filter((_, index) => index !== sectionIndex);
         setEvaluationData({ ...evaluationData, sections: updatedSections });
@@ -122,10 +123,10 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
             title: "Sección Eliminada",
             description: "La sección ha sido eliminada con éxito.",
             status: "success",
+            className: "bg-green-500 text-white",
         });
     };
 
-    // Handle remove criteria
     const handleRemoveCriteria = (sectionIndex, criteriaIndex) => {
         const updatedSections = evaluationData.sections ? [...evaluationData.sections] : [];
         updatedSections[sectionIndex].criteria.splice(criteriaIndex, 1);
@@ -134,6 +135,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
             title: "Criterio Eliminado",
             description: "El criterio ha sido eliminado con éxito.",
             status: "success",
+            className: "bg-green-500 text-white",
         });
     };
 
@@ -178,17 +180,19 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                                 setEvaluationData({ ...evaluationData, sections: updatedSections });
                             }}
                             className="text-lg font-semibold text-purple-600 w-full border-b mb-2"
-                            placeholder="Título de la Sección"
+                            placeholder="Nueva Sección"
                         />
-                        <button onClick={() => handleAddCriteria(sectionIndex)} className="text-green-500">
-                            <PlusCircle className="inline mr-1" /> Añadir Criterio
-                        </button>
-                        <button
-                            onClick={() => handleRemoveSection(sectionIndex)}
-                            className="text-red-500"
-                        >
-                            <Trash className="inline mr-1" /> Eliminar Sección
-                        </button>
+                        <div className="flex gap-2">
+                            <button onClick={() => handleAddCriteria(sectionIndex)} className="text-green-500">
+                                <PlusCircle className="inline mr-1" /> Añadir Criterio
+                            </button>
+                            <button
+                                onClick={() => handleRemoveSection(sectionIndex)}
+                                className="text-red-500"
+                            >
+                                <Trash className="inline mr-1" /> Eliminar Sección
+                            </button>
+                        </div>
                     </div>
 
                     {(section.criteria || []).map((criteria, criteriaIndex) => (
@@ -214,7 +218,13 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                                 className="w-full p-2 mt-1 border rounded-md"
                                 placeholder="Descripción del Criterio"
                             ></textarea>
-                            <div className="flex justify-end mt-2">
+                            <div className="flex justify-between mt-2">
+                                <button
+                                    onClick={() => handleAddCriteria(sectionIndex)}
+                                    className="text-green-500"
+                                >
+                                    <PlusCircle className="mr-1" /> Añadir Criterio
+                                </button>
                                 <button
                                     className="text-red-500"
                                     onClick={() => handleRemoveCriteria(sectionIndex, criteriaIndex)}
@@ -227,7 +237,6 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                 </section>
             ))}
 
-            {/* Button to Add Section */}
             <div className="flex justify-between mt-6">
                 <button onClick={handleAddSection} className="text-blue-500">
                     <PlusCircle className="inline mr-1" /> Añadir Sección

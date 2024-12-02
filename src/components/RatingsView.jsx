@@ -1,224 +1,234 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getData, postData } from "../api/apiService";
+import { useToast } from "@/hooks/use-toast";
 
-const RatingsView = ({ onBack }) => {
-    const [expandedGroup, setExpandedGroup] = useState(null);
-    const [selectedStudent, setSelectedStudent] = useState(null);
-    const [filter, setFilter] = useState("Todos los Grupos");
+const RatingsView = ({ onBack, managementId }) => {
+    const [formValues, setFormValues] = useState({
+        sprint_points: "",
+        cross_evaluation_points: "",
+        proposal_points: "",
+        sprint_teacher_percentage: "",
+        sprint_self_percentage: "",
+        sprint_peer_percentage: "",
+        proposal_part_a_percentage: "",
+        proposal_part_b_percentage: "",
+    });
+    const [isFormValid, setIsFormValid] = useState(false); // Estado para controlar si el formulario es válido
+    const toast = useToast();
 
-    const toggleGroup = (group) => {
-        setExpandedGroup(expandedGroup === group ? null : group);
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+
+        // Validación: Solo números entre 1 y 100
+        if (!value || (/^[0-9]*$/.test(value) && value >= 1 && value <= 100)) {
+            setFormValues((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
     };
 
-    const openModal = (student) => {
-        setSelectedStudent(student);
+    // Validar el formulario cada vez que se cambian los valores
+    useEffect(() => {
+        const {
+            sprint_points,
+            cross_evaluation_points,
+            proposal_points,
+            sprint_teacher_percentage,
+            sprint_self_percentage,
+            sprint_peer_percentage,
+            proposal_part_a_percentage,
+            proposal_part_b_percentage,
+        } = formValues;
+
+        const sprintPoints = parseInt(sprint_points);
+        const crossEvaluationPoints = parseInt(cross_evaluation_points);
+        const proposalPoints = parseInt(proposal_points);
+        const sprintTeacherPercentage = parseInt(sprint_teacher_percentage);
+        const sprintSelfPercentage = parseInt(sprint_self_percentage);
+        const sprintPeerPercentage = parseInt(sprint_peer_percentage);
+        const proposalPartAPercentage = parseInt(proposal_part_a_percentage);
+        const proposalPartBPercentage = parseInt(proposal_part_b_percentage);
+
+        const valid =
+            sprintPoints + crossEvaluationPoints + proposalPoints === 100 &&
+            sprintTeacherPercentage + sprintSelfPercentage + sprintPeerPercentage === 100 &&
+            proposalPartAPercentage + proposalPartBPercentage === 100;
+
+        setIsFormValid(valid); // Actualiza el estado de validación
+    }, [formValues]);
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+
+        // Validar antes de enviar
+        if (!isFormValid) {
+            toast({
+                title: "Error",
+                description: "Las sumas de los puntos y porcentajes deben ser igual a 100.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const response = await postData(`/managements/${managementId}/score`, formValues);
+            if (response.success) {
+                toast({
+                    title: "Configuración Enviada",
+                    description: "La configuración de puntuación se guardó correctamente.",
+                    variant: "success",
+                });
+                onBack(); // Cierra el popup
+            } else {
+                toast({
+                    title: "Error al Enviar",
+                    description: "Hubo un problema al enviar la configuración. Intenta de nuevo.",
+                    variant: "destructive",
+                });
+            }
+        } catch (error) {
+            console.log("Error al enviar la configuración", error);
+            toast({
+                title: "Error de Conexión",
+                description: "Hubo un error al intentar realizar la solicitud. Intenta nuevamente.",
+                variant: "destructive",
+            });
+        }
     };
-
-    const closeModal = () => {
-        setSelectedStudent(null);
-    };
-
-    const groups = [
-        {
-            name: "Grupo A",
-            metrics: {
-                sprints: "47.5/60",
-                proposals: "27.0/30",
-                peerEvaluation: "8.0/10",
-            },
-            students: [
-                {
-                    name: "Juan Pérez",
-                    sprints: "45/60",
-                    proposals: "27/30",
-                    peerEvaluation: "8/10",
-                    finalGrade: "80/100",
-                    sprintDetails: [
-                        { sprint: "Sprint 1", teacher: "39/70", auto: "12/15", peers: "9/15", total: "60/100" },
-                        { sprint: "Sprint 2", teacher: "65/70", auto: "13/15", peers: "7/15", total: "85/100" },
-                        { sprint: "Sprint 3", teacher: "8/70", auto: "0/15", peers: "12/15", total: "20/100" },
-                    ],
-                },
-                {
-                    name: "Ana García",
-                    sprints: "50/60",
-                    proposals: "27/30",
-                    peerEvaluation: "8/10",
-                    finalGrade: "85/100",
-                    sprintDetails: [],
-                },
-            ],
-        },
-        {
-            name: "Grupo B",
-            metrics: {
-                sprints: "50.0/60",
-                proposals: "28.0/30",
-                peerEvaluation: "9.0/10",
-            },
-            students: [
-                {
-                    name: "Carlos López",
-                    sprints: "50/60",
-                    proposals: "28/30",
-                    peerEvaluation: "9/10",
-                    finalGrade: "90/100",
-                    sprintDetails: [],
-                },
-                {
-                    name: "María Fernández",
-                    sprints: "55/60",
-                    proposals: "28/30",
-                    peerEvaluation: "9/10",
-                    finalGrade: "92/100",
-                    sprintDetails: [],
-                },
-            ],
-        },
-    ];
-
-    const filteredGroups =
-        filter === "Todos los Grupos"
-            ? groups
-            : groups.filter((group) => group.name === filter);
 
     return (
-        <div className="bg-purple-50 min-h-screen p-6">
-            <Button
-                variant="outline"
-                className="mb-4"
-                onClick={onBack}
-            >
-                ← Volver
-            </Button>
-            <h1 className="text-purple-700 font-bold text-2xl mb-6">
-                Resumen de Calificaciones
-            </h1>
-            <div className="mb-4">
-                <select
-                    className="border border-purple-300 rounded-md px-4 py-2"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                >
-                    <option>Todos los Grupos</option>
-                    {groups.map((group, index) => (
-                        <option key={index}>{group.name}</option>
-                    ))}
-                </select>
-            </div>
-            {filteredGroups.map((group, index) => (
-                <div
-                    key={index}
-                    className="bg-purple-100 rounded-lg shadow-md mb-4 overflow-hidden"
-                >
-                    <div
-                        className="flex justify-between items-center p-4 cursor-pointer"
-                        onClick={() => toggleGroup(group.name)}
-                    >
-                        <h2 className="text-purple-700 font-bold">{group.name}</h2>
-                        <span className="text-purple-500">{group.students.length} estudiantes</span>
-                    </div>
-                    {expandedGroup === group.name && (
-                        <div className="p-4 bg-white">
-                            <div className="grid grid-cols-3 gap-4 mb-6">
-                                <div className="text-center">
-                                    <h3 className="text-purple-600 font-semibold">Sprints</h3>
-                                    <p className="text-purple-800 font-bold">{group.metrics.sprints}</p>
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="text-purple-600 font-semibold">Propuestas</h3>
-                                    <p className="text-purple-800 font-bold">{group.metrics.proposals}</p>
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="text-purple-600 font-semibold">Evaluación Cruzada</h3>
-                                    <p className="text-purple-800 font-bold">{group.metrics.peerEvaluation}</p>
-                                </div>
-                            </div>
-                            <table className="w-full text-left">
-                                <thead>
-                                <tr className="border-b">
-                                    <th className="py-2">Estudiante</th>
-                                    <th className="py-2">Sprints (60%)</th>
-                                    <th className="py-2">Nota Final</th>
-                                    <th className="py-2">Detalles</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {group.students.map((student, studentIndex) => (
-                                    <tr key={studentIndex} className="border-b">
-                                        <td className="py-2">{student.name}</td>
-                                        <td className="py-2">{student.sprints}</td>
-                                        <td className="py-2 font-bold">{student.finalGrade}</td>
-                                        <td className="py-2">
-                                            <button
-                                                onClick={() => openModal(student)}
-                                                className="text-purple-500 hover:underline"
-                                            >
-                                                Ver Detalles
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-            ))}
+        <Dialog open={true} onOpenChange={onBack}>
+            <DialogContent className="max-w-lg mx-auto overflow-y-auto max-h-[80vh] p-6">
+                <DialogClose onClick={onBack} />
+                <h1 className="text-purple-700 font-bold text-2xl mb-6">Configurar Ponderaciones</h1>
 
-            {/* Modal */}
-            {selectedStudent && (
-                <Dialog open={!!selectedStudent} onOpenChange={closeModal}>
-                    <DialogContent className="bg-white p-6 rounded-lg max-w-lg mx-auto shadow-lg">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-purple-700 font-bold text-xl">
-                                Detalles de {selectedStudent.name} - {expandedGroup}
-                            </h2>
-                            <DialogClose asChild>
-                                <button className="text-purple-500 hover:text-purple-700">
-                                    ✖
-                                </button>
-                            </DialogClose>
-                        </div>
-                        <div className="mb-6">
-                            <h3 className="text-purple-600 font-semibold mb-2">Resumen de Calificaciones</h3>
-                            <p><strong>Sprints:</strong> {selectedStudent.sprints}</p>
-                            <p><strong>Propuestas:</strong> {selectedStudent.proposals}</p>
-                            <p><strong>Evaluación Cruzada:</strong> {selectedStudent.peerEvaluation}</p>
-                            <p className="font-bold text-lg mt-2">
-                                Nota Final: {selectedStudent.finalGrade}
-                            </p>
+                <form className="grid grid-cols-1 gap-6" onSubmit={handleFormSubmit}>
+                    <div className="space-y-4">
+                        <h2 className="text-lg font-semibold text-purple-700">Puntos de Evaluación</h2>
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de Sprint</label>
+                            <Input
+                                name="sprint_points"
+                                type="number"
+                                value={formValues.sprint_points}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
                         </div>
                         <div>
-                            <h3 className="text-purple-600 font-semibold mb-2">Detalle de Sprints</h3>
-                            <table className="w-full text-left">
-                                <thead>
-                                <tr className="border-b">
-                                    <th className="py-2">Sprint</th>
-                                    <th className="py-2">Docente (70%)</th>
-                                    <th className="py-2">Auto (15%)</th>
-                                    <th className="py-2">Pares (15%)</th>
-                                    <th className="py-2">Total</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {selectedStudent.sprintDetails.map((detail, index) => (
-                                    <tr key={index} className="border-b">
-                                        <td className="py-2">{detail.sprint}</td>
-                                        <td className="py-2">{detail.teacher}</td>
-                                        <td className="py-2">{detail.auto}</td>
-                                        <td className="py-2">{detail.peers}</td>
-                                        <td className="py-2">{detail.total}</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de Evaluación Cruzada</label>
+                            <Input
+                                name="cross_evaluation_points"
+                                type="number"
+                                value={formValues.cross_evaluation_points}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
                         </div>
-                    </DialogContent>
-                </Dialog>
-            )}
-        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de Propuesta</label>
+                            <Input
+                                name="proposal_points"
+                                type="number"
+                                value={formValues.proposal_points}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h2 className="text-lg font-semibold text-purple-700">Porcentajes de Sprint</h2>
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Profesor)</label>
+                            <Input
+                                name="sprint_teacher_percentage"
+                                type="number"
+                                value={formValues.sprint_teacher_percentage}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Autoevaluación)</label>
+                            <Input
+                                name="sprint_self_percentage"
+                                type="number"
+                                value={formValues.sprint_self_percentage}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Evaluación Cruzada)</label>
+                            <Input
+                                name="sprint_peer_percentage"
+                                type="number"
+                                value={formValues.sprint_peer_percentage}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <h2 className="text-lg font-semibold text-purple-700">Porcentajes de Propuesta</h2>
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje Parte A Propuesta</label>
+                            <Input
+                                name="proposal_part_a_percentage"
+                                type="number"
+                                value={formValues.proposal_part_a_percentage}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje Parte B Propuesta</label>
+                            <Input
+                                name="proposal_part_b_percentage"
+                                type="number"
+                                value={formValues.proposal_part_b_percentage}
+                                onChange={handleInputChange}
+                                className="w-full border-purple-300"
+                                min="1"
+                                max="100"
+                                placeholder="Ingresa un valor entre 1 y 100"
+                            />
+                        </div>
+                    </div>
+
+                    <Button type="submit" className="bg-purple-600 text-white" disabled={!isFormValid}>
+                        Guardar Configuración
+                    </Button>
+                </form>
+            </DialogContent>
+        </Dialog>
     );
 };
 
