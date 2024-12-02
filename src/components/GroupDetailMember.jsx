@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -15,17 +15,24 @@ import {
   Phone,
   Star,
   Link,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import RankingModal from "@/components/RankingModal";
 import LinksViewerModal from "@/components/LinksViewerModal";
+import { getData } from "../api/apiService";
+import ProposalsViewer from "@/components/ProposalsViewer.jsx"; // Modal de propuestas
 
 export default function GroupDetailMember({ selectedGroup }) {
   const { toast } = useToast();
   const topRef = useRef(null);
   const [isRankingDialogOpen, setIsRankingDialogOpen] = useState(false);
   const [isLinksDialogOpen, setIsLinksDialogOpen] = useState(false);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false); // Estado para el modal de propuestas
+  const [proposals, setProposals] = useState([]); // Propuestas
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(
@@ -48,6 +55,36 @@ export default function GroupDetailMember({ selectedGroup }) {
 
   const handleOpenLinks = () => setIsLinksDialogOpen(true);
   const handleCloseLinks = () => setIsLinksDialogOpen(false);
+
+  // Función para obtener las propuestas
+  const fetchProposals = async () => {
+    setLoading(true);
+    setErrorMessage(""); // Limpia el mensaje de error antes de la consulta
+    try {
+      const response = await getData("/proposal-submission");
+      if (response.success) {
+        const { part_a, part_b } = response.data;
+        setProposals([
+          ...(part_a.status === "submitted" ? [{ title: "Parte A", url: part_a.file_url }] : []),
+          ...(part_b.status === "submitted" ? [{ title: "Parte B", url: part_b.file_url }] : []),
+        ]);
+        if (part_a.status === "pending" && part_b.status === "pending") {
+          setErrorMessage("Comunícate con el representante legal para subir las propuestas.");
+        }
+      } else {
+        setErrorMessage("No se pudo cargar las propuestas.");
+      }
+    } catch (error) {
+      setErrorMessage("Hubo un problema al cargar las propuestas.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProposals();
+  }, []);
 
   return (
       <>
@@ -78,30 +115,22 @@ export default function GroupDetailMember({ selectedGroup }) {
                   <h2 className="text-xl font-bold text-gray-800">
                     {selectedGroup.short_name}
                   </h2>
-                  <p className="text-sm text-gray-600">
-                    {selectedGroup.long_name}
-                  </p>
+                  <p className="text-sm text-gray-600">{selectedGroup.long_name}</p>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2">
                   <Mail className="h-5 w-5 text-purple-500" />
-                  <span className="text-sm text-gray-700">
-                  {selectedGroup.contact_email}
-                </span>
+                  <span className="text-sm text-gray-700">{selectedGroup.contact_email}</span>
                 </div>
                 <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-2">
                   <Phone className="h-5 w-5 text-purple-500" />
-                  <span className="text-sm text-gray-700">
-                  {selectedGroup.contact_phone}
-                </span>
+                  <span className="text-sm text-gray-700">{selectedGroup.contact_phone}</span>
                 </div>
                 <div className="flex items-center justify-between bg-gray-100 rounded-lg p-2">
                   <div className="flex items-center space-x-2">
                     <Hash className="h-5 w-5 text-purple-500" />
-                    <span className="text-sm text-gray-700">
-                    {selectedGroup.code}
-                  </span>
+                    <span className="text-sm text-gray-700">{selectedGroup.code}</span>
                   </div>
                   <Button
                       onClick={() => copyToClipboard(selectedGroup.code)}
@@ -115,12 +144,8 @@ export default function GroupDetailMember({ selectedGroup }) {
               </div>
             </div>
             <div className="flex flex-col justify-center space-y-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Información del Grupo
-              </h3>
-              <p className="text-sm text-gray-600">
-                Este es tu grupo de trabajo actual.
-              </p>
+              <h3 className="text-lg font-semibold text-gray-800">Información del Grupo</h3>
+              <p className="text-sm text-gray-600">Este es tu grupo de trabajo actual.</p>
 
               <Button
                   variant="outline"
@@ -130,37 +155,25 @@ export default function GroupDetailMember({ selectedGroup }) {
                 <Link className="w-4 h-4 mr-2" />
                 Links
               </Button>
-
               <Button
                   variant="outline"
                   className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
-                  onClick={handleOpenRanking}
+                  onClick={() => setIsProposalModalOpen(true)}
               >
-                <ChartNoAxesCombined className="w-4 h-4 mr-2" />
-                Ranking
+                <FileText className="w-4 h-4 mr-2" />
+                Ver Propuestas
               </Button>
-
-              <h3 className="text-lg font-semibold text-gray-800 mt-4">
-                Satisfacción del docente
-              </h3>
-              <div className="flex space-x-1 mt-2">
-                {Array.from({ length: 5 }).map((_, index) => (
-                    <Star key={index} className="w-6 h-6 text-yellow-500" />
-                ))}
-              </div>
             </div>
           </CardContent>
         </Card>
-
-        <RankingModal
-            group={selectedGroup}
-            isOpen={isRankingDialogOpen}
-            onClose={handleCloseRanking}
-        />
-
         <LinksViewerModal
             isOpen={isLinksDialogOpen}
             onClose={handleCloseLinks}
+        />
+
+        <ProposalsViewer
+            isOpen={isProposalModalOpen}
+            onClose={() => setIsProposalModalOpen(false)}
         />
       </>
   );

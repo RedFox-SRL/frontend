@@ -19,12 +19,12 @@ import {
   Mail,
   Phone,
   Settings,
-  Star,
+  FileText ,
   X,
   Link,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { postData, putData } from "../api/apiService";
+import { postData, putData,getData } from "../api/apiService";
 import ImageCropper from "./ImageCropper";
 import {
   Dialog,
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import RankingModal from "@/components/RankingModal";
 import LinksManagerModal from "./LinksManagerModal";
+import ProposalModal from './ProposalModal';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -50,6 +51,39 @@ export default function GroupDetailCreator({
   const [isRankingDialogOpen, setIsRankingDialogOpen] = useState(false);
   const { toast } = useToast();
   const [isLinksModalOpen, setIsLinksModalOpen] = useState(false);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+  const [proposalStatus, setProposalStatus] = useState(null);  // Estado para el estado de las propuestas
+
+  useEffect(() => {
+    const fetchProposalStatus = async () => {
+      try {
+        const response = await getData("/proposal-submission");
+        if (response.success) {
+          setProposalStatus(response.data);  // Guardamos el estado de las propuestas
+          const { part_a, part_b } = response.data;
+          if (part_a.status === "pending" || part_b.status === "pending") {
+            setIsProposalModalOpen(true); // Abrir el modal si alguna parte está pendiente
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: "Error al obtener el estado de las propuestas.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error al obtener el estado:", error);
+        toast({
+          title: "Error",
+          description: "Hubo un error al intentar obtener el estado de las propuestas.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchProposalStatus();
+  }, []);
+
 
   useEffect(() => {
     setGroupData(initialGroupData);
@@ -368,23 +402,15 @@ export default function GroupDetailCreator({
                   onClose={() => setIsLinksModalOpen(false)}
               />
 
-              <Button
-                variant="outline"
-                className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
-                onClick={handleOpenRanking}
-              >
-                <ChartNoAxesCombined className="w-4 h-4 mr-2" />
-                Ranking
-              </Button>
+                  <Button
+                      variant="outline"
+                      className="w-full border-gray-300 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-300"
+                      onClick={() => setIsProposalModalOpen(true)}  // Volver a abrir el modal
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Ver Propuestas
+                  </Button>
 
-              <h3 className="text-lg font-semibold text-gray-800 mt-4">
-                Satisfacción del docente
-              </h3>
-              <div className="flex space-x-1 mt-2">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Star key={index} className="w-6 h-6 text-yellow-500" />
-                ))}
-              </div>
             </div>
           </div>
         </CardContent>
@@ -395,6 +421,11 @@ export default function GroupDetailCreator({
         isOpen={isRankingDialogOpen}
         onClose={handleCloseRanking}
       />
+      <ProposalModal
+          isOpen={isProposalModalOpen}
+          onClose={() => setIsProposalModalOpen(false)}
+      />
+
 
       <Dialog open={isLogoDialogOpen} onOpenChange={setIsLogoDialogOpen}>
         <DialogContent>

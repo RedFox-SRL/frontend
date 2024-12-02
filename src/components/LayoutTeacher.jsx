@@ -317,11 +317,6 @@ export default function LayoutTeacher({ children, setCurrentView }) {
             {displayedText}
             {!isTypingComplete && <span className="animate-blink">|</span>}
           </h2>
-          <div
-            className={`${isMobile && isSidebarOpen ? "pointer-events-none opacity-50" : ""} transition-opacity duration-300`}
-          >
-            <NotificationButton isMobile={isMobile} />
-          </div>
         </header>
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50">
           <motion.div

@@ -22,8 +22,10 @@ import { useUser } from "../context/UserContext";
 import { AnimatePresence, motion } from "framer-motion";
 import NotificationButton from "./NotificationButton";
 import StarWarsIntro from "./starwars";
-import EvaluationModal from "./EvaluationModal"; // Importa el modal
-import EvaluationForm from "./EvaluationForm"; // Importa el formulario
+import EvaluationModal from "./EvaluationModal";
+import EvaluationForm from "./EvaluationForm";
+import CrossEvaluationModal from "./CrossEvaluationModal";
+
 
 const useTypingAnimation = (text, speed = 100) => {
   const [displayedText, setDisplayedText] = useState("");
@@ -137,6 +139,8 @@ export default function Layout({ children, setCurrentView }) {
 
   const [view, setView] = useState("evaluations");
   const [currentEvaluation, setCurrentEvaluation] = useState(null);
+  const [crossEvaluationActive, setCrossEvaluationActive] = useState(false);
+  const [crossEvaluationData, setCrossEvaluationData] = useState(null);
 
   const { displayedText, isTypingComplete } = useTypingAnimation(
       "Taller De Ingeniería en Software",
@@ -195,6 +199,27 @@ export default function Layout({ children, setCurrentView }) {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  const fetchCrossEvaluation = async () => {
+    try {
+      const response = await getData("/cross-evaluation");
+      if (response?.data) {
+        setCrossEvaluationData(response.data);
+        setCrossEvaluationActive(true);
+      }
+    } catch (error) {
+      console.error("Error fetching cross evaluation:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCrossEvaluation();
+  }, []);
+
+  const handleCrossEvaluationSubmit = () => {
+    setCrossEvaluationActive(false);
+    setCrossEvaluationData(null);
+  };
 
   const handleLogout = async () => {
     try {
@@ -373,15 +398,16 @@ export default function Layout({ children, setCurrentView }) {
               {displayedText}
               {!isTypingComplete && <span className="animate-blink">|</span>}
             </h2>
-            <div
-                className={`${
-                    isMobile && isSidebarOpen ? "pointer-events-none opacity-50" : ""
-                } transition-opacity duration-300`}
-            >
-              <NotificationButton isMobile={isMobile} />
-            </div>
+
           </header>
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50">
+            {/* Cross Evaluation Modal */}
+            {crossEvaluationActive && crossEvaluationData && (
+                <CrossEvaluationModal
+                    evaluationData={crossEvaluationData}
+                    onSubmit={handleCrossEvaluationSubmit}
+                />
+            )}
             {view === "evaluations" && (
                 <EvaluationModal onEvaluationSelect={handleEvaluationSelect} />
             )}

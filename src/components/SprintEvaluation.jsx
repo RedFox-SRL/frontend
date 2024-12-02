@@ -39,18 +39,36 @@ export default function SprintEvaluation({ groupId }) {
                     setTemplate(response.data.template);
                 } catch (error) {
                     console.error("Error al cargar la plantilla de evaluación de sprint:", error);
+
+                    if (error.response && error.response.data && error.response.data.code === 298) {
+                        toast({
+                            title: "Evaluación ya realizada",
+                            description: "Este sprint ya ha sido evaluado. No se puede realizar otra evaluación.",
+                            status: "info", // Tipo de mensaje
+                            variant: "outline", // Variación visual para que sea amigable
+                            className: "bg-blue-500 text-white", // Estilo de la notificación
+                        });
+                    } else {
+                        toast({
+                            title: "Error al cargar el template",
+                            description: "Hubo un problema al intentar cargar la plantilla de evaluación del sprint.",
+                            status: "error",
+                            variant: "destructive",
+                        });
+                    }
                 }
             };
             fetchSprintEvaluationTemplate();
         }
     }, [selectedSprintId]);
 
+
     const handleSaveEvaluation = async () => {
         if (!template || Object.keys(grades).length === 0 || Object.keys(comments).length === 0 || !summary) {
             toast({
                 title: "Error",
                 description: "Todos los campos de evaluación deben estar completos, incluyendo el resumen.",
-                variant: "destructive", // Toast para errores
+                variant: "destructive",
             });
             return;
         }
