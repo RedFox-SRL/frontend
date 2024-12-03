@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { getData } from "../api/apiService";
-import { ArrowLeft } from "lucide-react";
+import { getData } from "../api/apiService"; // Suponiendo que getData es la función para hacer peticiones GET
+import { ArrowLeft } from "lucide-react"; // Importar el ícono de Lucide React
 
 const RatingView2 = ({ onBack, managementId }) => {
     const [expandedGroup, setExpandedGroup] = useState(null);
@@ -10,18 +10,22 @@ const RatingView2 = ({ onBack, managementId }) => {
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Toggle para abrir o cerrar detalles de un grupo
     const toggleGroup = (groupId) => {
         setExpandedGroup(expandedGroup === groupId ? null : groupId);
     };
 
+    // Abrir el modal de detalles del estudiante
     const openModal = (student) => {
         setSelectedStudent(student);
     };
 
+    // Cerrar el modal de detalles del estudiante
     const closeModal = () => {
         setSelectedStudent(null);
     };
 
+    // Fetch de datos desde la API
     useEffect(() => {
         const fetchGradeSummary = async () => {
             try {
@@ -65,7 +69,7 @@ const RatingView2 = ({ onBack, managementId }) => {
                     {expandedGroup === group.group_id && (
                         <div className="p-4 bg-white">
                             {/* Información del grupo */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                            <div className="grid grid-cols-3 gap-4 mb-6">
                                 <div className="text-center">
                                     <h3 className="text-purple-600 font-semibold">Sprints</h3>
                                     <p className="text-purple-800 font-bold">{group.group_scores.sprints}</p>
@@ -80,56 +84,35 @@ const RatingView2 = ({ onBack, managementId }) => {
                                 </div>
                             </div>
 
-                            {/* Configuración de puntuaciones */}
-                            <div className="mb-6">
-                                <h3 className="text-purple-600 font-semibold">Configuración de Puntajes</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                    <div className="text-center">
-                                        <p className="font-semibold">Sprints</p>
-                                        <p className="text-purple-800">{group.score_configuration.sprints}%</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-semibold">Propuestas</p>
-                                        <p className="text-purple-800">{group.score_configuration.proposal}%</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-semibold">Evaluación Cruzada</p>
-                                        <p className="text-purple-800">{group.score_configuration.cross_evaluation}%</p>
-                                    </div>
-                                </div>
-                            </div>
-
                             {/* Lista de estudiantes */}
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead>
-                                    <tr className="border-b">
-                                        <th className="py-2">Estudiante</th>
-                                        <th className="py-2">Nota Final</th>
-                                        <th className="py-2">Sprints</th>
-                                        <th className="py-2">Propuesta</th>
-                                        <th className="py-2">Evaluación Cruzada</th>
-                                        <th className="py-2">Detalles</th>
+                            <table className="w-full text-left">
+                                <thead>
+                                <tr className="border-b">
+                                    <th className="py-2">Estudiante</th>
+                                    <th className="py-2">Nota Final</th>
+                                    <th className="py-2">Sprints</th>
+                                    <th className="py-2">Propuesta</th>
+                                    <th className="py-2">Evaluación Cruzada</th>
+                                    <th className="py-2">Detalles</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {group.students.map((student) => (
+                                    <tr key={student.student_id} className="border-b">
+                                        <td className="py-2">{student.name} {student.last_name}</td>
+                                        <td className="py-2 font-bold">{student.final_score}</td>
+                                        <td className="py-2">{student.sprint_final_score}</td>
+                                        <td className="py-2">{student.proposal_score}</td>
+                                        <td className="py-2">{student.cross_evaluation_score}</td>
+                                        <td className="py-2">
+                                            <button onClick={() => openModal(student)} className="text-purple-500 hover:underline">
+                                                Ver Detalles
+                                            </button>
+                                        </td>
                                     </tr>
-                                    </thead>
-                                    <tbody>
-                                    {group.students.map((student) => (
-                                        <tr key={student.student_id} className="border-b">
-                                            <td className="py-2">{student.name} {student.last_name}</td>
-                                            <td className="py-2 font-bold">{student.final_score}%</td>
-                                            <td className="py-2">{student.sprint_final_score}%</td>
-                                            <td className="py-2">{student.proposal_score}</td>
-                                            <td className="py-2">{student.cross_evaluation_score}</td>
-                                            <td className="py-2">
-                                                <button onClick={() => openModal(student)} className="text-purple-500 hover:underline">
-                                                    Ver Detalles
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>
@@ -138,13 +121,14 @@ const RatingView2 = ({ onBack, managementId }) => {
             {/* Modal de detalles del estudiante */}
             {selectedStudent && (
                 <Dialog open={!!selectedStudent} onOpenChange={closeModal}>
-                    <DialogContent className="bg-white p-4 sm:p-6 rounded-lg max-w-full sm:max-w-3xl mx-auto shadow-lg max-h-screen overflow-y-auto">
+                    <DialogContent className="bg-white p-6 rounded-lg max-w-lg mx-auto shadow-lg">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-purple-700 font-bold text-lg sm:text-xl">
+                            <h2 className="text-purple-700 font-bold text-xl">
                                 Detalles de {selectedStudent.name} {selectedStudent.last_name}
                             </h2>
                         </div>
 
+                        {/* Información de calificaciones */}
                         <div className="mb-6">
                             <p><strong>Sprint Final:</strong> {selectedStudent.sprint_final_score}</p>
                             <p><strong>Propuesta:</strong> {selectedStudent.proposal_score}</p>
@@ -154,38 +138,31 @@ const RatingView2 = ({ onBack, managementId }) => {
                             </p>
                         </div>
 
+                        {/* Detalle de los sprints */}
                         <div>
                             <h3 className="text-purple-600 font-semibold mb-2">Detalle de Sprints</h3>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                    <tr className="border-b">
-                                        <th className="py-2 px-4">Sprint</th>
-                                        <th className="py-2 px-4">Docente</th>
-                                        <th className="py-2 px-4">Autoevaluación</th>
-                                        <th className="py-2 px-4">Cruzada</th>
-                                        <th className="py-2 px-4">Final</th>
-                                        <th className="py-2 px-4">Porcentaje</th>
-                                        <th className="py-2 px-4">Autoeval %</th>
-                                        <th className="py-2 px-4">Puntaje Ponderado</th>
+                            <table className="w-full text-left">
+                                <thead>
+                                <tr className="border-b">
+                                    <th className="py-2">Sprint</th>
+                                    <th className="py-2">Docente</th>
+                                    <th className="py-2">Autoevaluación</th>
+                                    <th className="py-2">Evaluación Cruzada</th>
+                                    <th className="py-2">Puntaje Final</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {selectedStudent.sprints_detail.map((detail, index) => (
+                                    <tr key={index} className="border-b">
+                                        <td className="py-2">{detail.title}</td>
+                                        <td className="py-2">{detail.teacher_grade}</td>
+                                        <td className="py-2">{detail.self_evaluation_grade}</td>
+                                        <td className="py-2">{detail.peer_evaluation_grade}</td>
+                                        <td className="py-2">{detail.sprint_score}</td>
                                     </tr>
-                                    </thead>
-                                    <tbody>
-                                    {selectedStudent.sprints_detail.map((detail, index) => (
-                                        <tr key={index} className="border-b">
-                                            <td className="py-2 px-4">{detail.title}</td>
-                                            <td className="py-2 px-4">{detail.teacher_grade}</td>
-                                            <td className="py-2 px-4">{detail.self_evaluation_grade}</td>
-                                            <td className="py-2 px-4">{detail.peer_evaluation_grade}</td>
-                                            <td className="py-2 px-4">{detail.sprint_score}</td>
-                                            <td className="py-2 px-4">{detail.percentage}</td>
-                                            <td className="py-2 px-4">{detail.self_evaluation_percentage}</td>
-                                            <td className="py-2 px-4">{detail.weighted_score}</td>
-                                        </tr>
-                                    ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                ))}
+                                </tbody>
+                            </table>
                         </div>
                     </DialogContent>
                 </Dialog>
