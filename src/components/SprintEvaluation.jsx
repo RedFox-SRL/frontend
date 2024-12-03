@@ -3,6 +3,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getData, postData } from "../api/apiService";
+import SprintHistoryView from "./SprintHistoryView";
+
 
 const COLORS = ["#a78bfa", "#c4b5fd", "#8b5cf6"];
 
@@ -17,6 +19,9 @@ export default function SprintEvaluation({ groupId }) {
     const [grades, setGrades] = useState({});
     const [comments, setComments] = useState({});
     const [summary, setSummary] = useState("");
+    const [isEvaluationCompleted, setIsEvaluationCompleted] = useState(false);
+    const [showHistory, setShowHistory] = useState(false); // Estado para controlar la visibilidad del historial
+
     const { toast } = useToast();
 
     useEffect(() => {
@@ -37,6 +42,7 @@ export default function SprintEvaluation({ groupId }) {
                 try {
                     const response = await getData(`/sprints/${selectedSprintId}/sprint-evaluation-template`);
                     setTemplate(response.data.template);
+                    setIsEvaluationCompleted(false); // Restablecer a falso si no hay error
                 } catch (error) {
                     console.error("Error al cargar la plantilla de evaluación de sprint:", error);
 
@@ -44,10 +50,11 @@ export default function SprintEvaluation({ groupId }) {
                         toast({
                             title: "Evaluación ya realizada",
                             description: "Este sprint ya ha sido evaluado. No se puede realizar otra evaluación.",
-                            status: "info", // Tipo de mensaje
-                            variant: "outline", // Variación visual para que sea amigable
-                            className: "bg-blue-500 text-white", // Estilo de la notificación
+                            status: "info",
+                            variant: "outline",
+                            className: "bg-red-500 text-white",
                         });
+                        setIsEvaluationCompleted(true); // Marcar evaluación como completada
                     } else {
                         toast({
                             title: "Error al cargar el template",
@@ -60,7 +67,7 @@ export default function SprintEvaluation({ groupId }) {
             };
             fetchSprintEvaluationTemplate();
         }
-    }, [selectedSprintId]);
+    }, [selectedSprintId], toast);
 
 
     const handleSaveEvaluation = async () => {
@@ -165,9 +172,25 @@ export default function SprintEvaluation({ groupId }) {
                     ))}
                 </select>
             </div>
-
+            {/* Botón para Mostrar/Ocultar Historial */}
+            {isEvaluationCompleted && (
+                <div className="mt-4">
+                    <button
+                        className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md"
+                        onClick={() => setShowHistory(!showHistory)}
+                    >
+                        {showHistory ? "Ocultar Historial" : "Ver Historial"}
+                    </button>
+                </div>
+            )}
+            {/* Mostrar Componente SprintHistoryView */}
+            {showHistory && selectedSprintId && (
+                <div className="mt-6">
+                    <SprintHistoryView sprintId={selectedSprintId} />
+                </div>
+            )}
             {/* Mostrar mensaje o contenido del Sprint */}
-            {template && (!template.weekly_evaluations_summary || template.weekly_evaluations_summary.length === 0) ? (
+            {template && !showHistory && (!template.weekly_evaluations_summary || template.weekly_evaluations_summary.length === 0) ? (
                 <div className="p-6 bg-red-100 border border-red-400 text-red-800 rounded-lg shadow-md">
                     <h1 className="text-2xl font-bold">No se realizaron evaluaciones semanales este sprint</h1>
                     <p className="mt-2 text-sm">
@@ -176,7 +199,7 @@ export default function SprintEvaluation({ groupId }) {
                     </p>
                 </div>
             ) : (
-                template && (
+                template && !showHistory && (
                 <>
                     {/* Información sobre el Sprint */}
                     <div className="bg-white rounded-lg shadow-md p-4 space-y-2">

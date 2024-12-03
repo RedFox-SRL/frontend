@@ -142,13 +142,12 @@ export default function Dashboard() {
 
 
   const renderPagination = () => {
-    // Verifica si hay más de una página antes de renderizar la paginación
     if (pagination.lastPage <= 1) {
-      return null; // No renderiza nada si solo hay una página
+      return null;
     }
 
     const getPageRange = () => {
-      const totalVisible = window.innerWidth <= 768 ? 3 : 7; // Muestra 3 páginas en móviles, 7 en pantallas más grandes
+      const totalVisible = window.innerWidth <= 768 ? 3 : 7;
       const half = Math.floor(totalVisible / 2);
       let start = Math.max(1, pagination.currentPage - half);
       let end = Math.min(pagination.lastPage, pagination.currentPage + half);
@@ -165,7 +164,7 @@ export default function Dashboard() {
     const pages = getPageRange();
 
     return (
-        <div className="flex justify-center mt-6 gap-2"> {/* Cambiamos el margen superior */}
+        <div className="flex justify-center mt-6 gap-2">
           <Button
               onClick={() => fetchAnnouncements(managementDetails.id, pagination.currentPage - 1)}
               disabled={pagination.currentPage === 1}
