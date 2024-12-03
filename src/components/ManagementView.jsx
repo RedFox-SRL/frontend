@@ -131,11 +131,15 @@ export default function ManagementView({ management, onBack }) {
     }
   };
 
-  const closePopup = () => {
+  const closeRatingsPopup = () => {
     setShowRatingsPopup(false);
+    toast({
+      title: "Configuración Completa",
+      description: "La configuración de calificaciones se guardó correctamente.",
+      variant: "success",
+      className: "bg-green-500 text-white",
+    });
   };
-
-
 
   const handleAnnouncementCreated = (newAnnouncement) => {
     setAnnouncements((prev) => [newAnnouncement, ...prev]);
@@ -312,6 +316,7 @@ export default function ManagementView({ management, onBack }) {
         {showRatingsPopup && (
             <RatingsView
                 managementId={management.id}
+                onBack={closeRatingsPopup} // Pasa la función para cerrar el popup
             />
         )}
         <motion.div
