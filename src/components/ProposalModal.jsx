@@ -204,7 +204,11 @@ export default function ProposalModal({ isOpen, onClose }) {
                         </div>
                     </div>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">
+                        Puedes continuar con tu trabajo y subir después las propuestas, pero no
+                        olvides que tienes una fecha límite.
+                    </span>
                     <Button variant="outline" onClick={onClose}>
                         Cerrar
                     </Button>

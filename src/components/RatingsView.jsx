@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { postData } from "../api/apiService";
@@ -17,6 +17,7 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
         proposal_part_b_percentage: "",
     });
     const [isFormValid, setIsFormValid] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(true); // Controla el estado del diálogo
     const { toast } = useToast();
 
     const handleInputChange = (e) => {
@@ -81,7 +82,10 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                     variant: "success",
                     className: "bg-green-500 text-white",
                 });
-                setTimeout(() => onBack(), 500);
+                setTimeout(() => {
+                    setIsDialogOpen(false);
+                    onBack();
+                }, 500);
             } else {
                 toast({
                     title: "Error al Enviar",
@@ -99,14 +103,17 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
     };
 
     return (
-        <Dialog open={true} onOpenChange={onBack}>
+        <Dialog open={isDialogOpen} onOpenChange={() => {}}>
             <DialogContent className="max-w-lg mx-auto overflow-y-auto max-h-[80vh] p-6">
-                <DialogClose onClick={onBack} />
                 <h1 className="text-purple-700 font-bold text-2xl mb-6">Configurar Ponderaciones</h1>
 
                 <form className="grid grid-cols-1 gap-6" onSubmit={handleFormSubmit}>
+                    {/* Puntos de Evaluación */}
                     <div className="space-y-4">
                         <h2 className="text-lg font-semibold text-purple-700">Puntos de Evaluación</h2>
+                        <p className="text-sm text-red-600">
+                            La suma total debe ser igual a 100 para ser valido.
+                        </p>
                         <div>
                             <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de Sprint</label>
                             <Input
@@ -121,8 +128,7 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de Evaluación
-                                Cruzada</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de Evaluación Cruzada</label>
                             <Input
                                 name="cross_evaluation_points"
                                 type="number"
@@ -135,8 +141,7 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de
-                                Propuesta</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Puntos de Propuesta</label>
                             <Input
                                 name="proposal_points"
                                 type="number"
@@ -150,11 +155,14 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                         </div>
                     </div>
 
+                    {/* Porcentajes de Sprint */}
                     <div className="space-y-4">
                         <h2 className="text-lg font-semibold text-purple-700">Porcentajes de Sprint</h2>
+                        <p className="text-sm text-red-600">
+                            La suma total debe ser igual a 100 para ser valido.
+                        </p>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint
-                                (Profesor)</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Profesor)</label>
                             <Input
                                 name="sprint_teacher_percentage"
                                 type="number"
@@ -167,8 +175,7 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint
-                                (Autoevaluación)</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Autoevaluación)</label>
                             <Input
                                 name="sprint_self_percentage"
                                 type="number"
@@ -181,8 +188,7 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint
-                                (Evaluación Cruzada)</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Evaluación Cruzada)</label>
                             <Input
                                 name="sprint_peer_percentage"
                                 type="number"
@@ -196,11 +202,14 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                         </div>
                     </div>
 
+                    {/* Porcentajes de Propuesta */}
                     <div className="space-y-4">
                         <h2 className="text-lg font-semibold text-purple-700">Porcentajes de Propuesta</h2>
+                        <p className="text-sm text-red-600">
+                            La suma total debe ser igual a 100 para ser valido.
+                        </p>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje Parte A
-                                Propuesta</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje Parte A Propuesta</label>
                             <Input
                                 name="proposal_part_a_percentage"
                                 type="number"
@@ -213,8 +222,7 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje Parte B
-                                Propuesta</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje Parte B Propuesta</label>
                             <Input
                                 name="proposal_part_b_percentage"
                                 type="number"
