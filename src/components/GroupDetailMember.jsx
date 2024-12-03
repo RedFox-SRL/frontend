@@ -49,8 +49,6 @@ export default function GroupDetailMember({ selectedGroup }) {
     );
   };
 
-  const handleOpenRanking = () => setIsRankingDialogOpen(true);
-  const handleCloseRanking = () => setIsRankingDialogOpen(false);
 
   const handleOpenLinks = () => setIsLinksDialogOpen(true);
   const handleCloseLinks = () => setIsLinksDialogOpen(false);
