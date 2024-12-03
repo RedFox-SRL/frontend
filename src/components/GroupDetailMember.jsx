@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import RankingModal from "@/components/RankingModal";
 import LinksViewerModal from "@/components/LinksViewerModal";
 import { getData } from "../api/apiService";
 import ProposalsViewer from "@/components/ProposalsViewer.jsx"; // Modal de propuestas

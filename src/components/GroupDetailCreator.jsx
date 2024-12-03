@@ -33,7 +33,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import RankingModal from "@/components/RankingModal";
 import LinksManagerModal from "./LinksManagerModal";
 import ProposalModal from './ProposalModal';
 
