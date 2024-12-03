@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { getData } from "../api/apiService";
 import { ArrowLeft } from "lucide-react";
 
-const RatingView2 = ({ onBack, managementId }) => {
+const RatingView3 = ({ onBack, managementId }) => {
     const [expandedGroup, setExpandedGroup] = useState(null);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [groups, setGroups] = useState([]);
@@ -45,15 +45,6 @@ const RatingView2 = ({ onBack, managementId }) => {
     return (
         <div className="bg-purple-50 min-h-screen p-6">
             {/* Botón de Retroceder con la flecha de Lucide React */}
-            <Button
-                variant="outline"
-                className="mb-4 text-purple-600 hover:bg-purple-100 flex items-center space-x-2"
-                onClick={onBack}
-            >
-                <ArrowLeft className="w-5 h-5 text-purple-600" /> {/* Flecha morada */}
-                <span className="text-purple-600">Retroceder</span> {/* Texto morado */}
-            </Button>
-
             <h1 className="text-purple-700 font-bold text-2xl mb-6">Resumen de Calificaciones</h1>
 
             {groups.map((group) => (
@@ -194,4 +185,4 @@ const RatingView2 = ({ onBack, managementId }) => {
     );
 };
 
-export default RatingView2;
+export default RatingView3;

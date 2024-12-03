@@ -19,6 +19,7 @@ import GroupDetailCreator from "./GroupDetailCreator";
 import GroupDetailMember from "./GroupDetailMember";
 import ReportView from "./ReportView";
 import ImageCropper from "./ImageCropper";
+import RatingView3 from "./RatingView3"; // Asegúrate de que el import sea correcto
 
 export default function GruposYPlanificacion() {
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +71,8 @@ export default function GruposYPlanificacion() {
     } else if (activeCard === "equipo" && equipoRef.current) {
       equipoRef.current.scrollIntoView({ behavior: "smooth" });
     } else if (activeCard === "reportes" && reportesRef.current) {
+      reportesRef.current.scrollIntoView({ behavior: "smooth" });
+    } else if (activeCard === "notas" && reportesRef.current) {
       reportesRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [activeCard]);
@@ -491,97 +494,115 @@ export default function GruposYPlanificacion() {
 
   if (isInGroup && selectedGroup) {
     return (
-      <div className="space-y-6 sm:p-4">
-        {isCreator ? (
-          <GroupDetailCreator
-            initialGroupData={selectedGroup}
-            onUpdateGroup={handleUpdateGroup}
-          />
-        ) : (
-          <GroupDetailMember selectedGroup={selectedGroup} />
-        )}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card
-            className={`cursor-pointer transition-all duration-200 ${activeCard === "planificacion" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
-            onClick={() => handleCardClick("planificacion")}
-          >
-            <CardContent className="flex flex-col items-center justify-center p-4">
-              <Calendar className="h-8 w-8 text-purple-600 mb-2" />
-              <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center">
-                Planificación
-              </CardTitle>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all duration-200 ${activeCard === "tablero" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
-            onClick={() => handleCardClick("tablero")}
-          >
-            <CardContent className="flex flex-col items-center justify-center p-4">
-              <LayoutDashboard className="h-8 w-8 text-purple-600 mb-2" />
-              <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center">
-                Tablero
-              </CardTitle>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all duration-200 ${activeCard === "equipo" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
-            onClick={() => handleCardClick("equipo")}
-          >
-            <CardContent className="flex flex-col items-center justify-center p-4">
-              <Users className="h-8 w-8 text-purple-600 mb-2" />
-              <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center">
-                Equipo
-              </CardTitle>
-            </CardContent>
-          </Card>
-          <Card
-            className={`cursor-pointer transition-all duration-200 ${activeCard === "reportes" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
-            onClick={() => handleCardClick("reportes")}
-          >
-            <CardContent className="flex flex-col items-center justify-center p-4">
-              <Clipboard className="h-8 w-8 text-purple-600 mb-2" />
-              <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center">
-                Reportes
-              </CardTitle>
-            </CardContent>
-          </Card>
-        </div>
-        <div
-          ref={calendarRef}
-          className={activeCard === "planificacion" ? "" : "hidden"}
-        >
-          <CalendarioEventos groupId={groupId} />
-        </div>
-        <div
-          ref={kanbanRef}
-          className={activeCard === "tablero" ? "" : "hidden"}
-        >
-          <SprintKanbanBoard key={refreshKey} groupId={groupId} />
-        </div>
-        <div
-          ref={equipoRef}
-          className={activeCard === "equipo" ? "" : "hidden"}
-        >
+        <div className="space-y-6 sm:p-4">
           {isCreator ? (
-            <GroupMemberListCreator
-              groupId={groupId}
-              members={selectedGroup.members}
-              userId={userId}
-            />
+              <GroupDetailCreator
+                  initialGroupData={selectedGroup}
+                  onUpdateGroup={handleUpdateGroup}
+              />
           ) : (
-            <GroupMemberListMember
-              groupId={groupId}
-              members={selectedGroup.members}
-            />
+              <GroupDetailMember selectedGroup={selectedGroup}/>
           )}
+          <div className="grid grid-cols-5 gap-4">
+            <Card
+                className={`cursor-pointer transition-all duration-200 ${activeCard === "planificacion" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
+                onClick={() => handleCardClick("planificacion")}
+            >
+              <CardContent className="flex flex-col items-center justify-center p-4">
+                <Calendar className="h-8 w-8 text-purple-600 mb-2"/>
+                <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center hidden sm:block">
+                  Planificación
+                </CardTitle>
+              </CardContent>
+            </Card>
+            <Card
+                className={`cursor-pointer transition-all duration-200 ${activeCard === "tablero" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
+                onClick={() => handleCardClick("tablero")}
+            >
+              <CardContent className="flex flex-col items-center justify-center p-4">
+                <LayoutDashboard className="h-8 w-8 text-purple-600 mb-2"/>
+                <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center hidden sm:block">
+                  Tablero
+                </CardTitle>
+              </CardContent>
+            </Card>
+            <Card
+                className={`cursor-pointer transition-all duration-200 ${activeCard === "equipo" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
+                onClick={() => handleCardClick("equipo")}
+            >
+              <CardContent className="flex flex-col items-center justify-center p-4">
+                <Users className="h-8 w-8 text-purple-600 mb-2"/>
+                <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center hidden sm:block">
+                  Equipo
+                </CardTitle>
+              </CardContent>
+            </Card>
+            <Card
+                className={`cursor-pointer transition-all duration-200 ${activeCard === "reportes" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
+                onClick={() => handleCardClick("reportes")}
+            >
+              <CardContent className="flex flex-col items-center justify-center p-4">
+                <Clipboard className="h-8 w-8 text-purple-600 mb-2"/>
+                <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center hidden sm:block">
+                  Reportes
+                </CardTitle>
+              </CardContent>
+            </Card>
+            <Card
+                className={`cursor-pointer transition-all duration-200 ${activeCard === "notas" ? "bg-purple-100 ring-2 ring-purple-600" : "bg-white hover:bg-purple-50"}`}
+                onClick={() => handleCardClick("notas")}
+            >
+              <CardContent className="flex flex-col items-center justify-center p-4">
+                <Clipboard className="h-8 w-8 text-purple-600 mb-2"/>
+                <CardTitle className="text-sm sm:text-lg font-bold text-purple-800 text-center hidden sm:block">
+                  Notas
+                </CardTitle>
+              </CardContent>
+            </Card>
+          </div>
+
+
+          <div
+              ref={calendarRef}
+              className={activeCard === "planificacion" ? "" : "hidden"}
+          >
+            <CalendarioEventos groupId={groupId}/>
+          </div>
+          <div
+              ref={kanbanRef}
+              className={activeCard === "tablero" ? "" : "hidden"}
+          >
+            <SprintKanbanBoard key={refreshKey} groupId={groupId}/>
+          </div>
+          <div
+              ref={equipoRef}
+              className={activeCard === "equipo" ? "" : "hidden"}
+          >
+            {isCreator ? (
+                <GroupMemberListCreator
+                    groupId={groupId}
+                    members={selectedGroup.members}
+                    userId={userId}
+                />
+            ) : (
+                <GroupMemberListMember
+                    groupId={groupId}
+                    members={selectedGroup.members}
+                />
+            )}
+          </div>
+          <div
+              ref={reportesRef}
+              className={activeCard === "reportes" ? "" : "hidden"}
+          >
+            <ReportView groupId={groupId}/>
+          </div>
+          <div className={activeCard === "notas" ? "" : "hidden"}>
+            {managementDetails && (
+                <RatingView3 managementId={managementDetails.id}/>
+            )}
+          </div>
         </div>
-        <div
-          ref={reportesRef}
-          className={activeCard === "reportes" ? "" : "hidden"}
-        >
-          <ReportView groupId={groupId} />
-        </div>
-      </div>
     );
   }
 
