@@ -414,12 +414,6 @@ export default function GroupDetailCreator({
           </div>
         </CardContent>
       </Card>
-
-      <RankingModal
-        group={groupData}
-        isOpen={isRankingDialogOpen}
-        onClose={handleCloseRanking}
-      />
       <ProposalModal
           isOpen={isProposalModalOpen}
           onClose={() => setIsProposalModalOpen(false)}
