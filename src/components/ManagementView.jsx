@@ -316,7 +316,7 @@ export default function ManagementView({ management, onBack }) {
         {showRatingsPopup && (
             <RatingsView
                 managementId={management.id}
-                onBack={closeRatingsPopup} // Pasa la función para cerrar el popup
+                onBack={closeRatingsPopup}
             />
         )}
         <motion.div
@@ -394,7 +394,7 @@ export default function ManagementView({ management, onBack }) {
                 <div className="bg-white shadow-md p-6 rounded-lg mb-8">
                   <h1 className="text-3xl font-bold mb-4 text-purple-700">
                     Gestión {management.semester === "first" ? "1" : "2"}/
-                    {new Date(management.project_delivery_date).getFullYear()}
+                    {new Date(management.start_date).getFullYear()}
                   </h1>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center">
