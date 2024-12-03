@@ -200,17 +200,11 @@ export default function ManagementView({ management, onBack }) {
     setIsLoading(true);
     try {
       const response = await getData(`/management/${management.id}/announcements?page=${page}`);
-      console.log("Respuesta completa de la API:", response);
-
       if (response && response.data) {
         const rawData = response.data;
 
-        console.log("Datos crudos obtenidos:", rawData);
-
         const announcementsArray =
             Array.isArray(rawData) ? rawData : Object.values(rawData);
-
-        console.log("Anuncios transformados en array:", announcementsArray);
 
         setAnnouncements(announcementsArray);
         setPagination({

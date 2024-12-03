@@ -1,31 +1,35 @@
-import React, { useState, useEffect } from "react";
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import React, { useEffect, useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { getData } from "../api/apiService"; // Suponiendo que getData es la función para hacer peticiones GET
-import { ArrowLeft } from "lucide-react"; // Importar el ícono de Lucide React
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { getData } from "../api/apiService";
+import { ArrowLeft, ChevronDown, ChevronUp, Users } from 'lucide-react';
 
 const RatingView2 = ({ onBack, managementId }) => {
-    const [expandedGroup, setExpandedGroup] = useState(null);
+    const [expandedGroups, setExpandedGroups] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedGroup, setSelectedGroup] = useState("all");
+    const [managementInfo, setManagementInfo] = useState(null);
 
-    // Toggle para abrir o cerrar detalles de un grupo
     const toggleGroup = (groupId) => {
-        setExpandedGroup(expandedGroup === groupId ? null : groupId);
+        setExpandedGroups(prev =>
+            prev.includes(groupId)
+                ? prev.filter(id => id !== groupId)
+                : [...prev, groupId]
+        );
     };
 
-    // Abrir el modal de detalles del estudiante
     const openModal = (student) => {
         setSelectedStudent(student);
     };
 
-    // Cerrar el modal de detalles del estudiante
     const closeModal = () => {
         setSelectedStudent(null);
     };
 
-    // Fetch de datos desde la API
     useEffect(() => {
         const fetchGradeSummary = async () => {
             try {
@@ -43,132 +47,188 @@ const RatingView2 = ({ onBack, managementId }) => {
     }, [managementId]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="flex justify-center items-center h-screen">Cargando...</div>;
     }
 
+    const filteredGroups = selectedGroup === "all"
+        ? groups
+        : groups.filter(g => g.group_id.toString() === selectedGroup);
+
     return (
-        <div className="bg-purple-50 min-h-screen p-6">
-            {/* Botón de Retroceder con la flecha de Lucide React */}
+        <div className="bg-purple-50 min-h-screen p-4 sm:p-6">
             <Button
                 variant="outline"
-                className="mb-4 text-purple-600 hover:bg-purple-100 flex items-center space-x-2"
+                className="mb-4 text-purple-600 hover:bg-purple-100 flex items-center space-x-2 w-full sm:w-auto justify-center sm:justify-start"
                 onClick={onBack}
             >
-                <ArrowLeft className="w-5 h-5 text-purple-600" /> {/* Flecha morada */}
-                <span className="text-purple-600">Retroceder</span> {/* Texto morado */}
+                <ArrowLeft className="w-5 h-5"/>
+                <span>Retroceder</span>
             </Button>
 
-            <h1 className="text-purple-700 font-bold text-2xl mb-6">Resumen de Calificaciones</h1>
-
-            {groups.map((group) => (
-                <div key={group.group_id} className="bg-purple-100 rounded-lg shadow-md mb-6 overflow-hidden">
-                    <div className="flex justify-between items-center p-4 cursor-pointer" onClick={() => toggleGroup(group.group_id)}>
-                        <h2 className="text-purple-700 font-bold">{group.group_name}</h2>
-                        <span className="text-purple-500">{group.students.length} estudiantes</span>
-                    </div>
-                    {expandedGroup === group.group_id && (
-                        <div className="p-4 bg-white">
-                            {/* Información del grupo */}
-                            <div className="grid grid-cols-3 gap-4 mb-6">
-                                <div className="text-center">
-                                    <h3 className="text-purple-600 font-semibold">Sprints</h3>
-                                    <p className="text-purple-800 font-bold">{group.group_scores.sprints}</p>
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="text-purple-600 font-semibold">Propuestas</h3>
-                                    <p className="text-purple-800 font-bold">{group.group_scores.proposal}</p>
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="text-purple-600 font-semibold">Evaluación Cruzada</h3>
-                                    <p className="text-purple-800 font-bold">{group.group_scores.cross_evaluation}</p>
-                                </div>
-                            </div>
-
-                            {/* Lista de estudiantes */}
-                            <table className="w-full text-left">
-                                <thead>
-                                <tr className="border-b">
-                                    <th className="py-2">Estudiante</th>
-                                    <th className="py-2">Nota Final</th>
-                                    <th className="py-2">Sprints</th>
-                                    <th className="py-2">Propuesta</th>
-                                    <th className="py-2">Evaluación Cruzada</th>
-                                    <th className="py-2">Detalles</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {group.students.map((student) => (
-                                    <tr key={student.student_id} className="border-b">
-                                        <td className="py-2">{student.name} {student.last_name}</td>
-                                        <td className="py-2 font-bold">{student.final_score}</td>
-                                        <td className="py-2">{student.sprint_final_score}</td>
-                                        <td className="py-2">{student.proposal_score}</td>
-                                        <td className="py-2">{student.cross_evaluation_score}</td>
-                                        <td className="py-2">
-                                            <button onClick={() => openModal(student)} className="text-purple-500 hover:underline">
-                                                Ver Detalles
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                <div className="w-full sm:w-auto">
+                    <h1 className="text-purple-700 font-bold text-xl sm:text-2xl mb-2">Resumen de Calificaciones</h1>
+                    {managementInfo && (
+                        <p className="text-purple-600 text-sm sm:text-base">
+                            {managementInfo.semester} semestre, {managementInfo.year}
+                        </p>
                     )}
                 </div>
+                <Select
+                    value={selectedGroup}
+                    onValueChange={setSelectedGroup}
+                >
+                    <SelectTrigger className="w-full sm:w-[200px] bg-white">
+                        <SelectValue placeholder="Todos los Grupos"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos los Grupos</SelectItem>
+                        {groups.map(group => (
+                            <SelectItem key={group.group_id} value={group.group_id.toString()}>
+                                {group.group_name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {filteredGroups.map((group) => (
+                <Card key={group.group_id} className="mb-6">
+                    <div
+                        className="flex justify-between items-center p-4 cursor-pointer bg-purple-100 hover:bg-purple-200 transition-colors rounded-t-lg"
+                        onClick={() => toggleGroup(group.group_id)}
+                    >
+                        <div className="flex items-center gap-2 text-purple-700 font-bold">
+                            <Users className="w-5 h-5"/>
+                            <h2 className="text-sm sm:text-base">{group.group_name}</h2>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-purple-500 text-xs sm:text-sm">{group.students.length} estudiantes</span>
+                            {expandedGroups.includes(group.group_id) ? (
+                                <ChevronUp className="w-5 h-5 text-purple-500"/>
+                            ) : (
+                                <ChevronDown className="w-5 h-5 text-purple-500"/>
+                            )}
+                        </div>
+                    </div>
+                    {expandedGroups.includes(group.group_id) && (
+                        <CardContent className="p-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                                {Object.entries(group.group_scores).map(([key, value]) => (
+                                    <Card key={key}>
+                                        <CardContent className="p-4">
+                                            <h3 className="text-purple-600 font-semibold mb-2 capitalize text-sm sm:text-base">
+                                                {key === 'sprints' ? 'Sprints' :
+                                                    key === 'proposal' ? 'Propuesta' :
+                                                        key === 'cross_evaluation' ? 'Evaluación Cruzada' : key}
+                                            </h3>
+                                            <p className="text-xl sm:text-2xl font-bold text-purple-800">
+                                                {value.toFixed(2)}
+                                                <span className="text-xs sm:text-sm text-purple-600 ml-1">
+                                                    /{group.score_configuration[key]}
+                                                </span>
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead>
+                                        <tr className="border-b">
+                                            <th className="py-2 text-purple-700">Estudiante</th>
+                                            <th className="py-2 text-purple-700">Sprints ({group.score_configuration.sprints}%)</th>
+                                            <th className="py-2 text-purple-700">Propuesta ({group.score_configuration.proposal}%)</th>
+                                            <th className="py-2 text-purple-700">Eval. Cruzada ({group.score_configuration.cross_evaluation}%)</th>
+                                            <th className="py-2 text-purple-700">Nota Final</th>
+                                            <th className="py-2 text-purple-700">Detalles</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {group.students.map((student) => (
+                                            <tr key={student.student_id} className="border-b">
+                                                <td className="py-2">{student.name} {student.last_name}</td>
+                                                <td className="py-2">{student.sprint_final_score.toFixed(2)}</td>
+                                                <td className="py-2">{student.proposal_score.toFixed(2)}</td>
+                                                <td className="py-2">{student.cross_evaluation_score.toFixed(2)}</td>
+                                                <td className="py-2 font-bold">{student.final_score.toFixed(2)}/100</td>
+                                                <td className="py-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => openModal(student)}
+                                                        className="text-purple-600 hover:text-purple-800 text-xs sm:text-sm p-1 sm:p-2"
+                                                    >
+                                                        Ver Detalles
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                    )}
+                </Card>
             ))}
 
-            {/* Modal de detalles del estudiante */}
-            {selectedStudent && (
-                <Dialog open={!!selectedStudent} onOpenChange={closeModal}>
-                    <DialogContent className="bg-white p-6 rounded-lg max-w-lg mx-auto shadow-lg">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-purple-700 font-bold text-xl">
-                                Detalles de {selectedStudent.name} {selectedStudent.last_name}
-                            </h2>
-                        </div>
+            <Dialog open={!!selectedStudent} onOpenChange={closeModal}>
+                <DialogContent className="bg-white p-4 sm:p-6 rounded-lg w-[95vw] sm:w-[90vw] max-w-2xl mx-auto">
+                    <h2 className="text-purple-700 font-bold text-lg sm:text-xl mb-4">
+                        Detalles de {selectedStudent?.name} {selectedStudent?.last_name}
+                    </h2>
 
-                        {/* Información de calificaciones */}
-                        <div className="mb-6">
-                            <p><strong>Sprint Final:</strong> {selectedStudent.sprint_final_score}</p>
-                            <p><strong>Propuesta:</strong> {selectedStudent.proposal_score}</p>
-                            <p><strong>Evaluación Cruzada:</strong> {selectedStudent.cross_evaluation_score}</p>
-                            <p className="font-bold text-lg mt-2">
-                                Nota Final: {selectedStudent.final_score}
-                            </p>
+                    <div className="bg-purple-50 p-4 rounded-lg space-y-2 mb-6">
+                        <div className="flex justify-between">
+                            <span>Sprints:</span>
+                            <span className="font-bold">{selectedStudent?.sprint_final_score.toFixed(2)}</span>
                         </div>
+                        <div className="flex justify-between">
+                            <span>Propuestas:</span>
+                            <span className="font-bold">{selectedStudent?.proposal_score.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Evaluación Cruzada:</span>
+                            <span className="font-bold">{selectedStudent?.cross_evaluation_score.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t">
+                            <span className="font-bold">Nota Final:</span>
+                            <span className="font-bold text-lg">{selectedStudent?.final_score.toFixed(2)}/100</span>
+                        </div>
+                    </div>
 
-                        {/* Detalle de los sprints */}
-                        <div>
-                            <h3 className="text-purple-600 font-semibold mb-2">Detalle de Sprints</h3>
-                            <table className="w-full text-left">
+                    <div>
+                        <h3 className="text-purple-600 font-semibold mb-2">Detalle de Sprints</h3>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
                                 <thead>
-                                <tr className="border-b">
-                                    <th className="py-2">Sprint</th>
-                                    <th className="py-2">Docente</th>
-                                    <th className="py-2">Autoevaluación</th>
-                                    <th className="py-2">Evaluación Cruzada</th>
-                                    <th className="py-2">Puntaje Final</th>
-                                </tr>
+                                    <tr className="border-b">
+                                        <th className="py-2">Sprint</th>
+                                        <th className="py-2">Docente ({selectedStudent?.sprints_detail[0]?.teacher_percentage}%)</th>
+                                        <th className="py-2">Auto ({selectedStudent?.sprints_detail[0]?.self_evaluation_percentage}%)</th>
+                                        <th className="py-2">Pares ({selectedStudent?.sprints_detail[0]?.peer_evaluation_percentage}%)</th>
+                                        <th className="py-2">Total</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {selectedStudent.sprints_detail.map((detail, index) => (
-                                    <tr key={index} className="border-b">
-                                        <td className="py-2">{detail.title}</td>
-                                        <td className="py-2">{detail.teacher_grade}</td>
-                                        <td className="py-2">{detail.self_evaluation_grade}</td>
-                                        <td className="py-2">{detail.peer_evaluation_grade}</td>
-                                        <td className="py-2">{detail.sprint_score}</td>
-                                    </tr>
-                                ))}
+                                    {selectedStudent?.sprints_detail.map((detail, index) => (
+                                        <tr key={index} className="border-b">
+                                            <td className="py-2">{detail.title}</td>
+                                            <td className="py-2">{detail.teacher_grade}</td>
+                                            <td className="py-2">{detail.self_evaluation_grade}</td>
+                                            <td className="py-2">{detail.peer_evaluation_grade}</td>
+                                            <td className="py-2 font-bold">{detail.weighted_score.toFixed(2)}/100</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
-                    </DialogContent>
-                </Dialog>
-            )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
 
 export default RatingView2;
+

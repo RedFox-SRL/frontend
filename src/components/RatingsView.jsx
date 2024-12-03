@@ -64,7 +64,6 @@ const RatingsView = ({ onBack, managementId }) => {
     const handleFormSubmit = async (e) => {
         e.preventDefault();
 
-        // Validar antes de enviar
         if (!isFormValid) {
             toast({
                 title: "Error",
@@ -91,7 +90,6 @@ const RatingsView = ({ onBack, managementId }) => {
                 });
             }
         } catch (error) {
-            console.log("Error al enviar la configuración", error);
             toast({
                 title: "Error de Conexión",
                 description: "Hubo un error al intentar realizar la solicitud. Intenta nuevamente.",

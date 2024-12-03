@@ -118,27 +118,18 @@ export default function Dashboard() {
       const url = `/management/${managementId}/announcements?page=${page}`;
       const announcementsResponse = await getData(url);
 
-      console.log("Respuesta completa de la API:", announcementsResponse);
-
       if (announcementsResponse && announcementsResponse.data) {
         const rawData = announcementsResponse.data;
 
-        console.log("Datos crudos obtenidos:", rawData);
-
-        // Transforma el objeto en un array si es necesario
         const announcementsArray =
             Array.isArray(rawData) ? rawData : Object.values(rawData);
 
-        console.log("Anuncios transformados en array:", announcementsArray);
-
-        // Actualiza el estado
         setAnnouncements(announcementsArray);
         setPagination({
           currentPage: announcementsResponse.current_page || 1,
           lastPage: announcementsResponse.last_page || 1,
         });
       } else {
-        console.warn("No se encontraron datos válidos en la respuesta.");
         setAnnouncements([]);
         setPagination({ currentPage: 1, lastPage: 1 });
       }
