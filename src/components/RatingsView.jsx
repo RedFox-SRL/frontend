@@ -188,7 +188,7 @@ const RatingsView = ({ onBack = () => {}, managementId }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Evaluación Cruzada)</label>
+                            <label className="block text-sm font-medium text-purple-700 mb-2">Porcentaje de Sprint (Evaluación de Pares)</label>
                             <Input
                                 name="sprint_peer_percentage"
                                 type="number"
