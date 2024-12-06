@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { getData } from "../api/apiService";
-import { ArrowLeft, ChevronDown, ChevronUp, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users } from 'lucide-react';
 
-const RatingView2 = ({ onBack, managementId }) => {
+const RatingView3 = ({ onBack, managementId }) => {
     const [expandedGroups, setExpandedGroups] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [groups, setGroups] = useState([]);
@@ -221,5 +221,5 @@ const RatingView2 = ({ onBack, managementId }) => {
     );
 };
 
-export default RatingView2;
+export default RatingView3;
 
