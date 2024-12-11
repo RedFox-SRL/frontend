@@ -30,9 +30,9 @@ export const AuthProvider = ({ children }) => {
 
     // Redirigir según el rol
     if (role === "student") {
-      navigate("/DashboardStudent");
+      navigate("/dashboardEstudiante");
     } else if (role === "teacher") {
-      navigate("/DashboardTeacher");
+      navigate("/dashboardDocente");
     } else {
       navigate("/");
     }

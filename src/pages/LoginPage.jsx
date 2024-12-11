@@ -124,7 +124,7 @@ const LoginPage = () => {
     };
 
     const handleRegisterClick = () => {
-        navigate("/register");
+        navigate("/registro");
     };
 
     const formatTime = (seconds) => {

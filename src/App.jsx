@@ -15,7 +15,6 @@ function App() {
         <Router>
             <AuthProvider>
                 <Routes>
-                    {/* Rutas públicas */}
                     <Route
                         path="/"
                         element={
@@ -25,7 +24,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/register"
+                        path="/registro"
                         element={
                             <PublicRoute>
                                 <LoginRegister/>
@@ -33,7 +32,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/DashboardStudent"
+                        path="/dashboardEstudiante"
                         element={
                             <ProtectedRoute requiredRole="student">
                                 <StudentDashboard/>
@@ -41,7 +40,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/DashboardTeacher"
+                        path="/dashboardDocente"
                         element={
                             <ProtectedRoute requiredRole="teacher">
                                 <TeacherDashboard/>
@@ -49,7 +48,7 @@ function App() {
                         }
                     />
 
-                    <Route path="/accessDenied" element={<UnauthorizedPage/>}/>
+                    <Route path="/accesoDenegado" element={<UnauthorizedPage/>}/>
                     <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
                 <Toaster/>
