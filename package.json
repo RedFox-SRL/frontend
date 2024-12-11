@@ -45,7 +45,6 @@
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.9",
     "react-easy-crop": "^5.1.0",
-    "react-google-recaptcha": "^3.1.0",
     "react-modal": "^3.16.1",
     "react-particles": "^2.12.2",
     "react-quill": "^2.0.0",

@@ -4,11 +4,9 @@ import { postData } from "../api/apiService";
 import { AlertCircle, Check, CheckCircle, Eye, EyeOff } from "lucide-react";
 import Particles from "react-particles";
 import { particlesInit, particlesOptions } from "../components/ParticlesConfig";
-import ReCAPTCHA from "react-google-recaptcha";
 
 const LoginRegister = () => {
   const navigate = useNavigate();
-  const recaptchaRef = useRef();
 
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -106,14 +104,12 @@ const LoginRegister = () => {
     }
 
     try {
-      const recaptchaToken = await recaptchaRef.current.executeAsync();
       const response = await postData("/register", {
         name,
         last_name: lastName,
         email,
         password,
         role,
-        recaptchaToken,
       });
 
       if (response.success) {
@@ -364,13 +360,6 @@ const LoginRegister = () => {
               <p className="text-red-500 text-center mt-4">{errors.api}</p>
             )}
           </form>
-          <div className="absolute bottom-0 right-0 transform scale-50 origin-bottom-right">
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              size="invisible"
-              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-            />
-          </div>
         </div>
       </div>
     </div>

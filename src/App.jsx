@@ -4,7 +4,6 @@ import LoginRegister from "./pages/LoginRegister";
 import LoginPage from "./pages/LoginPage";
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import {AuthProvider} from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import UnauthorizedPage from "./pages/UnauthorizedPage.jsx";
@@ -33,7 +32,6 @@ function App() {
                             </PublicRoute>
                         }
                     />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
                     <Route
                         path="/DashboardStudent"
                         element={

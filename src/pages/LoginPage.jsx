@@ -5,7 +5,6 @@ import { postData } from "../api/apiService";
 import useAuth from "../hooks/useAuth";
 import Particles from "react-particles";
 import { particlesInit, particlesOptions } from "../components/ParticlesConfig";
-import ReCAPTCHA from "react-google-recaptcha";
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -15,7 +14,6 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const recaptchaRef = useRef();
 
   useEffect(() => {
     document.body.style.overflow = "auto";
@@ -29,11 +27,9 @@ const LoginPage = () => {
     setError(null);
 
     try {
-      const recaptchaToken = await recaptchaRef.current.executeAsync();
       const response = await postData("/login", {
         email,
         password,
-        recaptchaToken,
       });
       const { token, role } = response.data;
       login(token, role, rememberMe);
@@ -43,8 +39,6 @@ const LoginPage = () => {
       } else {
         setError("Ocurrió un error. Inténtalo de nuevo más tarde.");
       }
-      console.error("Error:", error);
-      recaptchaRef.current.reset();
     }
   };
 
@@ -74,12 +68,6 @@ const LoginPage = () => {
             className="bg-transparent border border-white text-white px-6 py-2 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:text-black"
           >
             REGISTRATE
-          </button>
-          <button
-            onClick={() => navigate("/forgot-password")}
-            className="mt-6 text-center underline hover:text-purple-200 transition duration-300 ease-in-out"
-          >
-            ¿Olvidaste tu contraseña?
           </button>
         </div>
 
@@ -137,13 +125,6 @@ const LoginPage = () => {
               </button>
             </div>
           </form>
-          <div className="absolute bottom-0 right-0 transform scale-50 origin-bottom-right">
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              size="invisible"
-              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-            />
-          </div>
         </div>
       </div>
     </div>
