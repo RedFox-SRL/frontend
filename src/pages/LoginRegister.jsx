@@ -1,7 +1,7 @@
-import React, {useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import {ArrowLeft, ArrowRight, CheckCircle, Mail} from 'lucide-react';
 import {postData} from "../api/apiService";
-import {ArrowLeft, ArrowRight, CheckCircle} from 'lucide-react';
 import Particles from "react-particles";
 import {particlesInit, particlesOptions} from "../components/ParticlesConfig";
 import {AnimatePresence, motion} from "framer-motion";
@@ -9,6 +9,18 @@ import {AnimatePresence, motion} from "framer-motion";
 const validateName = (name) => {
     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]+$/;
     return nameRegex.test(name);
+};
+
+const trimExcessiveSpaces = (str) => {
+    let trimmed = str.trim();
+    if (trimmed.replace(/\s/g, '').length < 3) {
+        return trimmed.replace(/\s/g, '');
+    }
+    return trimmed.replace(/\s+/g, ' ');
+};
+
+const countNonSpaceCharacters = (str) => {
+    return str.replace(/\s/g, '').length;
 };
 
 const LoginRegister = () => {
@@ -21,27 +33,31 @@ const LoginRegister = () => {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [showNotification, setShowNotification] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const emailInputRef = useRef(null);
+
+    useEffect(() => {
+        if (emailInputRef.current && step === 2) {
+            emailInputRef.current.focus();
+        }
+    }, [step]);
 
     const validateStep = (currentStep) => {
         let stepErrors = {};
         switch (currentStep) {
             case 1:
-                if (formData.name.trim() === "") {
-                    stepErrors.name = "El nombre es obligatorio";
-                } else if (formData.name.trim().length < 2) {
-                    stepErrors.name = "El nombre debe tener al menos 2 caracteres";
-                } else if (formData.name.trim().length > 50) {
-                    stepErrors.name = "El nombre no debe exceder 50 caracteres";
+                if (countNonSpaceCharacters(formData.name) < 3) {
+                    stepErrors.name = "El nombre debe tener al menos 3 caracteres (sin contar espacios)";
+                } else if (countNonSpaceCharacters(formData.name) > 25) {
+                    stepErrors.name = "El nombre no debe exceder 25 caracteres (sin contar espacios)";
                 } else if (!validateName(formData.name)) {
                     stepErrors.name = "El nombre contiene caracteres no válidos";
                 }
 
-                if (formData.last_name.trim() === "") {
-                    stepErrors.last_name = "Los apellidos son obligatorios";
-                } else if (formData.last_name.trim().length < 2) {
-                    stepErrors.last_name = "Los apellidos deben tener al menos 2 caracteres";
-                } else if (formData.last_name.trim().length > 50) {
-                    stepErrors.last_name = "Los apellidos no deben exceder 50 caracteres";
+                if (countNonSpaceCharacters(formData.last_name) < 3) {
+                    stepErrors.last_name = "Los apellidos deben tener al menos 3 caracteres (sin contar espacios)";
+                } else if (countNonSpaceCharacters(formData.last_name) > 25) {
+                    stepErrors.last_name = "Los apellidos no deben exceder 25 caracteres (sin contar espacios)";
                 } else if (!validateName(formData.last_name)) {
                     stepErrors.last_name = "Los apellidos contienen caracteres no válidos";
                 }
@@ -63,8 +79,26 @@ const LoginRegister = () => {
 
     const handleInputChange = (e) => {
         const {name, value} = e.target;
-        setFormData(prev => ({...prev, [name]: value}));
-        setErrors(prev => ({...prev, [name]: ""}));
+        if (name === 'name' || name === 'last_name') {
+            let processedValue = value;
+            const nonSpaceCount = countNonSpaceCharacters(processedValue);
+
+            // Permitir espacios después de los primeros 3 caracteres
+            if (nonSpaceCount >= 3) {
+                processedValue = processedValue.replace(/\s+/g, ' ');
+            } else {
+                processedValue = processedValue.replace(/\s/g, '');
+            }
+
+            // Limitar a 25 caracteres sin contar espacios
+            if (nonSpaceCount <= 25) {
+                setFormData(prev => ({...prev, [name]: processedValue}));
+                setErrors(prev => ({...prev, [name]: ""}));
+            }
+        } else {
+            setFormData(prev => ({...prev, [name]: value}));
+            setErrors(prev => ({...prev, [name]: ""}));
+        }
     };
 
     const handleNextStep = () => {
@@ -125,12 +159,9 @@ const LoginRegister = () => {
                     exit={{opacity: 0, x: 20}}
                     transition={{duration: 0.3}}
                 >
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 md:mb-5">Paso {step} de {totalSteps}</h3>
-                    <h4 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 sm:mb-5 md:mb-6">Información
-                        Personal</h4>
                     <div className="space-y-4 sm:space-y-5 md:space-y-6">
                         <div className="relative">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="name" className="block text-sm font-medium text-white mb-1">
                                 Nombre *
                             </label>
                             <input
@@ -139,19 +170,19 @@ const LoginRegister = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border ${errors.name ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                placeholder="Tu nombre (mínimo 2 caracteres)"
-                                minLength={2}
-                                maxLength={50}
+                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-white bg-opacity-10 backdrop-filter backdrop-blur-md text-white placeholder-white placeholder-opacity-70 ${errors.name ? 'border-red-500' : 'border-white border-opacity-30'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                placeholder="Tu nombre (mínimo 3 letras)"
+                                minLength={3}
+                                maxLength={25}
                             />
-                            <span className="absolute right-2 bottom-2 text-xs text-gray-500">
-                  {formData.name.length}/50
-                </span>
+                            <span className="absolute right-2 bottom-2 text-xs text-white opacity-70">
+                                    {countNonSpaceCharacters(formData.name)}/25
+                                </span>
                         </div>
-                        {errors.name && <p className="text-red-500 text-xs sm:text-sm ml-1">{errors.name}</p>}
+                        {errors.name && <p className="text-red-300 text-xs sm:text-sm ml-1">{errors.name}</p>}
 
                         <div className="relative">
-                            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="last_name" className="block text-sm font-medium text-white mb-1">
                                 Apellidos *
                             </label>
                             <input
@@ -160,16 +191,16 @@ const LoginRegister = () => {
                                 name="last_name"
                                 value={formData.last_name}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border ${errors.last_name ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                placeholder="Tus apellidos (mínimo 2 caracteres)"
-                                minLength={2}
-                                maxLength={50}
+                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-white bg-opacity-10 backdrop-filter backdrop-blur-md text-white placeholder-white placeholder-opacity-70 ${errors.last_name ? 'border-red-500' : 'border-white border-opacity-30'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                placeholder="Tus apellidos (mínimo 3 letras)"
+                                minLength={3}
+                                maxLength={25}
                             />
-                            <span className="absolute right-2 bottom-2 text-xs text-gray-500">
-                  {formData.last_name.length}/50
-                </span>
+                            <span className="absolute right-2 bottom-2 text-xs text-white opacity-70">
+                                    {countNonSpaceCharacters(formData.last_name)}/25
+                                </span>
                         </div>
-                        {errors.last_name && <p className="text-red-500 text-xs sm:text-sm ml-1">{errors.last_name}</p>}
+                        {errors.last_name && <p className="text-red-300 text-xs sm:text-sm ml-1">{errors.last_name}</p>}
                     </div>
                 </motion.div>);
             case 2:
@@ -179,32 +210,36 @@ const LoginRegister = () => {
                     exit={{opacity: 0, x: 20}}
                     transition={{duration: 0.3}}
                 >
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 md:mb-5">Paso {step} de {totalSteps}</h3>
-                    <h4 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 sm:mb-5 md:mb-6">Correo
-                        Electrónico Institucional</h4>
-                    <div className="mb-4 p-3 bg-gray-100 rounded-lg">
-                        <p className="text-xs sm:text-sm text-gray-600">
+                    <div
+                        className="mb-4 p-3 bg-purple-800 bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
+                        <p className="text-sm text-white font-medium">
                             Usa tu correo institucional:
-                            <br/>- Estudiantes: codsis@est.umss.edu
-                            <br/>- Docentes: @fcyt.umss.edu.bo
+                            <br/>- Estudiantes: <span className="font-bold">codsis@est.umss.edu</span>
+                            <br/>- Docentes: <span className="font-bold">@fcyt.umss.edu.bo</span>
                         </p>
                     </div>
                     <div className="space-y-4 sm:space-y-5 md:space-y-6">
                         <div className="relative">
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
                                 Correo Electrónico *
                             </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                placeholder="Tu correo institucional"
-                            />
+                            <div className="relative">
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    className={`w-full pl-3 pr-10 py-2 text-sm sm:text-base rounded-lg border bg-white bg-opacity-10 backdrop-filter backdrop-blur-md text-white placeholder-white placeholder-opacity-70 ${errors.email ? 'border-red-500' : 'border-white border-opacity-30'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                    placeholder="Tu correo institucional"
+                                    ref={emailInputRef}
+                                />
+                                <Mail
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white opacity-70"
+                                    size={20}/>
+                            </div>
                         </div>
-                        {errors.email && <p className="text-red-500 text-xs sm:text-sm ml-1">{errors.email}</p>}
+                        {errors.email && <p className="text-red-300 text-xs sm:text-sm ml-1">{errors.email}</p>}
                     </div>
                 </motion.div>);
             default:
@@ -225,75 +260,78 @@ const LoginRegister = () => {
                 initial={{opacity: 0, y: -50}}
                 animate={{opacity: 1, y: 0}}
                 exit={{opacity: 0, y: -50}}
-                className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center text-sm sm:text-base"
+                className="fixed top-4 inset-x-0 mx-auto w-fit bg-green-500 text-white px-6 py-2 rounded-lg shadow-lg z-50 flex items-center text-sm sm:text-base"
             >
                 <CheckCircle className="mr-2" size={20}/>
                 <span>Registro exitoso. Redirigiendo...</span>
             </motion.div>)}
         </AnimatePresence>
         <div
-            className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden relative z-10">
-            <div className="flex flex-col md:flex-row">
-                <div className="w-full md:w-1/2 bg-black text-white p-6 md:p-8 flex flex-col justify-center">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">TrackMaster</h1>
-                    <p className="text-sm sm:text-base md:text-lg mb-4 md:mb-6">
-                        ¡Bienvenido a TrackMaster!
-                        <br/>
-                        Únete a nuestra comunidad de aprendizaje en {totalSteps} sencillos pasos.
-                    </p>
-                    <button
-                        type="button"
-                        onClick={() => navigate("/")}
-                        className="bg-transparent border border-white text-white px-4 py-2 rounded-lg transition duration-300 ease-in-out text-sm sm:text-base"
-                    >
-                        ¿Ya tienes cuenta? Inicia sesión
-                    </button>
-                </div>
+            className="w-full max-w-[320px] xs:max-w-xs sm:max-w-sm md:max-w-md bg-white bg-opacity-10 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative z-10 border border-white border-opacity-10">
+            <div className="w-full p-6 sm:p-8 md:p-10 bg-white bg-opacity-10 backdrop-filter backdrop-blur-md">
+                <h1 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 drop-shadow">TrackMaster</h1>
+                <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-3 sm:mb-4 drop-shadow">
+                    Crea tu cuenta
+                </h2>
+                <p className="text-center text-sm sm:text-base md:text-lg text-white mb-4 sm:mb-5 drop-shadow">
+                    Completa el formulario para comenzar tu viaje con TrackMaster
+                </p>
 
-                <div
-                    className="w-full md:w-1/2 bg-white p-6 sm:p-8 md:p-10 overflow-y-auto max-h-[70vh] md:max-h-none">
-                    <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-semibold text-purple-900 mb-2 md:mb-4">
-                        Crea tu cuenta
-                    </h2>
-                    <p className="text-center text-sm md:text-base text-purple-700 mb-4 md:mb-6">
-                        Completa el formulario para comenzar tu viaje con TrackMaster
-                    </p>
-
-                    <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-                        {renderStepContent()}
-
-                        <div className="flex justify-between mt-6 sm:mt-8 md:mt-10">
-                            {step > 1 && (<button
-                                type="button"
-                                onClick={handlePrevStep}
-                                className="flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 border border-purple-600 text-purple-600 rounded-lg transition duration-300 ease-in-out text-sm sm:text-base"
-                            >
-                                <ArrowLeft className="mr-2" size={16}/>
-                                Anterior
-                            </button>)}
-                            {step < totalSteps ? (<button
-                                type="button"
-                                onClick={handleNextStep}
-                                className="flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-purple-600 text-white rounded-lg transition duration-300 ease-in-out ml-auto text-sm sm:text-base"
-                            >
-                                Siguiente
-                                <ArrowRight className="ml-2" size={16}/>
-                            </button>) : (<button
-                                type="submit"
-                                className={`flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-purple-600 text-white rounded-lg transition duration-300 ease-in-out ml-auto text-sm sm:text-base ${!isEmailValid() || isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={!isEmailValid() || isLoading}
-                            >
-                                {isLoading ? (<span
-                                    className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>) : (<>
-                                    Registrarse
-                                    <ArrowRight className="ml-2" size={16}/>
-                                </>)}
-                            </button>)}
+                <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+                    <div className="mb-6 flex justify-between items-center">
+                        <div className="flex space-x-2">
+                            {[1, 2].map((stepNumber) => (<div
+                                key={stepNumber}
+                                className={`w-3 h-3 rounded-full ${step >= stepNumber ? 'bg-purple-600' : 'bg-white bg-opacity-30'}`}
+                            />))}
                         </div>
-                    </form>
+                        <span className="text-white text-sm">Paso {step} de {totalSteps}</span>
+                    </div>
+                    {renderStepContent()}
 
-                    {errors.api && (<p className="text-red-500 text-center mt-4 text-xs sm:text-sm">{errors.api}</p>)}
-                </div>
+                    <div className="flex flex-col gap-3 mt-6">
+                        {step < totalSteps ? (<button
+                            type="button"
+                            onClick={handleNextStep}
+                            className={`w-full flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 bg-purple-600 text-white rounded-lg transition duration-300 ease-in-out text-sm sm:text-base ${Object.keys(validateStep(step)).length > 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'}`}
+                            disabled={Object.keys(validateStep(step)).length > 0}
+                        >
+                            Siguiente
+                            <ArrowRight className="ml-2" size={16}/>
+                        </button>) : (<button
+                            type="submit"
+                            className={`w-full py-3 rounded-lg transition duration-300 ease-in-out flex items-center justify-center text-sm sm:text-base font-semibold backdrop-filter backdrop-blur-sm ${isEmailValid() && !isLoading ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-400 text-white cursor-not-allowed'}`}
+                            disabled={!isEmailValid() || isLoading}
+                        >
+                            {isLoading ? (<span
+                                className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>) : (<>
+                                Registrarse
+                                <ArrowRight className="ml-2" size={16}/>
+                            </>)}
+                        </button>)}
+                        {step > 1 && (<button
+                            type="button"
+                            onClick={handlePrevStep}
+                            className="w-full flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 border border-white text-white rounded-lg transition duration-300 ease-in-out text-sm sm:text-base hover:bg-white hover:bg-opacity-10"
+                        >
+                            <ArrowLeft className="mr-2" size={16}/>
+                            Anterior
+                        </button>)}
+                    </div>
+                </form>
+
+                {errors.api && (<p className="text-red-300 text-center mt-4 text-xs sm:text-sm">{errors.api}</p>)}
+
+                {step === 1 && (<div className="mt-6 text-center">
+                    <p className="text-sm sm:text-base text-white mb-2 drop-shadow">¿Ya tienes una cuenta?</p>
+                    <button
+                        onClick={() => navigate("/")}
+                        className="w-full bg-transparent border border-white border-opacity-30 text-white px-4 py-3 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:bg-opacity-10 text-sm sm:text-base flex items-center justify-center backdrop-filter backdrop-blur-sm"
+                    >
+                        <ArrowLeft className="mr-2" size={18}/>
+                        Iniciar sesión
+                    </button>
+                </div>)}
             </div>
         </div>
     </div>);
