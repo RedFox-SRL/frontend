@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
@@ -7,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CalendarDays, Clock, TrendingUp, Users } from "lucide-react";
+import { CalendarDays, Clock, Users } from "lucide-react";
 import { differenceInDays, format, isPast } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -31,45 +30,8 @@ const DesktopInfoCard = ({ icon: Icon, title, value }) => (
     </Card>
 );
 
-const AnimatedProgressBar = ({ value }) => (
-    <div className="relative pt-1">
-      <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200">
-        <motion.div
-            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-pink-500"
-            initial={{ width: 0 }}
-            animate={{ width: `${value}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-        />
-      </div>
-    </div>
-);
-
-const AnimatedPercentage = ({ value }) => {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    const animationDuration = 1000; // 1 second
-    const startTime = Date.now();
-
-    const animateValue = () => {
-      const now = Date.now();
-      const progress = Math.min((now - startTime) / animationDuration, 1);
-      setDisplayValue(Math.round(progress * value));
-
-      if (progress < 1) {
-        requestAnimationFrame(animateValue);
-      }
-    };
-
-    requestAnimationFrame(animateValue);
-  }, [value]);
-
-  return <span>{displayValue}</span>;
-};
-
 export default function CourseInfo({ managementDetails }) {
   const [isDesktop, setIsDesktop] = useState(false);
-  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -102,20 +64,6 @@ export default function CourseInfo({ managementDetails }) {
     const daysRemaining = differenceInDays(deliveryDate, today);
     return `${daysRemaining} días restantes`;
   }, [deliveryDate, today]);
-
-  const getProgressPercentage = useCallback(() => {
-    const totalDays = differenceInDays(deliveryDate, startDate);
-    const daysPassed = differenceInDays(today, startDate);
-    const progress = Math.min(Math.max((daysPassed / totalDays) * 100, 0), 100);
-    return Math.round(progress);
-  }, [startDate, deliveryDate, today]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setProgress(getProgressPercentage());
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [getProgressPercentage]);
 
   const MobileView = () => (
       <Card className="mb-4">
@@ -151,26 +99,13 @@ export default function CourseInfo({ managementDetails }) {
                     value={managementDetails.group_limit}
                 />
                 <InfoItem icon={Clock} title="Estado" value={getRemainingTime()} />
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      <TrendingUp className="w-5 h-5 text-purple-500 mr-2" />
-                      <span className="text-sm font-medium text-purple-700">
-                    Progreso del curso
-                  </span>
-                    </div>
-                    <span className="text-sm font-semibold text-purple-900">
-                  <AnimatedPercentage value={progress} />%
-                </span>
-                  </div>
-                  <AnimatedProgressBar value={progress} />
-                </div>
               </CardContent>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
       </Card>
   );
+
   const DesktopView = () => (
       <Card className="mb-4">
         <CardHeader>
@@ -202,24 +137,9 @@ export default function CourseInfo({ managementDetails }) {
             />
             <DesktopInfoCard icon={Clock} title="Estado" value={getRemainingTime()} />
           </div>
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center">
-                <TrendingUp className="w-5 h-5 text-purple-500 mr-2" />
-                <span className="text-sm font-medium text-purple-700">
-              Progreso del curso
-            </span>
-              </div>
-              <span className="text-sm font-semibold text-purple-900">
-            <AnimatedPercentage value={progress} />%
-          </span>
-            </div>
-            <AnimatedProgressBar value={progress} />
-          </div>
         </CardContent>
       </Card>
   );
-
 
   return isDesktop ? <DesktopView /> : <MobileView />;
 }

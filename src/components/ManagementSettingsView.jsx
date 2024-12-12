@@ -37,6 +37,14 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
     }, [management]);
 
     useEffect(() => {
+        if (isOpen) {
+            setNewGroupLimit(management.group_limit);
+            setIsCodeActive(management.is_code_active);
+            setNewDeliveryDate(management.project_delivery_date || "");
+        }
+    }, [isOpen, management]);
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
                 setTooltipVisible({ code: false, limit: false, date: false });

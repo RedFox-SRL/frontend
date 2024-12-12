@@ -51,7 +51,7 @@ export default function ManagementView({ management, onBack }) {
   const [announcements, setAnnouncements] = useState([]);
   const [isProposalView, setIsProposalView] = useState(false);
   const [isRatingsView2, setIsRatingsView2] = useState(false);
-  const [showRatingsPopup, setShowRatingsPopup] = useState(false);  // Estado para mostrar el popup
+  const [showRatingsPopup, setShowRatingsPopup] = useState(false);
   const toast = useToast();
   const [currentManagement, setCurrentManagement] = useState(management);
   const formatDate = (date) => (date ? date.split(" ")[0] : "Aún no establecido");
@@ -274,7 +274,7 @@ export default function ManagementView({ management, onBack }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="sm:p-4 p-2 max-w-7xl mx-auto"
+            className="sm:p-4 space-y-2 sm:space-y-4"
         >
           {!isEvaluating && !isSpecialEvaluationsView && (
               <div className="flex flex-wrap justify-between mb-4 items-center gap-2">
@@ -353,7 +353,7 @@ export default function ManagementView({ management, onBack }) {
                       </CardHeader>
                       <CardContent className="flex items-center p-2">
                         <CalendarDays className="h-6 w-6 text-purple-600 mr-2"/>
-                        <p className="text-sm text-gray-700">{formatDate(management.project_delivery_date)}</p>
+                        <p className="text-sm text-gray-700">{formatDate(currentManagement.project_delivery_date)}</p>
                       </CardContent>
                     </Card>
                     <Card className="p-2">
@@ -380,7 +380,7 @@ export default function ManagementView({ management, onBack }) {
                       </CardHeader>
                       <CardContent className="flex items-center p-2">
                         <Users className="h-6 w-6 text-purple-600 mr-2"/>
-                        <p className="text-sm text-gray-700">{management.group_limit}</p>
+                        <p className="text-sm text-gray-700">{currentManagement.group_limit}</p>
                       </CardContent>
                     </Card>
                     <Card className="p-2">
@@ -430,8 +430,8 @@ export default function ManagementView({ management, onBack }) {
                         >
                           <Users className="w-4 h-4 sm:w-5 sm:h-5"/>
                           <span className="hidden sm:inline ml-1 sm:ml-2">
-        Grupos ({groups.length})
-      </span>
+                            Grupos ({groups.length})
+                          </span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="participants"
@@ -439,8 +439,8 @@ export default function ManagementView({ management, onBack }) {
                         >
                           <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5"/>
                           <span className="hidden sm:inline ml-1 sm:ml-2">
-        Estudiantes ({participants?.students?.length || 0})
-      </span>
+                            Estudiantes ({participants?.students?.length || 0})
+                          </span>
                         </TabsTrigger>
                       </TabsList>
 
