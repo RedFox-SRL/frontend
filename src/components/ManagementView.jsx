@@ -15,6 +15,8 @@ import {
   BarChart2,
   Lightbulb,
   Folder,
+  Copy,
+  CalendarDays,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,43 +33,6 @@ import RatingsView from "./RatingsView.jsx";
 import ProposalDeadlinesMandatoryCard from "./ProposalDeadlinesMandatoryCard";
 import { useToast } from "@/hooks/use-toast";
 import RatingView2 from "./RatingView2.jsx";
-
-
-const AnimatedProgressBar = ({ value }) => (
-    <div className="relative pt-1">
-      <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200">
-        <motion.div
-            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-pink-500"
-            initial={{ width: 0 }}
-            animate={{ width: `${value}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-        />
-      </div>
-    </div>
-);
-
-const AnimatedPercentage = ({ value }) => {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    const animationDuration = 1000;
-    const startTime = Date.now();
-
-    const animateValue = () => {
-      const now = Date.now();
-      const progress = Math.min((now - startTime) / animationDuration, 1);
-      setDisplayValue(Math.round(progress * value));
-
-      if (progress < 1) {
-        requestAnimationFrame(animateValue);
-      }
-    };
-
-    requestAnimationFrame(animateValue);
-  }, [value]);
-
-  return <span>{displayValue}</span>;
-};
 
 export default function ManagementView({ management, onBack }) {
   const [groups, setGroups] = useState([]);
@@ -88,22 +53,25 @@ export default function ManagementView({ management, onBack }) {
   const [isRatingsView2, setIsRatingsView2] = useState(false);
   const [showRatingsPopup, setShowRatingsPopup] = useState(false);  // Estado para mostrar el popup
   const toast = useToast();
+  const [currentManagement, setCurrentManagement] = useState(management);
+  const formatDate = (date) => (date ? date.split(" ")[0] : "Aún no establecido");
+
   const [showProposalModal, setShowProposalModal] = useState(
       !management.proposal_part_a_deadline || !management.proposal_part_b_deadline
   );
 
-
-  const handleSuccess = () => {
-    setIsCardVisible(false);
+  const updateManagementData = (updatedFields) => {
+    setCurrentManagement((prev) => ({
+      ...prev,
+      ...updatedFields,
+    }));
   };
+
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     lastPage: 1,
   });
-
-  const toggleSettingsDropdown = () => {
-    setIsSettingsDropdownOpen(!isSettingsDropdownOpen);
-  };
 
   useEffect(() => {
     fetchScoreStatus();
@@ -145,23 +113,6 @@ export default function ManagementView({ management, onBack }) {
     setAnnouncements((prev) => [newAnnouncement, ...prev]);
   };
 
-  const progress = useMemo(() => {
-    const startDate = new Date(management.start_date);
-    const endDate = management.project_delivery_date
-        ? new Date(management.project_delivery_date)
-        : new Date(management.end_date);
-    const today = new Date();
-
-    const totalDuration = endDate - startDate;
-    const completedDuration = today - startDate;
-
-    let calculatedProgress = (completedDuration / totalDuration) * 100;
-    return calculatedProgress > 100
-        ? 100
-        : calculatedProgress < 0
-            ? 0
-            : calculatedProgress;
-  }, [management.start_date, management.project_delivery_date, management.end_date]);
 
   useEffect(() => {
     if (management) {
@@ -328,39 +279,38 @@ export default function ManagementView({ management, onBack }) {
           {!isEvaluating && !isSpecialEvaluationsView && (
               <div className="flex flex-wrap justify-between mb-4 items-center gap-2">
                 <div className="flex flex-wrap gap-2 justify-end items-center">
-                  <div className="relative">
                     <Button
-                        onClick={toggleSettingsDropdown}
+                        onClick={() => setIsSettingsDropdownOpen(true)}
                         className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
                     >
-                      <Settings className="mr-2" />
+                      <Settings className="mr-2"/>
                       Configuración
                     </Button>
-                    {isSettingsDropdownOpen && (
-                        <div className="absolute left-0 mt-2 w-64 bg-white border rounded-lg shadow-lg z-10">
-                          <ManagementSettingsView management={management} />
-                        </div>
-                    )}
-                  </div>
+                  <ManagementSettingsView
+                      management={currentManagement}
+                      isOpen={isSettingsDropdownOpen}
+                      onClose={() => setIsSettingsDropdownOpen(false)}
+                      onUpdate={updateManagementData}
+                  />
                   <Button
                       onClick={() => setIsSpecialEvaluationsView(true)}
                       className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
                   >
-                    <Star className="mr-2" />
+                    <Star className="mr-2"/>
                     Evaluaciones Especiales
                   </Button>
                   <Button
                       onClick={() => setIsRatingsView2(true)}
                       className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
                   >
-                    <Lightbulb className="mr-2" />
+                    <Lightbulb className="mr-2"/>
                     Calificaciones
                   </Button>
                   <Button
                       onClick={() => setIsProposalView(true)}
                       className="flex items-center bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
                   >
-                    <Folder className="mr-2" />
+                    <Folder className="mr-2"/>
                     Propuestas
                   </Button>
                 </div>
@@ -370,7 +320,7 @@ export default function ManagementView({ management, onBack }) {
           {isEvaluating || isSpecialEvaluationsView || isRatingsView2 || isProposalView ? (
               <>
                 {isEvaluating && (
-                    <EvaluationView groupId={selectedGroupId} onBack={() => setIsEvaluating(false)} />
+                    <EvaluationView groupId={selectedGroupId} onBack={() => setIsEvaluating(false)}/>
                 )}
                 {isSpecialEvaluationsView && (
                     <SpecialEvaluationsView
@@ -396,68 +346,66 @@ export default function ManagementView({ management, onBack }) {
                     Gestión {management.semester === "first" ? "1" : "2"}/
                     {new Date(management.start_date).getFullYear()}
                   </h1>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-center">
-                      <Calendar className="h-6 w-6 text-purple-600 mr-3"/>
-                      <div>
-                        <p className="font-semibold">Entrega del proyecto:</p>
-                        <p>
-                          {management.project_delivery_date
-                              ? management.project_delivery_date.split(" ")[0]
-                              : "Aún no establecido"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-6 w-6 text-purple-600 mr-3"/>
-                      <div>
-                        <p className="font-semibold">Fecha límite Parte A:</p>
-                        <p>
-                          {management.proposal_part_a_deadline
-                              ? management.proposal_part_a_deadline.split(" ")[0]
-                              : "Aún no establecido"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-6 w-6 text-purple-600 mr-3"/>
-                      <div>
-                        <p className="font-semibold">Fecha límite Parte B:</p>
-                        <p>
-                          {management.proposal_part_b_deadline
-                              ? management.proposal_part_b_deadline.split(" ")[0]
-                              : "Aún no establecido"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-6 w-6 text-purple-600 mr-3"/>
-                      <div>
-                        <p className="font-semibold">Límite de grupos:</p>
-                        <p>{management.group_limit}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <Clipboard className="h-6 w-6 text-purple-600 mr-3"/>
-                      <div>
-                        <p className="font-semibold">Código de la gestión:</p>
-                        <p className="font-bold text-lg">{management.code}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <TrendingUp className="h-6 w-6 text-purple-600 mr-2"/>
-                        <span className="text-sm font-medium text-purple-700">
-          Progreso del curso
-        </span>
-                      </div>
-                      <span className="text-sm font-semibold text-purple-900">
-        <AnimatedPercentage value={progress}/>%
-      </span>
-                    </div>
-                    <AnimatedProgressBar value={progress}/>
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <Card className="p-2">
+                      <CardHeader className="p-2">
+                        <CardTitle className="text-sm font-semibold text-purple-700">Entrega del proyecto</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex items-center p-2">
+                        <CalendarDays className="h-6 w-6 text-purple-600 mr-2"/>
+                        <p className="text-sm text-gray-700">{formatDate(management.project_delivery_date)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="p-2">
+                      <CardHeader className="p-2">
+                        <CardTitle className="text-sm font-semibold text-purple-700">Fecha límite Parte A</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex items-center p-2">
+                        <CalendarDays className="h-6 w-6 text-purple-600 mr-2"/>
+                        <p className="text-sm text-gray-700">{formatDate(management.proposal_part_a_deadline)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="p-2">
+                      <CardHeader className="p-2">
+                        <CardTitle className="text-sm font-semibold text-purple-700">Fecha límite Parte B</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex items-center p-2">
+                        <CalendarDays className="h-6 w-6 text-purple-600 mr-2"/>
+                        <p className="text-sm text-gray-700">{formatDate(management.proposal_part_b_deadline)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="p-2">
+                      <CardHeader className="p-2">
+                        <CardTitle className="text-sm font-semibold text-purple-700">Límite de miembros</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex items-center p-2">
+                        <Users className="h-6 w-6 text-purple-600 mr-2"/>
+                        <p className="text-sm text-gray-700">{management.group_limit}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="p-2">
+                      <CardHeader className="p-2">
+                        <CardTitle className="text-sm font-semibold text-purple-700">Código de la gestión</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex items-center p-2">
+                        <Clipboard className="h-6 w-6 text-purple-600 mr-2"/>
+                        <p className="font-bold text-sm text-gray-700 truncate overflow-hidden text-overflow-ellipsis whitespace-nowrap">{management.code}</p>
+                        <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(management.code);
+                              toast({
+                                title: "Copiado",
+                                description: "El código de la gestión ha sido copiado al portapapeles.",
+                                duration: 3000,
+                                className: "bg-green-500 text-white",
+                              });
+                            }}
+                            className="text-purple-600 hover:text-purple-800 hover:bg-purple-100 p-1 rounded transition-transform transform hover:scale-110 ml-2"
+                        >
+                          <Copy className="h-5 w-5"/>
+                        </button>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
                 <Card className="bg-white shadow-md w-full rounded-lg mb-8">
@@ -473,14 +421,14 @@ export default function ManagementView({ management, onBack }) {
                             value="announcements"
                             className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                         >
-                          <Megaphone className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <Megaphone className="w-4 h-4 sm:w-5 sm:h-5"/>
                           <span className="hidden sm:inline ml-1 sm:ml-2">Anuncios</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="groups"
                             className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                         >
-                          <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <Users className="w-4 h-4 sm:w-5 sm:h-5"/>
                           <span className="hidden sm:inline ml-1 sm:ml-2">
         Grupos ({groups.length})
       </span>
@@ -489,7 +437,7 @@ export default function ManagementView({ management, onBack }) {
                             value="participants"
                             className="flex items-center justify-center data-[state=active]:bg-white data-[state=active]:text-purple-700 rounded-sm sm:rounded-md transition-all duration-200 ease-in-out text-xs sm:text-sm"
                         >
-                          <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5"/>
                           <span className="hidden sm:inline ml-1 sm:ml-2">
         Estudiantes ({participants?.students?.length || 0})
       </span>
@@ -502,7 +450,7 @@ export default function ManagementView({ management, onBack }) {
                             onAnnouncementCreated={handleAnnouncementCreated}
                         />
                         {renderPagination("top")}
-                        <AnnouncementList announcements={announcements} />
+                        <AnnouncementList announcements={announcements}/>
                         {renderPagination("bottom")}
                       </TabsContent>
 
