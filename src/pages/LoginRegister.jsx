@@ -211,7 +211,7 @@ const LoginRegister = () => {
                     transition={{duration: 0.3}}
                 >
                     <div
-                        className="mb-4 p-3 bg-purple-800 bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
+                        className="mb-4 p-3 bg-purple-800 bg-opacity-100 backdrop-filter backdrop-blur-md rounded-lg">
                         <p className="text-sm text-white font-medium">
                             Usa tu correo institucional:
                             <br/>- Estudiantes: <span className="font-bold">codsis@est.umss.edu</span>
