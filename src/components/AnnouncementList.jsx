@@ -260,7 +260,7 @@ export default function AnnouncementList({managementId}) {
         const pages = getPageRange();
 
         return (
-            <nav className="flex items-center justify-center mt-6 space-x-1" aria-label="Paginación">
+            <nav className="flex items-center justify-center mt-2 space-x-1" aria-label="Paginación">
                 <Button
                     onClick={() => fetchAnnouncements(managementId, pagination.currentPage - 1)}
                     disabled={pagination.currentPage === 1}
@@ -297,7 +297,7 @@ export default function AnnouncementList({managementId}) {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 space-y-6">
+        <div className="container mx-auto px-0 py-1 space-y-6">
             {renderPagination()}
             {isLoading ? (
                 <div className="space-y-6">

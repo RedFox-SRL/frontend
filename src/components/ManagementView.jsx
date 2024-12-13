@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {motion} from "framer-motion";
 import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardContent} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 import {useToast} from "@/hooks/use-toast";
@@ -312,11 +312,6 @@ const ManagementView = ({management, onBack}) => {
                     <ProposalsView onBack={() => setIsProposalView(false)} managementId={management.id}/>
                 </div>)}
             </>) : (<Card className="bg-white shadow-md w-full rounded-lg mb-8">
-                <CardHeader className="p-2 sm:p-4">
-                    <CardTitle className="text-lg sm:text-xl text-purple-700">
-                        Gestión
-                    </CardTitle>
-                </CardHeader>
                 <CardContent className="p-1 sm:p-4">
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
                         <TabsList
