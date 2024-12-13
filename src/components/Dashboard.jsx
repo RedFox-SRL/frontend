@@ -165,11 +165,6 @@ export default function Dashboard() {
             <InvitationModal/>
             {memoizedCourseInfo}
             <Card className="w-full shadow-sm">
-                <CardHeader className="p-2 sm:p-4">
-                    <CardTitle className="text-lg sm:text-xl text-purple-700">
-                        Dashboard del Curso
-                    </CardTitle>
-                </CardHeader>
                 <CardContent className="p-1 sm:p-4">
                     <Tabs
                         value={activeTab}

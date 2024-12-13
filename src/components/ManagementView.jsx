@@ -148,7 +148,7 @@ const CourseInfo = ({managementDetails}) => {
     return (<div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="p-3 bg-purple-100">
             <h3 className="text-sm sm:text-base md:text-lg font-semibold text-purple-800">
-                Gestión {managementDetails.semester === "first" ? "1" : "2"}/{new Date(managementDetails.start_date).getFullYear()}
+                Semestre {managementDetails.semester === "first" ? "1" : "2"}/{new Date(managementDetails.start_date).getFullYear()}
             </h3>
         </div>
         <div className="p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">

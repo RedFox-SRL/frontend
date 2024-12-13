@@ -33,7 +33,7 @@ export default function ManagementHistory({ onSelectManagement }) {
                 setManagements([]);
             }
         } catch (error) {
-            console.error("Error al cargar el historial de gestiones:", error);
+            console.error("Error al cargar el historial de semestres:", error);
         } finally {
             setIsLoading(false);
         }
@@ -47,7 +47,7 @@ export default function ManagementHistory({ onSelectManagement }) {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">
-                <p className="text-gray-500 text-lg">Cargando historial de gestiones...</p>
+                <p className="text-gray-500 text-lg">Cargando historial de semestres pasados...</p>
             </div>
         );
     }
@@ -65,7 +65,7 @@ export default function ManagementHistory({ onSelectManagement }) {
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-extrabold text-purple-700">Historial de Gestiones</h1>
+                <h1 className="text-3xl font-extrabold text-purple-700">Historial de semestres pasados</h1>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {managements.length > 0 ? (
@@ -99,13 +99,13 @@ export default function ManagementHistory({ onSelectManagement }) {
                                     className="mt-4 w-full bg-purple-600 text-white hover:bg-purple-700 transition duration-300 rounded-md flex items-center justify-center"
                                     onClick={() => setSelectedManagement(management)}
                                 >
-                                    <span>Ver Gestión</span>
+                                    <span>Ver semestre</span>
                                 </Button>
                             </CardContent>
                         </Card>
                     ))
                 ) : (
-                    <p className="text-center text-gray-500">No tiene gestiones previas.</p>
+                    <p className="text-center text-gray-500">No tiene semestres previos.</p>
                 )}
             </div>
         </div>
