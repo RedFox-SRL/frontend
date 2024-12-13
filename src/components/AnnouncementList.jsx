@@ -4,7 +4,7 @@ import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {AlertCircle, Calendar, ChevronDown, ChevronUp, LinkIcon, Paperclip} from 'lucide-react';
+import {AlertCircle, Calendar, ChevronDown, ChevronUp, LinkIcon, Loader2, Paperclip} from 'lucide-react';
 import {Skeleton} from "@/components/ui/skeleton";
 import {getData} from "../api/apiService";
 
@@ -61,12 +61,6 @@ export default function AnnouncementList({managementId}) {
     useEffect(() => {
         fetchAnnouncements(1);
     }, [fetchAnnouncements]);
-
-    const loadMoreAnnouncements = useCallback(() => {
-        if (pagination.currentPage < pagination.lastPage) {
-            fetchAnnouncements(pagination.currentPage + 1);
-        }
-    }, [pagination, fetchAnnouncements]);
 
     const toggleExpanded = (id) => {
         setExpandedAnnouncements((prev) => prev.includes(id) ? prev.filter((annId) => annId !== id) : [...prev, id]);
@@ -327,9 +321,8 @@ export default function AnnouncementList({managementId}) {
                 </Card>);
             })}
             {pagination.currentPage < pagination.lastPage && (
-                <div ref={observerRef} className="h-10 flex items-center justify-center">
-                    {isLoadingMore && (
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>)}
+                <div ref={observerRef} className="h-20 flex items-center justify-center">
+                    {isLoadingMore && (<Loader2 className="h-8 w-8 animate-spin text-purple-600"/>)}
                 </div>)}
         </>) : (<Card className="overflow-hidden">
             <CardContent className="p-8 flex flex-col items-center justify-center text-center">
@@ -345,3 +338,10 @@ export default function AnnouncementList({managementId}) {
 }
 
 export {AnnouncementList};
+export const useAddNewAnnouncement = () => {
+    const [_, setAnnouncements] = useState([]);
+    return useCallback((newAnnouncement) => {
+        setAnnouncements(prevAnnouncements => [newAnnouncement, ...prevAnnouncements]);
+    }, []);
+};
+
