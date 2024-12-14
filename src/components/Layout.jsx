@@ -9,6 +9,7 @@ import {useUser} from "../context/UserContext";
 import EvaluationModal from "./EvaluationModal";
 import EvaluationForm from "./EvaluationForm";
 import CrossEvaluationModal from "./CrossEvaluationModal";
+import Perfil from "./Perfil";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -40,6 +41,7 @@ export default function Layout({children, setCurrentView}) {
     const [currentEvaluation, setCurrentEvaluation] = useState(null);
     const [crossEvaluationActive, setCrossEvaluationActive] = useState(false);
     const [crossEvaluationData, setCrossEvaluationData] = useState(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -110,6 +112,10 @@ export default function Layout({children, setCurrentView}) {
     const handleEvaluationSelect = (evaluation) => {
         setCurrentEvaluation(evaluation);
         setView("form");
+    };
+
+    const handleProfileClick = () => {
+        setIsProfileOpen(true);
     };
 
     return (
@@ -185,14 +191,14 @@ export default function Layout({children, setCurrentView}) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleMenuItemClick("perfil")}>
+                                    <DropdownMenuItem onClick={handleProfileClick}>
                                         <User className="mr-2 h-4 w-4"/>
-                                        <span>Perfil</span>
+                                        <span>Editar perfil</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator/>
                                     <DropdownMenuItem onClick={handleLogout}>
                                         <LogOut className="mr-2 h-4 w-4"/>
-                                        <span>Cerrar Sesión</span>
+                                        <span>Cerrar sesión</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -222,6 +228,8 @@ export default function Layout({children, setCurrentView}) {
                     )}
                 </div>
             </main>
+
+            <Perfil isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)}/>
         </div>
     );
 }
