@@ -169,8 +169,8 @@ const LoginRegister = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.name ? 'border-red-500' : 'border-purple-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                placeholder="Tus nombres (mínimo 3 letras)"
+                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.name ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
+                                placeholder="Tu nombre (mínimo 3 letras)"
                                 minLength={3}
                                 maxLength={25}
                             />
@@ -190,7 +190,7 @@ const LoginRegister = () => {
                                 name="last_name"
                                 value={formData.last_name}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.last_name ? 'border-red-500' : 'border-purple-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.last_name ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
                                 placeholder="Tus apellidos (mínimo 3 letras)"
                                 minLength={3}
                                 maxLength={25}
@@ -209,8 +209,8 @@ const LoginRegister = () => {
                     exit={{opacity: 0, x: 20}}
                     transition={{duration: 0.3}}
                 >
-                    <div className="mb-4 p-3 bg-purple-700 rounded-lg">
-                        <p className="text-sm text-white font-medium">
+                    <div className="mb-4 p-3 bg-purple-200 rounded-lg">
+                        <p className="text-sm text-purple-900 font-medium">
                             Usa tu correo institucional:
                             <br/>- Estudiantes: <span className="font-bold">codsis@est.umss.edu</span>
                             <br/>- Docentes: <span className="font-bold">@fcyt.umss.edu.bo</span>
@@ -228,7 +228,7 @@ const LoginRegister = () => {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleInputChange}
-                                    className={`w-full pl-3 pr-10 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.email ? 'border-red-500' : 'border-purple-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                    className={`w-full pl-3 pr-10 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.email ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
                                     placeholder="Tu correo institucional"
                                     ref={emailInputRef}
                                 />

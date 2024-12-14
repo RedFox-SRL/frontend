@@ -17,7 +17,7 @@ const LoginPage = () => {
     const [isCodeSent, setIsCodeSent] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
-    const [rememberBrowser, setRememberBrowser] = useState(false);
+    const [rememberBrowser, setRememberBrowser] = useState(true);
     const emailInputRef = useRef(null);
     const codeInputRefs = useRef([]);
 
@@ -178,7 +178,7 @@ const LoginPage = () => {
                                         type="email"
                                         id="email"
                                         name="email"
-                                        className={`w-full pl-3 pr-10 py-3 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${error ? 'border-red-500' : 'border-purple-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                        className={`w-full pl-3 pr-10 py-3 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${error ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
                                         placeholder="Tu correo electrónico"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -226,26 +226,13 @@ const LoginPage = () => {
                                     type="text"
                                     inputMode="numeric"
                                     pattern="\d*"
-                                    className="w-10 h-12 text-center text-lg sm:text-xl bg-purple-100 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                    className="w-10 h-12 text-center text-lg sm:text-xl bg-purple-100 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                     value={digit}
                                     onChange={(e) => handleCodeChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
                                     maxLength={6}
                                     required
                                 />))}
-                            </div>
-                            <div className="flex items-center mb-4">
-                                <input
-                                    type="checkbox"
-                                    id="rememberBrowser"
-                                    checked={rememberBrowser}
-                                    onChange={(e) => setRememberBrowser(e.target.checked)}
-                                    className="rounded text-purple-600 focus:ring-purple-500 bg-purple-100"
-                                />
-                                <label htmlFor="rememberBrowser"
-                                       className="ml-2 text-sm sm:text-base text-black">
-                                    Recordar navegador por 30 días
-                                </label>
                             </div>
                             {error && (<motion.p
                                 initial={{opacity: 0, y: -10}}
