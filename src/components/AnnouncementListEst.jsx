@@ -1,18 +1,19 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import DOMPurify from "dompurify";
-import {Card, CardContent, CardHeader} from "@/components/ui/card";
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {Card, CardContent, CardHeader} from "@/components/ui/card.jsx";
+import {Badge} from "@/components/ui/badge.jsx";
+import {Button} from "@/components/ui/button.jsx";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.jsx";
 import {AlertCircle, Calendar, ChevronDown, ChevronUp, LinkIcon, Loader2, Paperclip} from 'lucide-react';
-import {Skeleton} from "@/components/ui/skeleton";
+import {Skeleton} from "@/components/ui/skeleton.jsx";
 import {getData} from "../api/apiService";
 
 const MAX_CONTENT_LENGTH = 280;
 
-export default function AnnouncementList({managementId, announcements, setAnnouncements}) {
+export default function AnnouncementListEst({managementId}) {
+    const [announcements, setAnnouncements] = useState([]);
     const [expandedAnnouncements, setExpandedAnnouncements] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [pagination, setPagination] = useState({
         currentPage: 1, lastPage: 1,
@@ -31,6 +32,7 @@ export default function AnnouncementList({managementId, announcements, setAnnoun
 
             if (announcementsResponse && announcementsResponse.data) {
                 const rawData = announcementsResponse.data;
+
                 const announcementsArray = Array.isArray(rawData) ? rawData : Object.values(rawData);
 
                 setAnnouncements(prevAnnouncements => page === 1 ? announcementsArray : [...prevAnnouncements, ...announcementsArray]);
@@ -54,7 +56,7 @@ export default function AnnouncementList({managementId, announcements, setAnnoun
             setIsLoading(false);
             setIsLoadingMore(false);
         }
-    }, [managementId, setAnnouncements]);
+    }, [managementId]);
 
     useEffect(() => {
         fetchAnnouncements(1);
@@ -231,7 +233,7 @@ export default function AnnouncementList({managementId, announcements, setAnnoun
                 observer.unobserve(observerRef.current);
             }
         };
-    }, [isLoading, isLoadingMore, pagination, fetchAnnouncements]);
+    }, [fetchAnnouncements, isLoading, isLoadingMore, pagination]);
 
     return (<div className="container mx-auto px-0 py-1 space-y-6">
         {isLoading && announcements.length === 0 ? (<div className="space-y-6">
@@ -334,4 +336,4 @@ export default function AnnouncementList({managementId, announcements, setAnnoun
     </div>);
 }
 
-export {AnnouncementList};
+export {AnnouncementListEst};

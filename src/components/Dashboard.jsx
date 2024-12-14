@@ -11,7 +11,7 @@ import CourseInfo from "./CourseInfo";
 import GroupList from "./GroupList";
 import ParticipantList from "./ParticipantList";
 import GroupDetails from "./GroupDetail";
-import AnnouncementList from "./AnnouncementList";
+import AnnouncementListEst from "./AnnouncementListEst";
 import InvitationModal from "./InvitationModal";
 
 export default function Dashboard() {
@@ -203,7 +203,7 @@ export default function Dashboard() {
                         </TabsList>
                         <div className="mt-2 sm:mt-4">
                             <TabsContent value="announcements">
-                                <AnnouncementList managementId={managementDetails.id}/>
+                                <AnnouncementListEst managementId={managementDetails.id}/>
                             </TabsContent>
                             <TabsContent value="groups">
                                 <GroupList

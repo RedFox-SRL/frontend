@@ -171,14 +171,13 @@ const ManagementView = ({management, onBack}) => {
     const [selectedGroupDetails, setSelectedGroupDetails] = useState(null);
     const [activeTab, setActiveTab] = useState("announcements");
     const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
+    const [announcements, setAnnouncements] = useState([]);
     const [isProposalView, setIsProposalView] = useState(false);
     const [isRatingsView2, setIsRatingsView2] = useState(false);
     const [showRatingsPopup, setShowRatingsPopup] = useState(false);
     const {toast} = useToast();
     const [currentManagement, setCurrentManagement] = useState(management);
     const [showProposalModal, setShowProposalModal] = useState(!management.proposal_part_a_deadline || !management.proposal_part_b_deadline);
-    const [announcements, setAnnouncements] = useState([]);
-
 
     const updateManagementData = (updatedFields) => {
         setCurrentManagement((prev) => ({
@@ -215,6 +214,9 @@ const ManagementView = ({management, onBack}) => {
         });
     };
 
+    const handleAnnouncementCreated = useCallback((newAnnouncement) => {
+        setAnnouncements(prevAnnouncements => [newAnnouncement, ...prevAnnouncements]);
+    }, []);
 
     const fetchGroups = async () => {
         setIsLoading(true);
@@ -265,6 +267,23 @@ const ManagementView = ({management, onBack}) => {
         if (management) {
             fetchGroups();
             fetchParticipants();
+        }
+    }, [management]);
+
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const response = await getData(`/management/${management.id}/announcements`);
+                if (response && response.data) {
+                    setAnnouncements(response.data);
+                }
+            } catch (error) {
+                console.error("Error fetching announcements:", error);
+            }
+        };
+
+        if (management) {
+            fetchAnnouncements();
         }
     }, [management]);
 
@@ -346,9 +365,7 @@ const ManagementView = ({management, onBack}) => {
                         <TabsContent value="announcements">
                             <CreateAnnouncement
                                 managementId={management.id}
-                                onAnnouncementCreated={(newAnnouncement) => {
-                                    setAnnouncements(prevAnnouncements => [newAnnouncement, ...prevAnnouncements]);
-                                }}
+                                onAnnouncementCreated={handleAnnouncementCreated}
                             />
                             <AnnouncementList
                                 managementId={management.id}
@@ -384,4 +401,3 @@ const ManagementView = ({management, onBack}) => {
 };
 
 export default ManagementView;
-
