@@ -7,7 +7,7 @@ import {particlesInit, particlesOptions} from "../components/ParticlesConfig";
 import {AnimatePresence, motion} from "framer-motion";
 
 const validateName = (name) => {
-    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]+$/;
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
     return nameRegex.test(name);
 };
 
@@ -79,20 +79,36 @@ const LoginRegister = () => {
     const handleInputChange = (e) => {
         const {name, value} = e.target;
         if (name === 'name' || name === 'last_name') {
-            let processedValue = value;
+            const sanitizedValue = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+            let processedValue = sanitizedValue;
             const nonSpaceCount = countNonSpaceCharacters(processedValue);
 
-            // Permitir espacios después de los primeros 3 caracteres
-            if (nonSpaceCount >= 3) {
-                processedValue = processedValue.replace(/\s+/g, ' ');
-            } else {
-                processedValue = processedValue.replace(/\s/g, '');
-            }
-
-            // Limitar a 25 caracteres sin contar espacios
             if (nonSpaceCount <= 25) {
+                if (nonSpaceCount >= 3) {
+                    processedValue = processedValue.replace(/\s+/g, ' ');
+                } else {
+                    processedValue = processedValue.replace(/\s/g, '');
+                }
+                // Prevenir la adición de espacios si ya se alcanzó el límite
+                if (nonSpaceCount === 25 && processedValue.endsWith(' ')) {
+                    processedValue = processedValue.trim();
+                }
                 setFormData(prev => ({...prev, [name]: processedValue}));
                 setErrors(prev => ({...prev, [name]: ""}));
+            } else {
+                let newValue = '';
+                let currentNonSpaceCount = 0;
+                for (let char of sanitizedValue) {
+                    if (char !== ' ') {
+                        if (currentNonSpaceCount < 25) {
+                            newValue += char;
+                            currentNonSpaceCount++;
+                        }
+                    } else if (currentNonSpaceCount < 25) {
+                        newValue += char;
+                    }
+                }
+                setFormData(prev => ({...prev, [name]: newValue}));
             }
         } else {
             setFormData(prev => ({...prev, [name]: value}));
@@ -161,7 +177,7 @@ const LoginRegister = () => {
                     <div className="space-y-4 sm:space-y-5 md:space-y-6">
                         <div className="relative">
                             <label htmlFor="name" className="block text-sm font-medium text-black mb-1">
-                                Nombre *
+                                Nombres *
                             </label>
                             <input
                                 type="text"
@@ -170,9 +186,7 @@ const LoginRegister = () => {
                                 value={formData.name}
                                 onChange={handleInputChange}
                                 className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.name ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
-                                placeholder="Tu nombre (mínimo 3 letras)"
-                                minLength={3}
-                                maxLength={25}
+                                placeholder="Tus nombres (mínimo 3 letras)"
                             />
                             <span className="absolute right-2 bottom-2 text-sm text-purple-600 opacity-100">
                                     {countNonSpaceCharacters(formData.name)}/25
@@ -192,8 +206,6 @@ const LoginRegister = () => {
                                 onChange={handleInputChange}
                                 className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.last_name ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
                                 placeholder="Tus apellidos (mínimo 3 letras)"
-                                minLength={3}
-                                maxLength={25}
                             />
                             <span className="absolute right-2 bottom-2 text-sm text-purple-600 opacity-100">
                                     {countNonSpaceCharacters(formData.last_name)}/25
@@ -234,7 +246,8 @@ const LoginRegister = () => {
                                 />
                                 <Mail
                                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600"
-                                    size={20}/>
+                                    size={20}
+                                />
                             </div>
                         </div>
                         {errors.email && <p className="text-red-600 text-xs sm:text-sm ml-1">{errors.email}</p>}
