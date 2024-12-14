@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Eye, EyeOff, Mail, UserPlus} from 'lucide-react';
+import {AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Mail, UserPlus} from 'lucide-react';
 import {postData} from "../api/apiService";
 import useAuth from "../hooks/useAuth";
 import Particles from "react-particles";
@@ -15,7 +15,6 @@ const LoginPage = () => {
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [isCodeSent, setIsCodeSent] = useState(false);
-    const [showCode, setShowCode] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
     const [rememberBrowser, setRememberBrowser] = useState(false);
@@ -61,7 +60,7 @@ const LoginPage = () => {
             await postData("/login", {email});
             setIsCodeSent(true);
             setTimeLeft(900); // Reset timer to 15 minutes
-            setSuccessMessage(null); // Update: Removed success message after sending code
+            setSuccessMessage(null);
         } catch (error) {
             setError(error.response?.data?.message || "Ocurrió un error al enviar el código. Por favor, inténtalo de nuevo.");
         } finally {
@@ -140,7 +139,7 @@ const LoginPage = () => {
 
     const buttonClass = `w-full py-3 rounded-lg transition duration-300 ease-in-out flex items-center justify-center text-sm sm:text-base font-semibold backdrop-filter backdrop-blur-sm`;
     const activeButtonClass = `${buttonClass} bg-purple-600 text-white hover:bg-purple-700`;
-    const disabledButtonClass = `${buttonClass} bg-purple-400 text-white cursor-not-allowed`; // Update: Changed disabled button style
+    const disabledButtonClass = `${buttonClass} bg-purple-400 text-white cursor-not-allowed`;
 
     return (<div
         className="min-h-screen flex items-center justify-center bg-gradient-to-br from-fuchsia-950 via-purple-950 to-stone-950 animate-gradient-x p-4 sm:p-6 md:p-8 overflow-auto relative">
@@ -151,16 +150,15 @@ const LoginPage = () => {
             className="absolute inset-0"
         />
         <div
-            className="w-full max-w-[320px] xs:max-w-xs sm:max-w-sm md:max-w-md bg-white bg-opacity-10 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative z-10 border border-white border-opacity-10">
-            <div className="w-full p-6 sm:p-8 md:p-10 bg-white bg-opacity-10 backdrop-filter backdrop-blur-md">
-                <h1 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 drop-shadow">TrackMaster</h1>
-                <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-3 sm:mb-4 drop-shadow">
+            className="w-full max-w-[320px] xs:max-w-xs sm:max-w-sm md:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden relative z-10 border border-purple-300">
+            <div className="w-full p-6 sm:p-8 md:p-10 bg-white">
+                <h1 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 mb-2 sm:mb-3">TrackMaster</h1>
+                <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-semibold text-purple-900 mb-3 sm:mb-4">
                     Inicia sesión
                 </h2>
-                {!isCodeSent && (
-                    <p className="text-center text-sm sm:text-base md:text-lg text-white mb-4 sm:mb-5 drop-shadow">
-                        ¡Bienvenido de nuevo! Inicia sesión para continuar tu progreso.
-                    </p>)}
+                {!isCodeSent && (<p className="text-center text-sm sm:text-base md:text-lg text-black mb-4 sm:mb-5">
+                    ¡Bienvenido de nuevo! Inicia sesión para continuar tu progreso.
+                </p>)}
                 <AnimatePresence mode="wait">
                     {!isCodeSent ? (<motion.div
                         key="email-form"
@@ -172,7 +170,7 @@ const LoginPage = () => {
                         <form className="space-y-4" onSubmit={handleSendCode}>
                             <div className="relative">
                                 <label htmlFor="email"
-                                       className="block text-sm sm:text-base font-medium text-white mb-1 drop-shadow">
+                                       className="block text-sm sm:text-base font-medium text-black mb-1">
                                     Correo Electrónico
                                 </label>
                                 <div className="relative">
@@ -180,7 +178,7 @@ const LoginPage = () => {
                                         type="email"
                                         id="email"
                                         name="email"
-                                        className={`w-full pl-3 pr-10 py-3 text-sm sm:text-base rounded-lg border bg-white bg-opacity-10 backdrop-filter backdrop-blur-md text-white placeholder-white placeholder-opacity-70 ${error ? 'border-red-500' : 'border-white border-opacity-30'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                        className={`w-full pl-3 pr-10 py-3 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${error ? 'border-red-500' : 'border-purple-300'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
                                         placeholder="Tu correo electrónico"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -188,10 +186,10 @@ const LoginPage = () => {
                                         required
                                     />
                                     <Mail
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white opacity-70"
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600"
                                         size={20}/>
                                 </div>
-                                {error && (<p className="text-red-300 text-sm mt-1 flex items-center">
+                                {error && (<p className="text-red-600 text-sm mt-1 flex items-center">
                                     <AlertCircle className="mr-1" size={16}/>{error}
                                 </p>)}
                             </div>
@@ -214,10 +212,10 @@ const LoginPage = () => {
                         exit={{opacity: 0, y: -20}}
                         transition={{duration: 0.3}}
                     >
-                        <p className="text-sm sm:text-base text-white mb-2 drop-shadow">
+                        <p className="text-sm sm:text-base text-black mb-2">
                             Ingresa el código de verificación enviado a {email}
                         </p>
-                        <p className="text-sm text-white opacity-80 mb-4 drop-shadow">
+                        <p className="text-sm text-black mb-4">
                             El código expirará en {formatTime(timeLeft)}.
                         </p>
                         <form className="space-y-4" onSubmit={handleVerifyCode}>
@@ -225,52 +223,41 @@ const LoginPage = () => {
                                 {verificationCode.map((digit, index) => (<input
                                     key={index}
                                     ref={(el) => (codeInputRefs.current[index] = el)}
-                                    type={showCode ? "text" : "password"}
+                                    type="text"
                                     inputMode="numeric"
                                     pattern="\d*"
-                                    className="w-10 h-12 text-center text-lg sm:text-xl bg-white bg-opacity-10 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 backdrop-filter backdrop-blur-md"
+                                    className="w-10 h-12 text-center text-lg sm:text-xl bg-purple-100 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
                                     value={digit}
                                     onChange={(e) => handleCodeChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
-                                    maxLength={1}
+                                    maxLength={6}
                                     required
                                 />))}
                             </div>
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        id="rememberBrowser"
-                                        checked={rememberBrowser}
-                                        onChange={(e) => setRememberBrowser(e.target.checked)}
-                                        className="rounded text-purple-600 focus:ring-purple-500 bg-white bg-opacity-20"
-                                    />
-                                    <label htmlFor="rememberBrowser"
-                                           className="ml-2 text-sm sm:text-base text-white drop-shadow">
-                                        Recordar navegador por 30 días
-                                    </label>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCode(!showCode)}
-                                    className="text-white flex items-center text-sm sm:text-base drop-shadow"
-                                >
-                                    {showCode ? <EyeOff size={16} className="mr-1"/> :
-                                        <Eye size={16} className="mr-1"/>}
-                                    {showCode ? "Ocultar" : "Mostrar"}
-                                </button>
+                            <div className="flex items-center mb-4">
+                                <input
+                                    type="checkbox"
+                                    id="rememberBrowser"
+                                    checked={rememberBrowser}
+                                    onChange={(e) => setRememberBrowser(e.target.checked)}
+                                    className="rounded text-purple-600 focus:ring-purple-500 bg-purple-100"
+                                />
+                                <label htmlFor="rememberBrowser"
+                                       className="ml-2 text-sm sm:text-base text-black">
+                                    Recordar navegador por 30 días
+                                </label>
                             </div>
                             {error && (<motion.p
                                 initial={{opacity: 0, y: -10}}
                                 animate={{opacity: 1, y: 0}}
-                                className="text-red-300 text-sm sm:text-base flex items-center"
+                                className="text-red-600 text-sm sm:text-base flex items-center"
                             >
                                 <AlertCircle className="mr-2" size={18}/>{error}
                             </motion.p>)}
                             {successMessage && (<motion.p
                                 initial={{opacity: 0, y: -10}}
                                 animate={{opacity: 1, y: 0}}
-                                className="text-green-300 text-sm sm:text-base flex items-center"
+                                className="text-green-600 text-sm sm:text-base flex items-center"
                             >
                                 <CheckCircle className="mr-2" size={18}/>{successMessage}
                             </motion.p>)}
@@ -294,24 +281,24 @@ const LoginPage = () => {
                                         setError(null);
                                         setSuccessMessage(null);
                                     }}
-                                    className={`${buttonClass} border border-white border-opacity-50 text-white hover:bg-white hover:bg-opacity-10`}
+                                    className={`${buttonClass} border border-purple-300 text-black hover:bg-purple-100`}
                                 >
                                     <ArrowLeft className="mr-2" size={18}/>
                                     Volver
                                 </button>
                             </div>
                         </form>
-                        <p className="mt-4 text-center text-sm sm:text-base text-white drop-shadow">
+                        <p className="mt-4 text-center text-sm sm:text-base text-black">
                             ¿No recibiste el código? <button onClick={handleSendCode}
-                                                             className="text-purple-300 underline">Reenviar</button>
+                                                             className="text-purple-600 underline">Reenviar</button>
                         </p>
                     </motion.div>)}
                 </AnimatePresence>
                 {!isCodeSent && (<div className="mt-6 text-center">
-                    <p className="text-sm sm:text-base text-white mb-2 drop-shadow">¿No tienes una cuenta?</p>
+                    <p className="text-sm sm:text-base text-black mb-2">¿No tienes una cuenta?</p>
                     <button
                         onClick={handleRegisterClick}
-                        className="bg-transparent border border-white border-opacity-30 text-white px-4 py-3 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:bg-opacity-10 text-sm sm:text-base flex items-center justify-center mx-auto backdrop-filter backdrop-blur-sm"
+                        className="bg-purple-100 border border-purple-300 text-black px-4 py-3 rounded-lg transition duration-300 ease-in-out hover:bg-purple-200 text-sm sm:text-base flex items-center justify-center mx-auto"
                     >
                         <UserPlus className="mr-2" size={18}/>
                         Regístrate
