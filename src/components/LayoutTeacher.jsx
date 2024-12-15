@@ -24,7 +24,7 @@ const getAvatarUrl = (name, lastName) => {
 
 const menuItems = [
     {icon: Home, label: "Inicio", view: "inicio"},
-    {icon: History, label: "Historial de semestres pasados", view: "gestiones"},
+    {icon: History, label: "Semestres pasados", view: "gestiones"},
     {icon: Building2, label: "FundEmpresa", view: "empresas"},
 ];
 

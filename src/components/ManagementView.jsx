@@ -104,17 +104,17 @@ const ManagementActions = ({onSettingsClick, onEvaluationsClick, onRatingsClick,
         <Button onClick={onEvaluationsClick}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 h-auto text-xs sm:text-sm md:text-base">
             <Star className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"/>
-            <span>Evaluaciones Especiales</span>
+            <span>Plantillas de evaluaciones</span>
         </Button>
         <Button onClick={onRatingsClick}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 h-auto text-xs sm:text-sm md:text-base">
             <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"/>
-            <span>Calificaciones</span>
+            <span>Resumen notas</span>
         </Button>
         <Button onClick={onProposalsClick}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 h-auto text-xs sm:text-sm md:text-base">
             <Folder className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2"/>
-            <span>Propuestas</span>
+            <span>Calificar propuestas</span>
         </Button>
     </div>);
 
@@ -142,7 +142,7 @@ const CourseInfo = ({managementDetails}) => {
     }, {
         icon: Users, title: "Max. integrantes", value: managementDetails.group_limit,
     }, {
-        icon: Clipboard, title: "Código de la gestión", value: managementDetails.code, copyable: true,
+        icon: Clipboard, title: "Código de tu grupo", value: managementDetails.code, copyable: true,
     },], [managementDetails, formatDateWithTime, formatDateOnly]);
 
     return (<div className="bg-white shadow rounded-lg overflow-hidden">
