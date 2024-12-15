@@ -7,7 +7,7 @@ import {particlesInit, particlesOptions} from "../components/ParticlesConfig";
 import {AnimatePresence, motion} from "framer-motion";
 
 const validateName = (name) => {
-    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]+$/;
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
     return nameRegex.test(name);
 };
 
@@ -33,7 +33,6 @@ const LoginRegister = () => {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [showNotification, setShowNotification] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
     const emailInputRef = useRef(null);
 
     useEffect(() => {
@@ -80,20 +79,36 @@ const LoginRegister = () => {
     const handleInputChange = (e) => {
         const {name, value} = e.target;
         if (name === 'name' || name === 'last_name') {
-            let processedValue = value;
+            const sanitizedValue = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+            let processedValue = sanitizedValue;
             const nonSpaceCount = countNonSpaceCharacters(processedValue);
 
-            // Permitir espacios después de los primeros 3 caracteres
-            if (nonSpaceCount >= 3) {
-                processedValue = processedValue.replace(/\s+/g, ' ');
-            } else {
-                processedValue = processedValue.replace(/\s/g, '');
-            }
-
-            // Limitar a 25 caracteres sin contar espacios
             if (nonSpaceCount <= 25) {
+                if (nonSpaceCount >= 3) {
+                    processedValue = processedValue.replace(/\s+/g, ' ');
+                } else {
+                    processedValue = processedValue.replace(/\s/g, '');
+                }
+                // Prevenir la adición de espacios si ya se alcanzó el límite
+                if (nonSpaceCount === 25 && processedValue.endsWith(' ')) {
+                    processedValue = processedValue.trim();
+                }
                 setFormData(prev => ({...prev, [name]: processedValue}));
                 setErrors(prev => ({...prev, [name]: ""}));
+            } else {
+                let newValue = '';
+                let currentNonSpaceCount = 0;
+                for (let char of sanitizedValue) {
+                    if (char !== ' ') {
+                        if (currentNonSpaceCount < 25) {
+                            newValue += char;
+                            currentNonSpaceCount++;
+                        }
+                    } else if (currentNonSpaceCount < 25) {
+                        newValue += char;
+                    }
+                }
+                setFormData(prev => ({...prev, [name]: newValue}));
             }
         } else {
             setFormData(prev => ({...prev, [name]: value}));
@@ -161,8 +176,8 @@ const LoginRegister = () => {
                 >
                     <div className="space-y-4 sm:space-y-5 md:space-y-6">
                         <div className="relative">
-                            <label htmlFor="name" className="block text-sm font-medium text-white mb-1">
-                                Nombre *
+                            <label htmlFor="name" className="block text-sm font-medium text-black mb-1">
+                                Nombres *
                             </label>
                             <input
                                 type="text"
@@ -170,19 +185,17 @@ const LoginRegister = () => {
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-white bg-opacity-10 backdrop-filter backdrop-blur-md text-white placeholder-white placeholder-opacity-70 ${errors.name ? 'border-red-500' : 'border-white border-opacity-30'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                                placeholder="Tu nombre (mínimo 3 letras)"
-                                minLength={3}
-                                maxLength={25}
+                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.name ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
+                                placeholder="Tus nombres (mínimo 3 letras)"
                             />
-                            <span className="absolute right-2 bottom-2 text-xs text-white opacity-70">
+                            <span className="absolute right-2 bottom-2 text-sm text-purple-600 opacity-100">
                                     {countNonSpaceCharacters(formData.name)}/25
                                 </span>
                         </div>
-                        {errors.name && <p className="text-red-300 text-xs sm:text-sm ml-1">{errors.name}</p>}
+                        {errors.name && <p className="text-red-600 text-xs sm:text-sm ml-1">{errors.name}</p>}
 
                         <div className="relative">
-                            <label htmlFor="last_name" className="block text-sm font-medium text-white mb-1">
+                            <label htmlFor="last_name" className="block text-sm font-medium text-black mb-1">
                                 Apellidos *
                             </label>
                             <input
@@ -191,16 +204,14 @@ const LoginRegister = () => {
                                 name="last_name"
                                 value={formData.last_name}
                                 onChange={handleInputChange}
-                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-white bg-opacity-10 backdrop-filter backdrop-blur-md text-white placeholder-white placeholder-opacity-70 ${errors.last_name ? 'border-red-500' : 'border-white border-opacity-30'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                className={`w-full px-3 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.last_name ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
                                 placeholder="Tus apellidos (mínimo 3 letras)"
-                                minLength={3}
-                                maxLength={25}
                             />
-                            <span className="absolute right-2 bottom-2 text-xs text-white opacity-70">
+                            <span className="absolute right-2 bottom-2 text-sm text-purple-600 opacity-100">
                                     {countNonSpaceCharacters(formData.last_name)}/25
                                 </span>
                         </div>
-                        {errors.last_name && <p className="text-red-300 text-xs sm:text-sm ml-1">{errors.last_name}</p>}
+                        {errors.last_name && <p className="text-red-600 text-xs sm:text-sm ml-1">{errors.last_name}</p>}
                     </div>
                 </motion.div>);
             case 2:
@@ -210,9 +221,8 @@ const LoginRegister = () => {
                     exit={{opacity: 0, x: 20}}
                     transition={{duration: 0.3}}
                 >
-                    <div
-                        className="mb-4 p-3 bg-purple-800 bg-opacity-100 backdrop-filter backdrop-blur-md rounded-lg">
-                        <p className="text-sm text-white font-medium">
+                    <div className="mb-4 p-3 bg-purple-200 rounded-lg">
+                        <p className="text-sm text-purple-900 font-medium">
                             Usa tu correo institucional:
                             <br/>- Estudiantes: <span className="font-bold">codsis@est.umss.edu</span>
                             <br/>- Docentes: <span className="font-bold">@fcyt.umss.edu.bo</span>
@@ -220,7 +230,7 @@ const LoginRegister = () => {
                     </div>
                     <div className="space-y-4 sm:space-y-5 md:space-y-6">
                         <div className="relative">
-                            <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
+                            <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
                                 Correo Electrónico *
                             </label>
                             <div className="relative">
@@ -230,16 +240,17 @@ const LoginRegister = () => {
                                     name="email"
                                     value={formData.email}
                                     onChange={handleInputChange}
-                                    className={`w-full pl-3 pr-10 py-2 text-sm sm:text-base rounded-lg border bg-white bg-opacity-10 backdrop-filter backdrop-blur-md text-white placeholder-white placeholder-opacity-70 ${errors.email ? 'border-red-500' : 'border-white border-opacity-30'} focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
+                                    className={`w-full pl-3 pr-10 py-2 text-sm sm:text-base rounded-lg border bg-purple-100 text-black placeholder-purple-400 ${errors.email ? 'border-red-500' : 'border-purple-300'} focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent`}
                                     placeholder="Tu correo institucional"
                                     ref={emailInputRef}
                                 />
                                 <Mail
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white opacity-70"
-                                    size={20}/>
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600"
+                                    size={20}
+                                />
                             </div>
                         </div>
-                        {errors.email && <p className="text-red-300 text-xs sm:text-sm ml-1">{errors.email}</p>}
+                        {errors.email && <p className="text-red-600 text-xs sm:text-sm ml-1">{errors.email}</p>}
                     </div>
                 </motion.div>);
             default:
@@ -267,13 +278,13 @@ const LoginRegister = () => {
             </motion.div>)}
         </AnimatePresence>
         <div
-            className="w-full max-w-[320px] xs:max-w-xs sm:max-w-sm md:max-w-md bg-white bg-opacity-10 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative z-10 border border-white border-opacity-10">
-            <div className="w-full p-6 sm:p-8 md:p-10 bg-white bg-opacity-10 backdrop-filter backdrop-blur-md">
-                <h1 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 drop-shadow">TrackMaster</h1>
-                <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-3 sm:mb-4 drop-shadow">
+            className="w-full max-w-[320px] xs:max-w-xs sm:max-w-sm md:max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden relative z-10 border border-purple-300">
+            <div className="w-full p-6 sm:p-8 md:p-10 bg-white">
+                <h1 className="text-center text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 mb-2 sm:mb-3">TrackMaster</h1>
+                <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-semibold text-purple-900 mb-3 sm:mb-4">
                     Crea tu cuenta
                 </h2>
-                <p className="text-center text-sm sm:text-base md:text-lg text-white mb-4 sm:mb-5 drop-shadow">
+                <p className="text-center text-sm sm:text-base md:text-lg text-black mb-4 sm:mb-5">
                     Completa el formulario para comenzar tu viaje con TrackMaster
                 </p>
 
@@ -282,10 +293,10 @@ const LoginRegister = () => {
                         <div className="flex space-x-2">
                             {[1, 2].map((stepNumber) => (<div
                                 key={stepNumber}
-                                className={`w-3 h-3 rounded-full ${step >= stepNumber ? 'bg-purple-600' : 'bg-white bg-opacity-30'}`}
+                                className={`w-3 h-3 rounded-full ${step >= stepNumber ? 'bg-purple-600' : 'bg-purple-200'}`}
                             />))}
                         </div>
-                        <span className="text-white text-sm">Paso {step} de {totalSteps}</span>
+                        <span className="text-black text-sm">Paso {step} de {totalSteps}</span>
                     </div>
                     {renderStepContent()}
 
@@ -300,7 +311,7 @@ const LoginRegister = () => {
                             <ArrowRight className="ml-2" size={16}/>
                         </button>) : (<button
                             type="submit"
-                            className={`w-full py-3 rounded-lg transition duration-300 ease-in-out flex items-center justify-center text-sm sm:text-base font-semibold backdrop-filter backdrop-blur-sm ${isEmailValid() && !isLoading ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-400 text-white cursor-not-allowed'}`}
+                            className={`w-full py-3 rounded-lg transition duration-300 ease-in-out flex items-center justify-center text-sm sm:text-base font-semibold ${isEmailValid() && !isLoading ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-purple-400 text-white cursor-not-allowed'}`}
                             disabled={!isEmailValid() || isLoading}
                         >
                             {isLoading ? (<span
@@ -312,7 +323,7 @@ const LoginRegister = () => {
                         {step > 1 && (<button
                             type="button"
                             onClick={handlePrevStep}
-                            className="w-full flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 border border-white text-white rounded-lg transition duration-300 ease-in-out text-sm sm:text-base hover:bg-white hover:bg-opacity-10"
+                            className="w-full flex items-center justify-center px-4 py-2 sm:px-5 sm:py-2.5 border border-purple-300 text-purple-600 rounded-lg transition duration-300 ease-in-out text-sm sm:text-base hover:bg-purple-50"
                         >
                             <ArrowLeft className="mr-2" size={16}/>
                             Anterior
@@ -320,13 +331,13 @@ const LoginRegister = () => {
                     </div>
                 </form>
 
-                {errors.api && (<p className="text-red-300 text-center mt-4 text-xs sm:text-sm">{errors.api}</p>)}
+                {errors.api && (<p className="text-red-600 text-center mt-4 text-xs sm:text-sm">{errors.api}</p>)}
 
                 {step === 1 && (<div className="mt-6 text-center">
-                    <p className="text-sm sm:text-base text-white mb-2 drop-shadow">¿Ya tienes una cuenta?</p>
+                    <p className="text-sm sm:text-base text-black mb-2">¿Ya tienes una cuenta?</p>
                     <button
                         onClick={() => navigate("/")}
-                        className="w-full bg-transparent border border-white border-opacity-30 text-white px-4 py-3 rounded-lg transition duration-300 ease-in-out hover:bg-white hover:bg-opacity-10 text-sm sm:text-base flex items-center justify-center backdrop-filter backdrop-blur-sm"
+                        className="w-full bg-purple-100 border border-purple-300 text-purple-900 px-4 py-3 rounded-lg transition duration-300 ease-in-out hover:bg-purple-200 text-sm sm:text-base flex items-center justify-center"
                     >
                         <ArrowLeft className="mr-2" size={18}/>
                         Iniciar sesión
@@ -338,4 +349,3 @@ const LoginRegister = () => {
 };
 
 export default LoginRegister;
-

@@ -17,7 +17,5 @@ export default defineConfig({
                 }
             }
         }
-    }, server: {
-        historyApiFallback: true, // Asegúrate de que esta línea esté presente
     }
 });

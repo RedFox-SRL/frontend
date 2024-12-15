@@ -6,6 +6,7 @@ import {Button} from "@/components/ui/button";
 import {Skeleton} from "@/components/ui/skeleton";
 import AuthContext from "../context/AuthContext";
 import {useUser} from "../context/UserContext";
+import Perfil from "./Perfil";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,7 +24,7 @@ const getAvatarUrl = (name, lastName) => {
 
 const menuItems = [
     {icon: Home, label: "Inicio", view: "inicio"},
-    {icon: History, label: "Historial de semestres pasados", view: "gestiones"},
+    {icon: History, label: "Semestres pasados", view: "gestiones"},
     {icon: Building2, label: "FundEmpresa", view: "empresas"},
 ];
 
@@ -33,6 +34,7 @@ export default function LayoutTeacher({children, setCurrentView}) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const {logout} = useContext(AuthContext);
     const {user, setUser} = useUser();
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     useEffect(() => {
         const handleResize = () => setIsMenuOpen(false);
@@ -78,6 +80,10 @@ export default function LayoutTeacher({children, setCurrentView}) {
         },
         [setCurrentView]
     );
+
+    const handleProfileClick = () => {
+        setIsProfileOpen(true);
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
@@ -152,14 +158,14 @@ export default function LayoutTeacher({children, setCurrentView}) {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleMenuItemClick("perfil")}>
+                                    <DropdownMenuItem onClick={handleProfileClick}>
                                         <User className="mr-2 h-4 w-4"/>
-                                        <span>Perfil</span>
+                                        <span>Editar perfil</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator/>
                                     <DropdownMenuItem onClick={handleLogout}>
                                         <LogOut className="mr-2 h-4 w-4"/>
-                                        <span>Cerrar Sesión</span>
+                                        <span>Cerrar sesión</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -173,6 +179,8 @@ export default function LayoutTeacher({children, setCurrentView}) {
                     {children}
                 </div>
             </main>
+
+            <Perfil isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)}/>
         </div>
     );
 }
