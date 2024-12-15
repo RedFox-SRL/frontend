@@ -11,7 +11,12 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
     const [isCodeActive, setIsCodeActive] = useState(management.is_code_active);
     const [newDeliveryDate, setNewDeliveryDate] = useState(management.project_delivery_date || "");
     const [tooltipVisible, setTooltipVisible] = useState({ code: false, limit: false, date: false });
-    const [successMessage, setSuccessMessage] = useState("");
+    const [groupLimitLoading, setGroupLimitLoading] = useState(false);
+    const [codeStatusLoading, setCodeStatusLoading] = useState(false);
+    const [deliveryDateLoading, setDeliveryDateLoading] = useState(false);
+    const [groupLimitMessage, setGroupLimitMessage] = useState("");
+    const [codeStatusMessage, setCodeStatusMessage] = useState("");
+    const [deliveryDateMessage, setDeliveryDateMessage] = useState("");
     const tooltipRef = useRef(null);
 
     const currentDate = new Date();
@@ -64,28 +69,32 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
     };
 
     const saveGroupLimit = async () => {
+        setGroupLimitLoading(true);
         try {
             await putData(`/managements/${management.id}/update-group-limit`, {
                 group_limit: parseInt(newGroupLimit, 10),
             });
-            setSuccessMessage("Límite de grupos actualizado correctamente.");
-            setTimeout(() => setSuccessMessage(""), 5000);
+            setGroupLimitMessage("Límite de grupos actualizado correctamente.");
             onUpdate({ group_limit: parseInt(newGroupLimit, 10) });
         } catch (error) {
-            setSuccessMessage("Error al actualizar el límite de grupos.");
-            setTimeout(() => setSuccessMessage(""), 5000);
+            setGroupLimitMessage("Error al actualizar el límite de grupos.");
+        } finally {
+            setGroupLimitLoading(false);
+            setTimeout(() => setGroupLimitMessage(""), 5000);
         }
     };
 
     const toggleCodeStatus = async () => {
+        setCodeStatusLoading(true);
         try {
             const response = await putData(`/managements/${management.id}/toggle-code`);
             setIsCodeActive(response.data.management.is_code_active);
-            setSuccessMessage("Estado del código actualizado correctamente.");
-            setTimeout(() => setSuccessMessage(""), 5000);
+            setCodeStatusMessage("Estado del código actualizado correctamente.");
         } catch (error) {
-            setSuccessMessage("Error al actualizar el estado del código.");
-            setTimeout(() => setSuccessMessage(""), 5000);
+            setCodeStatusMessage("Error al actualizar el estado del código.");
+        } finally {
+            setCodeStatusLoading(false);
+            setTimeout(() => setCodeStatusMessage(""), 5000);
         }
     };
 
@@ -111,19 +120,21 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
     };
 
     const saveDeliveryDate = async () => {
+        setDeliveryDateLoading(true);
         try {
             const formattedDate = formatDateTime(newDeliveryDate);
             await putData(`/managements/${management.id}/projectDate`, {
                 project_delivery_date: formattedDate,
             });
-            setSuccessMessage("Fecha de entrega del proyecto actualizada correctamente.");
-            setTimeout(() => setSuccessMessage(""), 5000);
+            setDeliveryDateMessage("Fecha de entrega del proyecto actualizada correctamente.");
             if (onUpdate) {
                 onUpdate({ project_delivery_date: formattedDate });
             }
         } catch (error) {
-            setSuccessMessage("Error al actualizar la fecha de entrega.");
-            setTimeout(() => setSuccessMessage(""), 5000);
+            setDeliveryDateMessage("Error al actualizar la fecha de entrega.");
+        } finally {
+            setDeliveryDateLoading(false);
+            setTimeout(() => setDeliveryDateMessage(""), 5000);
         }
     };
 
@@ -207,6 +218,8 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
                                                 {isCodeActive ? "Activo" : "Desactivado"}
                                             </span>
                                         </div>
+                                        {codeStatusLoading && <p className="text-sm text-gray-500">Actualizando...</p>}
+                                        {codeStatusMessage && <p className="text-sm text-green-500">{codeStatusMessage}</p>}
                                     </div>
 
                                     <div>
@@ -239,10 +252,12 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
                                             <Button
                                                 onClick={saveGroupLimit}
                                                 className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
+                                                disabled={groupLimitLoading}
                                             >
-                                                Guardar
+                                                {groupLimitLoading ? "Guardando..." : "Guardar"}
                                             </Button>
                                         </div>
+                                        {groupLimitMessage && <p className="text-sm text-green-500">{groupLimitMessage}</p>}
                                     </div>
 
                                     <div>
@@ -275,17 +290,14 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
                                             <Button
                                                 onClick={saveDeliveryDate}
                                                 className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
+                                                disabled={deliveryDateLoading}
                                             >
-                                                Guardar
+                                                {deliveryDateLoading ? "Guardando..." : "Guardar"}
                                             </Button>
                                         </div>
+                                        {deliveryDateMessage && <p className="text-sm text-green-500">{deliveryDateMessage}</p>}
                                     </div>
                                 </div>
-                                {successMessage && (
-                                    <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
-                                        {successMessage}
-                                    </div>
-                                )}
                             </Dialog.Panel>
                         </Transition.Child>
                     </div>
