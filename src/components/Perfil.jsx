@@ -1,7 +1,6 @@
 import React, {Fragment, useEffect, useState} from "react";
 import {getData, putData} from "../api/apiService";
 import {AlertCircle, Briefcase, CheckCircle, Mail, X} from 'lucide-react';
-import {useUser} from "../context/UserContext";
 import {Dialog, Transition} from "@headlessui/react";
 
 const validateName = (name) => {
@@ -26,7 +25,6 @@ const normalizeText = (text) => {
 };
 
 export default function Perfil({isOpen, onClose}) {
-    const {user, updateUser} = useUser();
     const [userData, setUserData] = useState({
         nombre: "", apellido: "", email: "", profilePicture: "", role: "",
     });
@@ -45,48 +43,30 @@ export default function Perfil({isOpen, onClose}) {
 
     useEffect(() => {
         const fetchUserData = async () => {
-            if (!user) {
-                setIsLoading(true);
-                try {
-                    const response = await getData("/me");
-                    const {name, last_name, email, profilePicture, role} = response.data.item;
-                    const newUserData = {
-                        nombre: name, apellido: last_name, email: email, profilePicture: profilePicture, role: role,
-                    };
-                    setUserData(newUserData);
-                    setOriginalUserData({
-                        nombre: name, apellido: last_name,
-                    });
-                    setOriginalData({
-                        nombre: name, apellido: last_name,
-                    });
-                    updateUser(newUserData);
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                    setError({general: "Error al cargar los datos del usuario."});
-                } finally {
-                    setIsLoading(false);
-                }
-            } else {
-                setUserData({
-                    nombre: user.name,
-                    apellido: user.last_name,
-                    email: user.email,
-                    profilePicture: user.profilePicture,
-                    role: user.role,
-                });
+            setIsLoading(true);
+            try {
+                const response = await getData("/me");
+                const {name, last_name, email, profilePicture, role} = response.data.item;
+                const newUserData = {
+                    nombre: name, apellido: last_name, email: email, profilePicture: profilePicture, role: role,
+                };
+                setUserData(newUserData);
                 setOriginalUserData({
-                    nombre: user.name, apellido: user.last_name,
+                    nombre: name, apellido: last_name,
                 });
                 setOriginalData({
-                    nombre: user.name, apellido: user.last_name,
+                    nombre: name, apellido: last_name,
                 });
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                setError({general: "Error al cargar los datos del usuario."});
+            } finally {
                 setIsLoading(false);
             }
         };
 
         fetchUserData();
-    }, [user, updateUser]);
+    }, []);
 
     useEffect(() => {
         if (message || Object.keys(error).length > 0) {
@@ -141,7 +121,7 @@ export default function Perfil({isOpen, onClose}) {
         } else {
             setUserData(prev => {
                 const newUserData = {...prev, [name]: value};
-                setIsFormChanged(JSON.stringify(newUserData) !== JSON.stringify(user));
+                setIsFormChanged(true);
                 return newUserData;
             });
         }
@@ -200,7 +180,7 @@ export default function Perfil({isOpen, onClose}) {
             const response = await putData("/profile", updatedData);
             setMessage(response.message);
             setError({});
-            updateUser({...user, ...updatedData});
+            // The user data will be fetched again when needed
             setIsFormChanged(false);
             setOriginalUserData({
                 nombre: userData.nombre, apellido: userData.apellido,

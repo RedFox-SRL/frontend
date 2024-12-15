@@ -1,11 +1,10 @@
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useRef, useState} from "react";
 import {Building2, ChevronDown, History, Home, LogOut, Menu, User} from 'lucide-react';
 import {getData, postData} from "../api/apiService";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
 import {Skeleton} from "@/components/ui/skeleton";
 import AuthContext from "../context/AuthContext";
-import {useUser} from "../context/UserContext";
 import Perfil from "./Perfil";
 import {
     DropdownMenu,
@@ -17,9 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const getAvatarUrl = (name, lastName) => {
-    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(
-        name + " " + lastName
-    )}&backgroundColor=F0E7FF&textColor=5B21B6`;
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + " " + lastName)}&backgroundColor=F0E7FF&textColor=5B21B6`;
 };
 
 const menuItems = [
@@ -33,8 +30,9 @@ export default function LayoutTeacher({children, setCurrentView}) {
     const [activeView, setActiveView] = useState("inicio");
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const {logout} = useContext(AuthContext);
-    const {user, setUser} = useUser();
+    const [user, setUser] = useState(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const userRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => setIsMenuOpen(false);
@@ -42,25 +40,40 @@ export default function LayoutTeacher({children, setCurrentView}) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const fetchUserData = async () => {
+        try {
+            const response = await getData("/me");
+            return response.data.item;
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            return null;
+        }
+    };
+
+    const updateUserIfChanged = (newUserData) => {
+        if (newUserData && JSON.stringify(newUserData) !== JSON.stringify(userRef.current)) {
+            setUser(newUserData);
+            userRef.current = newUserData;
+        }
+    };
+
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                setIsLoading(true);
-                const response = await getData("/me");
-                setUser(response.data.item);
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            } finally {
-                setIsLoading(false);
-            }
+        const initialFetch = async () => {
+            setIsLoading(true);
+            const initialUserData = await fetchUserData();
+            updateUserIfChanged(initialUserData);
+            setIsLoading(false);
         };
 
-        if (!user) {
-            fetchUserData();
-        } else {
-            setIsLoading(false);
-        }
-    }, [setUser, user]);
+        initialFetch();
+
+        const intervalId = setInterval(async () => {
+            const newUserData = await fetchUserData();
+            updateUserIfChanged(newUserData);
+        }, 10000);
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -72,14 +85,11 @@ export default function LayoutTeacher({children, setCurrentView}) {
         }
     };
 
-    const handleMenuItemClick = useCallback(
-        (view) => {
-            setCurrentView(view);
-            setActiveView(view);
-            setIsMenuOpen(false);
-        },
-        [setCurrentView]
-    );
+    const handleMenuItemClick = useCallback((view) => {
+        setCurrentView(view);
+        setActiveView(view);
+        setIsMenuOpen(false);
+    }, [setCurrentView]);
 
     const handleProfileClick = () => {
         setIsProfileOpen(true);
@@ -122,10 +132,7 @@ export default function LayoutTeacher({children, setCurrentView}) {
                                     onClick={() => handleMenuItemClick(view)}
                                     className={`
                     flex items-center px-3 py-2 text-sm font-medium
-                    ${activeView === view
-                                        ? "bg-purple-800 text-white"
-                                        : "text-purple-200 hover:bg-purple-800 hover:text-white"
-                                    }
+                    ${activeView === view ? "bg-purple-800 text-white" : "text-purple-200 hover:bg-purple-800 hover:text-white"}
                   `}
                                 >
                                     <Icon className="mr-2 h-5 w-5"/>

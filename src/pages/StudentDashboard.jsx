@@ -4,7 +4,6 @@ import Dashboard from "../components/Dashboard";
 import GruposYPlanificacion from "../components/GruposYPlanificacion";
 import Perfil from "../components/Perfil";
 import TeamsTable from "../components/TeamsTable";
-import {UserProvider} from "../context/UserContext";
 
 export default function StudentDashboard() {
     const [currentView, setCurrentView] = useState("inicio");
@@ -24,7 +23,7 @@ export default function StudentDashboard() {
         }
     };
 
-    return (<UserProvider>
-        <Layout setCurrentView={setCurrentView}>{renderContent()}</Layout>
-    </UserProvider>);
+    return (<Layout setCurrentView={setCurrentView}>
+        {renderContent()}
+    </Layout>);
 }
