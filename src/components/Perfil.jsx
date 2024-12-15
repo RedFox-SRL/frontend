@@ -41,32 +41,34 @@ export default function Perfil({isOpen, onClose}) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            setIsLoading(true);
-            try {
-                const response = await getData("/me");
-                const {name, last_name, email, profilePicture, role} = response.data.item;
-                const newUserData = {
-                    nombre: name, apellido: last_name, email: email, profilePicture: profilePicture, role: role,
-                };
-                setUserData(newUserData);
-                setOriginalUserData({
-                    nombre: name, apellido: last_name,
-                });
-                setOriginalData({
-                    nombre: name, apellido: last_name,
-                });
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                setError({general: "Error al cargar los datos del usuario."});
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const fetchUserData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await getData("/me");
+            const {name, last_name, email, profilePicture, role} = response.data.item;
+            const newUserData = {
+                nombre: name, apellido: last_name, email: email, profilePicture: profilePicture, role: role,
+            };
+            setUserData(newUserData);
+            setOriginalUserData({
+                nombre: name, apellido: last_name,
+            });
+            setOriginalData({
+                nombre: name, apellido: last_name,
+            });
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            setError({general: "Error al cargar los datos del usuario."});
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-        fetchUserData();
-    }, []);
+    useEffect(() => {
+        if (isOpen) {
+            fetchUserData();
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (message || Object.keys(error).length > 0) {
