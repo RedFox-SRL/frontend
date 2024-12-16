@@ -69,7 +69,7 @@ export default function Layout({children, setCurrentView}) {
         const intervalId = setInterval(async () => {
             const newUserData = await fetchUserData();
             updateUserIfChanged(newUserData);
-        }, 10000);
+        }, 5000);
 
         return () => clearInterval(intervalId);
     }, []);

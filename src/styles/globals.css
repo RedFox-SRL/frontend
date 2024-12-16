@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html, body {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    h1 {
+        @apply text-xl sm:text-2xl md:text-xl lg:text-xl xl:text-2xl font-bold;
+    }
+
+    h2 {
+        @apply text-lg sm:text-xl md:text-lg lg:text-lg xl:text-xl font-semibold;
+    }
+
+    h3 {
+        @apply text-base sm:text-lg md:text-base lg:text-base xl:text-lg font-semibold;
+    }
+
+    h4 {
+        @apply text-sm sm:text-base md:text-sm lg:text-sm xl:text-base font-medium;
+    }
+
+    h5 {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm font-medium;
+    }
+
+    h6 {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm font-medium;
+    }
+
+    p, span, label, li, td, th, button, input, textarea, select, option {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm;
+    }
+
+    a {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm text-blue-600 hover:text-blue-800;
+    }
+
+    blockquote {
+        @apply text-sm sm:text-base md:text-sm lg:text-sm xl:text-base italic border-l-4 border-gray-300 pl-4;
+    }
+
+    ul, ol {
+        @apply list-disc list-inside text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm;
+    }
+
+    code {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm font-mono bg-gray-100 p-1 rounded;
+    }
+
+    pre {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm font-mono bg-gray-100 p-4 rounded overflow-x-auto;
+    }
+
+    strong {
+        @apply font-semibold;
+    }
+
+    em {
+        @apply italic;
+    }
+
+    small {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm;
+    }
+
+    sub, sup {
+        @apply align-baseline text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm;
+    }
+}
+
+@layer components {
+    .text-tiny {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm;
+    }
+
+    .text-small {
+        @apply text-xs sm:text-sm md:text-xs lg:text-xs xl:text-sm;
+    }
+
+    .text-medium {
+        @apply text-sm sm:text-base md:text-sm lg:text-sm xl:text-base;
+    }
+
+    .text-large {
+        @apply text-base sm:text-lg md:text-base lg:text-base xl:text-lg;
+    }
+
+    .text-xlarge {
+        @apply text-lg sm:text-xl md:text-lg lg:text-lg xl:text-xl;
+    }
+}
