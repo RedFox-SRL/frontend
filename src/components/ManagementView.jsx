@@ -138,9 +138,17 @@ const CourseInfo = ({managementDetails}) => {
     }, {
         icon: Clock, title: "Entrega Parte B", value: formatDateWithTime(managementDetails.proposal_part_b_deadline),
     }, {
-        icon: CalendarDays, title: "Entrega Final", value: formatDateOnly(managementDetails.project_delivery_date),
+        icon: CalendarDays,
+        title: "Entrega Final",
+        value: (!managementDetails.project_delivery_date || formatDateOnly(managementDetails.project_delivery_date) === "No establecido")
+            ? "Ve a configuración"
+            : formatDateOnly(managementDetails.project_delivery_date),
     }, {
-        icon: Users, title: "Max. integrantes", value: managementDetails.group_limit,
+        icon: Users,
+        title: "Max. integrantes",
+        value: (managementDetails.group_limit >= 1 && managementDetails.group_limit <= 3)
+            ? "Ve a configuración"
+            : managementDetails.group_limit,
     }, {
         icon: Clipboard, title: "Código de tu grupo", value: managementDetails.code, copyable: true,
     },], [managementDetails, formatDateWithTime, formatDateOnly]);

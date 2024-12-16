@@ -1,15 +1,15 @@
-import React, {Fragment, useEffect, useRef, useState} from "react";
-import {Dialog, Switch, Transition} from "@headlessui/react";
-import {putData} from "../api/apiService";
-import {Button} from "@/components/ui/button";
-import {HelpCircle, X} from "lucide-react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
+import { Dialog, Transition, Switch } from "@headlessui/react";
+import { putData } from "../api/apiService";
+import { Button } from "@/components/ui/button";
+import { HelpCircle, X } from "lucide-react";
 import PropTypes from "prop-types";
 
-export default function ManagementSettingsView({management, isOpen, onClose, onUpdate}) {
+export default function ManagementSettingsView({ management, isOpen, onClose, onUpdate }) {
     const [newGroupLimit, setNewGroupLimit] = useState(management.group_limit);
     const [isCodeActive, setIsCodeActive] = useState(management.is_code_active);
     const [newDeliveryDate, setNewDeliveryDate] = useState(management.project_delivery_date || "");
-    const [tooltipVisible, setTooltipVisible] = useState({code: false, limit: false, date: false});
+    const [tooltipVisible, setTooltipVisible] = useState({ code: false, limit: false, date: false });
     const [groupLimitLoading, setGroupLimitLoading] = useState(false);
     const [codeStatusLoading, setCodeStatusLoading] = useState(false);
     const [deliveryDateLoading, setDeliveryDateLoading] = useState(false);
@@ -24,9 +24,9 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
 
     const getAvailableMonths = () => {
         if (currentMonth <= 6) {
-            return Array.from({length: 6}, (_, i) => i + 1);
+            return Array.from({ length: 6 }, (_, i) => i + 1);
         } else {
-            return Array.from({length: 6}, (_, i) => i + 7);
+            return Array.from({ length: 6 }, (_, i) => i + 7);
         }
     };
 
@@ -35,7 +35,6 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
     useEffect(() => {
         if (management) {
             setNewGroupLimit(management.group_limit);
-            setIsCodeActive(management.is_code_active);
             setNewDeliveryDate(management.project_delivery_date || "");
         }
     }, [management]);
@@ -43,7 +42,6 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
     useEffect(() => {
         if (isOpen) {
             setNewGroupLimit(management.group_limit);
-            setIsCodeActive(management.is_code_active);
             setNewDeliveryDate(management.project_delivery_date || "");
         }
     }, [isOpen, management]);
@@ -51,7 +49,7 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
-                setTooltipVisible({code: false, limit: false, date: false});
+                setTooltipVisible({ code: false, limit: false, date: false });
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -74,7 +72,7 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                 group_limit: parseInt(newGroupLimit, 10),
             });
             setGroupLimitMessage("Límite de grupos actualizado correctamente.");
-            onUpdate({group_limit: parseInt(newGroupLimit, 10)});
+            onUpdate({ group_limit: parseInt(newGroupLimit, 10) });
         } catch (error) {
             setGroupLimitMessage("Error al actualizar el límite de grupos.");
         } finally {
@@ -127,7 +125,7 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
             });
             setDeliveryDateMessage("Fecha de entrega del proyecto actualizada correctamente.");
             if (onUpdate) {
-                onUpdate({project_delivery_date: formattedDate});
+                onUpdate({ project_delivery_date: formattedDate });
             }
         } catch (error) {
             setDeliveryDateMessage("Error al actualizar la fecha de entrega.");
@@ -137,7 +135,8 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
         }
     };
 
-    return (<Transition appear show={isOpen} as={Fragment}>
+    return (
+        <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-10" onClose={onClose}>
                 <Transition.Child
                     as={Fragment}
@@ -148,7 +147,7 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"/>
+                    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -162,12 +161,11 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel
-                                className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                                 <div className="flex justify-between items-center mb-4">
                                     <Dialog.Title
                                         as="h3"
-                                        className="font-medium leading-6 text-gray-900"
+                                        className="text-lg font-medium leading-6 text-gray-900"
                                     >
                                         Configuraciones de la Gestión
                                     </Dialog.Title>
@@ -175,7 +173,7 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                                         onClick={onClose}
                                         className="text-gray-500 hover:text-gray-700"
                                     >
-                                        <X className="w-6 h-6"/>
+                                        <X className="w-6 h-6" />
                                     </button>
                                 </div>
                                 <div className="mt-4 space-y-6">
@@ -184,18 +182,17 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                                             Código de gestión:
                                             <div
                                                 className="relative inline-block"
-                                                onMouseEnter={() => setTooltipVisible({...tooltipVisible, code: true})}
-                                                onMouseLeave={() => setTooltipVisible({...tooltipVisible, code: false})}
-                                                onClick={() => setTooltipVisible({
-                                                    ...tooltipVisible, code: !tooltipVisible.code
-                                                })}
+                                                onMouseEnter={() => setTooltipVisible({ ...tooltipVisible, code: true })}
+                                                onMouseLeave={() => setTooltipVisible({ ...tooltipVisible, code: false })}
+                                                onClick={() => setTooltipVisible({ ...tooltipVisible, code: !tooltipVisible.code })}
                                                 ref={tooltipRef}
                                             >
-                                                <HelpCircle className="inline ml-2 text-gray-500"/>
-                                                {tooltipVisible.code && (<div
-                                                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white rounded shadow-lg">
+                                                <HelpCircle className="inline ml-2 text-gray-500" />
+                                                {tooltipVisible.code && (
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-sm rounded shadow-lg">
                                                         Activa o desactiva el código de gestión.
-                                                    </div>)}
+                                                    </div>
+                                                )}
                                             </div>
                                         </label>
                                         <div className="flex items-center space-x-2">
@@ -207,15 +204,19 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                                             >
                                                 <span className="sr-only">Toggle code</span>
                                                 <span
-                                                    className={`${isCodeActive ? "translate-x-6" : "translate-x-1"} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
+                                                    className={`${
+                                                        isCodeActive
+                                                            ? "translate-x-6"
+                                                            : "translate-x-1"
+                                                    } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
                                                 />
                                             </Switch>
-                                            <span className="font-medium">
+                                            <span className="text-sm font-medium">
                                                 {isCodeActive ? "Activo" : "Desactivado"}
                                             </span>
                                         </div>
-                                        {codeStatusLoading && <p className="text-gray-500">Actualizando...</p>}
-                                        {codeStatusMessage && <p className="text-green-500">{codeStatusMessage}</p>}
+                                        {codeStatusLoading && <p className="text-sm text-gray-500">Actualizando...</p>}
+                                        {codeStatusMessage && <p className="text-sm text-green-500">{codeStatusMessage}</p>}
                                     </div>
 
                                     <div>
@@ -223,20 +224,17 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                                             Límite de miembros:
                                             <div
                                                 className="relative inline-block"
-                                                onMouseEnter={() => setTooltipVisible({...tooltipVisible, limit: true})}
-                                                onMouseLeave={() => setTooltipVisible({
-                                                    ...tooltipVisible, limit: false
-                                                })}
-                                                onClick={() => setTooltipVisible({
-                                                    ...tooltipVisible, limit: !tooltipVisible.limit
-                                                })}
+                                                onMouseEnter={() => setTooltipVisible({ ...tooltipVisible, limit: true })}
+                                                onMouseLeave={() => setTooltipVisible({ ...tooltipVisible, limit: false })}
+                                                onClick={() => setTooltipVisible({ ...tooltipVisible, limit: !tooltipVisible.limit })}
                                                 ref={tooltipRef}
                                             >
-                                                <HelpCircle className="inline ml-2 text-gray-500"/>
-                                                {tooltipVisible.limit && (<div
-                                                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white rounded shadow-lg">
+                                                <HelpCircle className="inline ml-2 text-gray-500" />
+                                                {tooltipVisible.limit && (
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-sm rounded shadow-lg">
                                                         Establece el límite de miembros por grupo (4-15).
-                                                    </div>)}
+                                                    </div>
+                                                )}
                                             </div>
                                         </label>
                                         <div className="flex items-center space-x-2">
@@ -246,17 +244,17 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                                                 onChange={handleGroupLimitChange}
                                                 min="4"
                                                 max="15"
-                                                className="border rounded p-2 w-24"
+                                                className="border rounded p-2 w-24 text-sm"
                                             />
                                             <Button
                                                 onClick={saveGroupLimit}
-                                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                                                className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
                                                 disabled={groupLimitLoading}
                                             >
                                                 {groupLimitLoading ? "Guardando..." : "Guardar"}
                                             </Button>
                                         </div>
-                                        {groupLimitMessage && <p className="text-green-500">{groupLimitMessage}</p>}
+                                        {groupLimitMessage && <p className="text-sm text-green-500">{groupLimitMessage}</p>}
                                     </div>
 
                                     <div>
@@ -264,19 +262,17 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                                             Fecha de entrega del proyecto:
                                             <div
                                                 className="relative inline-block"
-                                                onMouseEnter={() => setTooltipVisible({...tooltipVisible, date: true})}
-                                                onMouseLeave={() => setTooltipVisible({...tooltipVisible, date: false})}
-                                                onClick={() => setTooltipVisible({
-                                                    ...tooltipVisible, date: !tooltipVisible.date
-                                                })}
+                                                onMouseEnter={() => setTooltipVisible({ ...tooltipVisible, date: true })}
+                                                onMouseLeave={() => setTooltipVisible({ ...tooltipVisible, date: false })}
+                                                onClick={() => setTooltipVisible({ ...tooltipVisible, date: !tooltipVisible.date })}
                                                 ref={tooltipRef}
                                             >
-                                                <HelpCircle className="inline ml-2 text-gray-500"/>
-                                                {tooltipVisible.date && (<div
-                                                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white rounded shadow-lg">
-                                                        La fecha de entrega debe estar en el mismo año y semestre
-                                                        actual.
-                                                    </div>)}
+                                                <HelpCircle className="inline ml-2 text-gray-500" />
+                                                {tooltipVisible.date && (
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-sm rounded shadow-lg">
+                                                        La fecha de entrega debe estar en el mismo año y semestre actual.
+                                                    </div>
+                                                )}
                                             </div>
                                         </label>
                                         <div className="flex items-center space-x-2">
@@ -284,19 +280,19 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                                                 type="datetime-local"
                                                 value={newDeliveryDate}
                                                 onChange={handleDateChange}
-                                                className="border rounded p-2 w-full"
+                                                className="border rounded p-2 text-sm w-full"
                                                 min={`${currentYear}-01-01T00:00`}
                                                 max={`${currentYear}-12-31T23:59`}
                                             />
                                             <Button
                                                 onClick={saveDeliveryDate}
-                                                className="bg-purple-600 hover:bg-purple-700 text-white"
+                                                className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
                                                 disabled={deliveryDateLoading}
                                             >
                                                 {deliveryDateLoading ? "Guardando..." : "Guardar"}
                                             </Button>
                                         </div>
-                                        {deliveryDateMessage && <p className="text-green-500">{deliveryDateMessage}</p>}
+                                        {deliveryDateMessage && <p className="text-sm text-green-500">{deliveryDateMessage}</p>}
                                     </div>
                                 </div>
                             </Dialog.Panel>
@@ -304,7 +300,8 @@ export default function ManagementSettingsView({management, isOpen, onClose, onU
                     </div>
                 </div>
             </Dialog>
-        </Transition>);
+        </Transition>
+    );
 }
 
 ManagementSettingsView.propTypes = {

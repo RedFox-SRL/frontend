@@ -162,7 +162,9 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
     const renderStep = () => {
         const stepComponents = [
             {
-                title: "Puntos de Evaluación",
+                title: "Paso 1: Puntos de Evaluación",
+                description: "Ingresa el valor que asignarás a las calificaciones de los sprints, a la evaluación cruzada y cuánto valdrán las propuestas A y B.",
+                reminder: "La suma total debe ser igual a 100.",
                 inputs: [
                     { label: "Puntos de Sprint", name: "sprint_points" },
                     { label: "Puntos de Evaluación Cruzada", name: "cross_evaluation_points" },
@@ -171,7 +173,9 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
                 keys: ["sprint_points", "cross_evaluation_points", "proposal_points"]
             },
             {
-                title: "Porcentajes de Sprint",
+                title: "Paso 2: Porcentajes de Sprint",
+                description: "Asigna el valor que tendrá la calificación del sprint, las autoevaluaciones y la evaluación de pares en las notas.",
+                reminder: "La suma total debe ser igual a 100.",
                 inputs: [
                     { label: "Porcentaje de Sprint (Profesor)", name: "sprint_teacher_percentage" },
                     { label: "Porcentaje de Sprint (Autoevaluación)", name: "sprint_self_percentage" },
@@ -180,7 +184,9 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
                 keys: ["sprint_teacher_percentage", "sprint_self_percentage", "sprint_peer_percentage"]
             },
             {
-                title: "Porcentajes de Propuesta",
+                title: "Paso 3: Porcentajes de Propuesta",
+                description: "Ingresa el porcentaje de nota que valdrán las propuestas A y B.",
+                reminder: "La suma total debe ser igual a 100.",
                 inputs: [
                     { label: "Porcentaje Parte A Propuesta", name: "proposal_part_a_percentage" },
                     { label: "Porcentaje Parte B Propuesta", name: "proposal_part_b_percentage" }
@@ -188,7 +194,8 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
                 keys: ["proposal_part_a_percentage", "proposal_part_b_percentage"]
             },
             {
-                title: "Fechas de Propuestas",
+                title: "Paso 4: Fechas de Propuestas",
+                description: "Ingresa la fecha de entrega para la parte A y B. Recuerda que no se aceptarán fechas en diferentes años o días que pertenezcan a otro semestre.",
                 inputs: [
                     { label: "Fecha límite Parte A", value: partADeadline, onChange: handleDateChange(setPartADeadline) },
                     { label: "Fecha límite Parte B", value: partBDeadline, onChange: handleDateChange(setPartBDeadline) }
@@ -197,12 +204,13 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
             }
         ];
 
-        const { title, inputs, keys, isDate } = stepComponents[currentStep];
+        const { title, description, reminder, inputs, keys, isDate } = stepComponents[currentStep];
 
         return (
             <div className="space-y-4">
                 <h2 className="text-lg font-semibold text-purple-700">{title}</h2>
-                {!isDate && <p className="text-sm text-red-600">La suma total debe ser igual a 100 para ser valido.</p>}
+                <p className="text-sm text-gray-600">{description}</p>
+                {reminder && <p className="text-sm text-gray-600 italic">{reminder}</p>}
                 {inputs.map(({ label, name, value, onChange }) => (
                     <div key={name}>
                         <label className="block text-sm font-medium text-purple-700 mb-2">{label}</label>
@@ -239,19 +247,20 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
     };
 
     return (
-        <div className="max-w-lg mx-auto overflow-y-auto max-h-[80vh] p-6">
+        <div className="max-w-2xl mx-auto p-6">
             <h1 className="text-purple-700 font-bold text-2xl mb-6">Configurar Ponderaciones</h1>
             <form className="grid grid-cols-1 gap-6" onSubmit={(e) => { e.preventDefault(); setIsConfirmationDialogOpen(true); }}>
                 {renderStep()}
                 <div className="flex justify-between mt-4">
-                    <Button
-                        type="button"
-                        className="bg-purple-600 text-white hover:bg-purple-700"
-                        onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))}
-                        disabled={currentStep === 0}
-                    >
-                        Anterior
-                    </Button>
+                    {currentStep > 0 && (
+                        <Button
+                            type="button"
+                            className="bg-purple-600 text-white hover:bg-purple-700"
+                            onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 0))}
+                        >
+                            Anterior
+                        </Button>
+                    )}
                     {currentStep < 3 ? (
                         <Button
                             type="button"
