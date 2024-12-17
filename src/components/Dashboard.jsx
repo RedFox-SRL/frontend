@@ -3,10 +3,8 @@ import {motion} from "framer-motion";
 import {getData, postData} from "../api/apiService";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {GraduationCap, Loader2, Megaphone, Users} from 'lucide-react';
-import {useToast} from "@/hooks/use-toast";
+import {GraduationCap, Loader2, Megaphone, Users, AlertCircle} from 'lucide-react';
 import CourseInfo from "./CourseInfo";
 import GroupList from "./GroupList";
 import ParticipantList from "./ParticipantList";
@@ -17,7 +15,7 @@ import InvitationModal from "./InvitationModal";
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [isInGroup, setIsInGroup] = useState(false);
-    const [groupCode, setGroupCode] = useState("");
+    const [groupCode, setGroupCode] = useState(['', '', '', '', '', '', '']);
     const [managementDetails, setManagementDetails] = useState(null);
     const [groups, setGroups] = useState([]);
     const [participants, setParticipants] = useState({
@@ -25,8 +23,9 @@ export default function Dashboard() {
     });
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [activeTab, setActiveTab] = useState("announcements");
-
-    const {toast} = useToast();
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [isJoining, setIsJoining] = useState(false);
 
     useEffect(() => {
         checkManagement();
@@ -70,7 +69,6 @@ export default function Dashboard() {
             const participantsResponse = await getData(`/managements/${managementId}/students`);
             if (participantsResponse && participantsResponse.success && participantsResponse.data) {
                 const {teacher, students} = participantsResponse.data;
-
                 setParticipants({
                     teacher, students,
                 });
@@ -84,18 +82,26 @@ export default function Dashboard() {
     };
 
     const handleJoinGroup = async () => {
+        const code = groupCode.join('');
+        if (code.length !== 7) {
+            setError("El código debe tener 7 caracteres.");
+            return;
+        }
+
+        setIsJoining(true);
+        setError("");
+        setSuccess("");
+
         try {
             const response = await postData("/managements/join", {
-                management_code: groupCode,
+                management_code: code,
             });
 
             if (response.success) {
-                toast({
-                    title: "Éxito",
-                    description: response.message || "Te has unido al grupo exitosamente.",
-                    duration: 3000,
-                });
-                await checkManagement();
+                setSuccess("Código válido. Uniéndose al grupo...");
+                setTimeout(async () => {
+                    await checkManagement();
+                }, 2000);
             } else {
                 let errorMessage = response.message || "Error al unirse al grupo.";
 
@@ -105,9 +111,7 @@ export default function Dashboard() {
                     errorMessage = "El código de gestión aún no está activo. No puedes unirte en este momento.";
                 }
 
-                toast({
-                    title: "Error", description: errorMessage, duration: 3000, variant: "destructive",
-                });
+                setError(errorMessage);
             }
         } catch (error) {
             console.error("Error al unirse al grupo:", error);
@@ -126,11 +130,50 @@ export default function Dashboard() {
                 }
             }
 
-            toast({
-                title: "Error", description: errorMessage, duration: 3000, variant: "destructive",
-            });
+            setError(errorMessage);
         } finally {
-            setGroupCode("");
+            setIsJoining(false);
+        }
+    };
+
+    const handlePaste = (e, index) => {
+        e.preventDefault();
+        const pastedText = e.clipboardData.getData('text').replace(/\s/g, '');
+        const remainingChars = 7 - index;
+        const relevantText = pastedText.slice(0, remainingChars);
+
+        const newCode = [...groupCode];
+        for (let i = 0; i < relevantText.length; i++) {
+            if (index + i < 7) {
+                newCode[index + i] = relevantText[i];
+            }
+        }
+        setGroupCode(newCode);
+
+        const nextEmptyIndex = newCode.findIndex((char, i) => i >= index && char === '');
+        const focusIndex = nextEmptyIndex === -1 ? 6 : nextEmptyIndex;
+        document.getElementById(`code-input-${focusIndex}`)?.focus();
+    };
+
+    const handleCodeChange = (index, value) => {
+        if (value.length <= 1) {
+            const newCode = [...groupCode];
+            newCode[index] = value;
+            setGroupCode(newCode);
+
+            if (value && index < 6) {
+                document.getElementById(`code-input-${index + 1}`)?.focus();
+            } else if (!value && index > 0) {
+                document.getElementById(`code-input-${index - 1}`)?.focus();
+            }
+        }
+        setError("");
+        setSuccess("");
+    };
+
+    const handleKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !groupCode[index] && index > 0) {
+            document.getElementById(`code-input-${index - 1}`).focus();
         }
     };
 
@@ -146,13 +189,17 @@ export default function Dashboard() {
         return managementDetails ? (<CourseInfo managementDetails={managementDetails}/>) : null;
     }, [managementDetails]);
 
+    const isCodeComplete = groupCode.every(char => char !== '');
+
     if (isLoading) {
-        return (<div className="flex items-center justify-center h-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
-            <span className="ml-2 text-lg font-medium text-purple-600">
-          Cargando...
-        </span>
-        </div>);
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <Loader2 className="h-9 w-9 animate-spin text-purple-600 mr-3"/>
+                <span className="font-medium text-purple-600">
+                Cargando...
+            </span>
+            </div>
+        );
     }
 
     if (isInGroup && managementDetails) {
@@ -160,11 +207,11 @@ export default function Dashboard() {
             initial={{opacity: 0, y: 20}}
             animate={{opacity: 1, y: 0}}
             transition={{duration: 0.5}}
-            className="sm:p-4 space-y-2 sm:space-y-4"
+            className="container mx-auto px-4 py-8 space-y-6"
         >
             <InvitationModal/>
             {memoizedCourseInfo}
-            <Card className="w-full shadow-sm">
+            <Card className="w-full shadow-lg">
                 <CardContent className="p-1 sm:p-4">
                     <Tabs
                         value={activeTab}
@@ -179,8 +226,8 @@ export default function Dashboard() {
                             >
                                 <Megaphone className="w-4 h-4 sm:w-5 sm:h-5"/>
                                 <span className="hidden sm:inline ml-1 sm:ml-2">
-                    Anuncios
-                  </span>
+                                        Anuncios
+                                    </span>
                             </TabsTrigger>
                             <TabsTrigger
                                 value="groups"
@@ -188,8 +235,8 @@ export default function Dashboard() {
                             >
                                 <Users className="w-4 h-4 sm:w-5 sm:h-5"/>
                                 <span className="hidden sm:inline ml-1 sm:ml-2">
-                    Grupos ({groups.length})
-                  </span>
+                                        Grupos ({groups.length})
+                                    </span>
                             </TabsTrigger>
                             <TabsTrigger
                                 value="participants"
@@ -197,8 +244,8 @@ export default function Dashboard() {
                             >
                                 <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5"/>
                                 <span className="hidden sm:inline ml-1 sm:ml-2">
-                    Estudiantes ({participants.students.length})
-                  </span>
+                                        Estudiantes ({participants.students.length})
+                                    </span>
                             </TabsTrigger>
                         </TabsList>
                         <div className="mt-2 sm:mt-4">
@@ -230,30 +277,77 @@ export default function Dashboard() {
         </motion.div>);
     }
 
-    return (
-        <div className="space-y-4 p-4 sm:p-6 max-w-md mx-auto">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
-                        No estás inscrito en un curso
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Input
-                        type="text"
-                        placeholder="Ingrese el código de la clase"
-                        value={groupCode}
-                        onChange={(e) => setGroupCode(e.target.value)}
-                        className="mb-4"
-                    />
-                    <Button
-                        onClick={handleJoinGroup}
-                        className="w-full bg-purple-600 hover:bg-purple-700"
-                    >
-                        Unirse a Clase
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
-    );
+    return (<div className="flex items-start justify-center min-h-screen pt-10 px-4">
+        <Card className="w-full max-w-md shadow-lg rounded-lg overflow-hidden">
+            <CardHeader className="bg-purple-600 text-white p-6">
+                <CardTitle className="font-bold">
+                    Inscripción a Grupo TIS
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+                <div className="space-y-4">
+                    <p className="text-gray-700">
+                        Actualmente no estás inscrito en ningún grupo de la materia TIS (Taller de Ingeniería de
+                        Software).
+                    </p>
+                    <p className="text-gray-700">
+                        Para inscribirte, necesitas ingresar el código único de 7 dígitos proporcionado por tu
+                        docente.
+                    </p>
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <AlertCircle className="h-5 w-5 text-yellow-400"/>
+                            </div>
+                            <div className="ml-3">
+                                <small className="text-yellow-700">
+                                    Si no tienes un código, por favor comunícate con tu docente para que te lo
+                                    proporcione.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <label htmlFor="code-input-0" className="block font-medium text-gray-700">
+                        Ingresa el código de tu grupo (7 dígitos):
+                    </label>
+                    <div className="flex justify-center space-x-2">
+                        {groupCode.map((char, index) => (<input
+                            key={index}
+                            id={`code-input-${index}`}
+                            type="text"
+                            maxLength="1"
+                            className="w-10 h-12 text-center font-bold border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500 bg-white shadow-sm"
+                            value={char}
+                            onChange={(e) => handleCodeChange(index, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(index, e)}
+                            onPaste={(e) => handlePaste(e, index)}
+                        />))}
+                    </div>
+                </div>
+
+                {error && (<div className="flex items-center text-red-600">
+                    <AlertCircle className="h-5 w-5 mr-2"/>
+                    <small>{error}</small>
+                </div>)}
+                {success && (<div className="flex items-center text-green-600">
+                    <CheckCircle className="h-5 w-5 mr-2"/>
+                    <small>{success}</small>
+                </div>)}
+
+                <Button
+                    onClick={handleJoinGroup}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded transition duration-300 ease-in-out"
+                    disabled={isJoining || !isCodeComplete}
+                >
+                    {isJoining ? (<>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2 inline"/>
+                        Uniéndose...
+                    </>) : ("Unirse al Grupo")}
+                </Button>
+            </CardContent>
+        </Card>
+    </div>);
 }
