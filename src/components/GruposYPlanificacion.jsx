@@ -304,7 +304,7 @@ export default function GruposYPlanificacion() {
                 Para crear o unirte a un grupo empresa, primero debes pertenecer a un grupo de la materia TIS.
               </p>
               <div className="bg-white p-4 rounded-lg shadow-inner w-full">
-                <h3 className="text-lg font-semibold text-purple-700 mb-2">Pasos a seguir:</h3>
+                <h4 className="font-semibold text-purple-700 mb-2">Pasos a seguir:</h4>
                 <ol className="list-decimal list-inside space-y-2 text-gray-800">
                   <li>Identifica tu grupo de la materia TIS y el docente asignado</li>
                   <li>Solicita el código de grupo al docente de tu grupo TIS</li>

@@ -192,14 +192,12 @@ export default function Dashboard() {
     const isCodeComplete = groupCode.every(char => char !== '');
 
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
+        return (<div className="flex items-center justify-center h-screen">
                 <Loader2 className="h-9 w-9 animate-spin text-purple-600 mr-3"/>
                 <span className="font-medium text-purple-600">
                 Cargando...
             </span>
-            </div>
-        );
+            </div>);
     }
 
     if (isInGroup && managementDetails) {
@@ -279,11 +277,6 @@ export default function Dashboard() {
 
     return (<div className="flex items-start justify-center min-h-screen pt-10 px-4">
         <Card className="w-full max-w-md shadow-lg rounded-lg overflow-hidden">
-            <CardHeader className="bg-purple-600 text-white p-6">
-                <CardTitle className="font-bold">
-                    Inscripción a Grupo TIS
-                </CardTitle>
-            </CardHeader>
             <CardContent className="p-6 space-y-6">
                 <div className="space-y-4">
                     <p className="text-gray-700">
@@ -313,28 +306,31 @@ export default function Dashboard() {
                     <label htmlFor="code-input-0" className="block font-medium text-gray-700">
                         Ingresa el código de tu grupo (7 dígitos):
                     </label>
-                    <div className="flex justify-center space-x-2">
-                        {groupCode.map((char, index) => (<input
-                            key={index}
-                            id={`code-input-${index}`}
-                            type="text"
-                            maxLength="1"
-                            className="w-10 h-12 text-center font-bold border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500 bg-white shadow-sm"
-                            value={char}
-                            onChange={(e) => handleCodeChange(index, e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(index, e)}
-                            onPaste={(e) => handlePaste(e, index)}
-                        />))}
+                    <div
+                        className="flex justify-center items-center w-full max-w-screen-lg mx-auto px-2 sm:px-4 py-4 sm:py-6">
+                        <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
+                            {groupCode.map((char, index) => (<input
+                                    key={index}
+                                    id={`code-input-${index}`}
+                                    type="text"
+                                    maxLength="1"
+                                    className="w-10 h-12 sm:w-11 sm:h-13 md:w-12 md:h-14 text-center text-lg sm:text-xl md:text-2xl font-bold border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500 bg-white shadow-sm transition-all duration-200 ease-in-out"
+                                    value={char}
+                                    onChange={(e) => handleCodeChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                    onPaste={(e) => handlePaste(e, index)}
+                                />))}
+                        </div>
                     </div>
                 </div>
 
                 {error && (<div className="flex items-center text-red-600">
                     <AlertCircle className="h-5 w-5 mr-2"/>
-                    <small>{error}</small>
+                    <p>{error}</p>
                 </div>)}
                 {success && (<div className="flex items-center text-green-600">
                     <CheckCircle className="h-5 w-5 mr-2"/>
-                    <small>{success}</small>
+                    <p>{success}</p>
                 </div>)}
 
                 <Button
