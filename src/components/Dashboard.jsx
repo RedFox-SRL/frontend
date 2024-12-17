@@ -4,7 +4,7 @@ import {getData, postData} from "../api/apiService";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {GraduationCap, Loader2, Megaphone, Users, AlertCircle} from 'lucide-react';
+import {GraduationCap, Loader2, Megaphone, Users, AlertCircle, CheckCircle} from 'lucide-react';
 import CourseInfo from "./CourseInfo";
 import GroupList from "./GroupList";
 import ParticipantList from "./ParticipantList";
