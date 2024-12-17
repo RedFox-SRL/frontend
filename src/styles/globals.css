@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-    --font-size-base: 13px;
+    --font-size-base: 14px;
     --scale-ratio: 1.2;
     --h1: calc(var(--font-size-base) * var(--scale-ratio) * var(--scale-ratio) * var(--scale-ratio));
     --h2: calc(var(--font-size-base) * var(--scale-ratio) * var(--scale-ratio));
@@ -15,26 +15,28 @@
 
 @media (min-width: 640px) {
     :root {
-        --font-size-base: 13px;
+        --font-size-base: 14px;
+        --scale-ratio: 1.25;
     }
 }
 
 @media (min-width: 768px) {
     :root {
-        --font-size-base: 14px;
+        --font-size-base: 15px;
     }
 }
 
 @media (min-width: 1024px) {
     :root {
-        --font-size-base: 15px;
-        --scale-ratio: 1.25;
+        --font-size-base: 16px;
+        --scale-ratio: 1.333;
     }
 }
 
 @media (min-width: 1280px) {
     :root {
         --font-size-base: 16px;
+        --scale-ratio: 1.414;
     }
 }
 
@@ -128,11 +130,6 @@
     /* Links */
     a {
         font-size: 1rem;
-        color: theme('colors.blue.600');
-    }
-
-    a:hover {
-        color: theme('colors.blue.800');
     }
 
     /* Lists */
@@ -145,26 +142,15 @@
     blockquote {
         font-size: 1.1rem;
         font-style: italic;
-        border-left: 4px solid theme('colors.gray.300');
-        padding-left: 1rem;
     }
 
     /* Code */
     code {
-        font-family: theme('fontFamily.mono'), serif;
         font-size: 0.9rem;
-        background-color: theme('colors.gray.100');
-        padding: 0.2rem 0.4rem;
-        border-radius: 0.25rem;
     }
 
     pre {
-        font-family: theme('fontFamily.mono'), serif;
         font-size: 0.9rem;
-        background-color: theme('colors.gray.100');
-        padding: 1rem;
-        border-radius: 0.25rem;
-        overflow-x: auto;
     }
 
     /* Misc */
