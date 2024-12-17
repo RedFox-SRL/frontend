@@ -230,33 +230,30 @@ export default function Dashboard() {
         </motion.div>);
     }
 
-    return (<motion.div
-        initial={{opacity: 0, y: 20}}
-        animate={{opacity: 1, y: 0}}
-        transition={{duration: 0.5}}
-        className="flex items-center justify-center min-h-screen p-2"
-    >
-        <Card className="w-full max-w-xs sm:max-w-sm shadow-sm">
-            <CardHeader className="p-3 sm:p-4">
-                <CardTitle className="text-center text-base sm:text-lg text-purple-700">
-                    No estás inscrito en un curso
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4">
-                <Input
-                    type="text"
-                    placeholder="Ingrese el código de la clase"
-                    value={groupCode}
-                    onChange={(e) => setGroupCode(e.target.value)}
-                    className="mb-3 sm:mb-4 text-sm"
-                />
-                <Button
-                    onClick={handleJoinGroup}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-sm"
-                >
-                    Unirse a Clase
-                </Button>
-            </CardContent>
-        </Card>
-    </motion.div>);
+    return (
+        <div className="space-y-4 p-4 sm:p-6 max-w-md mx-auto">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-center text-xl sm:text-2xl text-purple-700">
+                        No estás inscrito en un curso
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Input
+                        type="text"
+                        placeholder="Ingrese el código de la clase"
+                        value={groupCode}
+                        onChange={(e) => setGroupCode(e.target.value)}
+                        className="mb-4"
+                    />
+                    <Button
+                        onClick={handleJoinGroup}
+                        className="w-full bg-purple-600 hover:bg-purple-700"
+                    >
+                        Unirse a Clase
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
