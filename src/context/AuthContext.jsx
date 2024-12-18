@@ -6,6 +6,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -19,7 +20,10 @@ export const AuthProvider = ({children}) => {
                 } else {
                     logout();
                 }
+                setIsLoading(false);
             });
+        } else {
+            setIsLoading(false);
         }
     }, []);
 
@@ -45,7 +49,6 @@ export const AuthProvider = ({children}) => {
 
         setUser({token, role});
 
-        // Redirect based on role
         if (role === "student") {
             navigate("/dashboardEstudiante");
         } else if (role === "teacher") {
@@ -63,6 +66,10 @@ export const AuthProvider = ({children}) => {
         setUser(null);
         navigate("/");
     };
+
+    if (isLoading) {
+        return null;
+    }
 
     return (<AuthContext.Provider value={{user, login, logout}}>
         {children}
