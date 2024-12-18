@@ -4,7 +4,7 @@ import {getData, postData} from "../api/apiService";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {GraduationCap, Loader2, Megaphone, Users, AlertCircle, CheckCircle} from 'lucide-react';
+import { GraduationCap, Loader2, Megaphone, Users, AlertCircle, CheckCircle } from 'lucide-react';
 import CourseInfo from "./CourseInfo";
 import GroupList from "./GroupList";
 import ParticipantList from "./ParticipantList";
@@ -138,7 +138,13 @@ export default function Dashboard() {
 
     const handlePaste = (e, index) => {
         e.preventDefault();
-        const pastedText = e.clipboardData.getData('text').replace(/\s/g, '');
+        let pastedText;
+        if (e.clipboardData) {
+            pastedText = e.clipboardData.getData('text/plain');
+        } else if (window.clipboardData) {
+            pastedText = window.clipboardData.getData('Text');
+        }
+        pastedText = pastedText.replace(/[^a-zA-Z0-9]/g, '');
         const remainingChars = 7 - index;
         const relevantText = pastedText.slice(0, remainingChars);
 
@@ -156,14 +162,15 @@ export default function Dashboard() {
     };
 
     const handleCodeChange = (index, value) => {
-        if (value.length <= 1) {
+        const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, '');
+        if (alphanumericValue.length <= 1) {
             const newCode = [...groupCode];
-            newCode[index] = value;
+            newCode[index] = alphanumericValue;
             setGroupCode(newCode);
 
-            if (value && index < 6) {
+            if (alphanumericValue && index < 6) {
                 document.getElementById(`code-input-${index + 1}`)?.focus();
-            } else if (!value && index > 0) {
+            } else if (!alphanumericValue && index > 0) {
                 document.getElementById(`code-input-${index - 1}`)?.focus();
             }
         }
@@ -174,6 +181,12 @@ export default function Dashboard() {
     const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !groupCode[index] && index > 0) {
             document.getElementById(`code-input-${index - 1}`).focus();
+        }
+    };
+
+    const handleEnterKey = (e) => {
+        if (e.key === 'Enter' && isCodeComplete && !isJoining) {
+            handleJoinGroup();
         }
     };
 
@@ -309,7 +322,8 @@ export default function Dashboard() {
                     <div
                         className="flex justify-center items-center w-full max-w-screen-lg mx-auto px-2 sm:px-4 py-4 sm:py-6">
                         <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
-                            {groupCode.map((char, index) => (<input
+                            {groupCode.map((char, index) => (
+                                <input
                                     key={index}
                                     id={`code-input-${index}`}
                                     type="text"
@@ -317,9 +331,14 @@ export default function Dashboard() {
                                     className="w-10 h-12 sm:w-11 sm:h-13 md:w-12 md:h-14 text-center text-lg sm:text-xl md:text-2xl font-bold border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500 bg-white shadow-sm transition-all duration-200 ease-in-out"
                                     value={char}
                                     onChange={(e) => handleCodeChange(index, e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                    onKeyDown={(e) => {
+                                        handleKeyDown(index, e);
+                                        handleEnterKey(e);
+                                    }}
                                     onPaste={(e) => handlePaste(e, index)}
-                                />))}
+                                    pattern="[a-zA-Z0-9]"
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>
