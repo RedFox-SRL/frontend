@@ -6,8 +6,8 @@ import {es} from "date-fns/locale";
 const InfoItem = ({icon: Icon, title, value}) => (<div className="flex items-center space-x-2 py-1">
     <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0"/>
     <div className="flex-grow min-w-0">
-        <p className="text-xs sm:text-sm md:text-base font-medium text-gray-600 truncate">{title}</p>
-        <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 truncate">{value}</p>
+        <p className="font-medium text-gray-600 truncate">{title}</p>
+        <p className="font-semibold text-gray-800 truncate">{value}</p>
     </div>
 </div>);
 
@@ -38,7 +38,7 @@ export default function CourseInfo({managementDetails}) {
 
     return (<div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="p-3 bg-purple-100">
-            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-purple-800">
+            <h3 className="font-semibold text-purple-800">
                 Semestre {managementDetails.semester === "first" ? "1" : "2"}/{new Date(managementDetails.start_date).getFullYear()}
             </h3>
         </div>

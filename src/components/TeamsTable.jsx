@@ -48,7 +48,7 @@ export default function TeamsTable() {
   return (
     <div className="w-full max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
       <div className="p-6 bg-gradient-to-r from-purple-600 to-purple-800">
-        <h3 className="text-2xl font-bold text-white mb-4">
+        <h3 className="font-bold text-white mb-4">
           Grupo empresas registrados
         </h3>
       </div>
@@ -84,7 +84,7 @@ export default function TeamsTable() {
                     <TableCell colSpan={2} className="h-64">
                       <div className="flex justify-center items-center h-full">
                         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-                        <span className="ml-2 text-lg font-medium text-purple-600">
+                        <span className="ml-2 text-lg text-purple-600">
                           Cargando...
                         </span>
                       </div>
@@ -105,7 +105,7 @@ export default function TeamsTable() {
                       key={index}
                       className="hover:bg-purple-50 transition-colors duration-200"
                     >
-                      <TableCell className="font-medium text-purple-700 px-4 py-3 break-words">
+                      <TableCell className="text-purple-700 px-4 py-3 break-words">
                         {team.short_name}
                       </TableCell>
                       <TableCell className="text-purple-600 px-4 py-3 break-words">
