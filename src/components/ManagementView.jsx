@@ -140,15 +140,11 @@ const CourseInfo = ({managementDetails}) => {
     }, {
         icon: CalendarDays,
         title: "Entrega Final",
-        value: (!managementDetails.project_delivery_date || formatDateOnly(managementDetails.project_delivery_date) === "No establecido")
-            ? "Ve a configuración"
-            : formatDateOnly(managementDetails.project_delivery_date),
+        value: (!managementDetails.project_delivery_date || formatDateOnly(managementDetails.project_delivery_date) === "No establecido") ? "Ve a configuración" : formatDateOnly(managementDetails.project_delivery_date),
     }, {
         icon: Users,
         title: "Max. integrantes",
-        value: (managementDetails.group_limit >= 1 && managementDetails.group_limit <= 3)
-            ? "Ve a configuración"
-            : managementDetails.group_limit,
+        value: (managementDetails.group_limit >= 1 && managementDetails.group_limit <= 3) ? "Ve a configuración" : managementDetails.group_limit,
     }, {
         icon: Clipboard, title: "Código de tu grupo", value: managementDetails.code, copyable: true,
     },], [managementDetails, formatDateWithTime, formatDateOnly]);
@@ -317,7 +313,7 @@ const ManagementView = ({management, onBack}) => {
         />);
     }
 
-    return (<>
+    return (<div className="relative min-h-screen">
         <motion.div
             initial={{opacity: 0, y: 20}}
             animate={{opacity: 1, y: 0}}
@@ -330,28 +326,17 @@ const ManagementView = ({management, onBack}) => {
                 onClose={() => setIsSettingsDropdownOpen(false)}
                 onUpdate={updateManagementData}
             />
-            {!isEvaluating && !isSpecialEvaluationsView && (<ManagementActions
+
+            <ManagementActions
                 onSettingsClick={() => setIsSettingsDropdownOpen(true)}
                 onEvaluationsClick={() => setIsSpecialEvaluationsView(true)}
                 onRatingsClick={() => setIsRatingsView2(true)}
                 onProposalsClick={() => setIsProposalView(true)}
-            />)}
+            />
 
             <CourseInfo managementDetails={currentManagement}/>
 
-            {isEvaluating || isSpecialEvaluationsView || isRatingsView2 || isProposalView ? (<>
-                {isEvaluating && (<EvaluationView groupId={selectedGroupId} onBack={() => setIsEvaluating(false)}/>)}
-                {isSpecialEvaluationsView && (<SpecialEvaluationsView
-                    onBack={() => setIsSpecialEvaluationsView(false)}
-                    managementId={management.id}
-                />)}
-                {isRatingsView2 && (<div className="absolute inset-0 bg-white z-50">
-                    <RatingView2 onBack={() => setIsRatingsView2(false)} managementId={management.id}/>
-                </div>)}
-                {isProposalView && (<div className="absolute inset-0 bg-white z-50">
-                    <ProposalsView onBack={() => setIsProposalView(false)} managementId={management.id}/>
-                </div>)}
-            </>) : (<Card className="bg-white shadow-md w-full rounded-lg mb-8">
+            <Card className="bg-white shadow-md w-full rounded-lg mb-8">
                 <CardContent className="p-1 sm:p-4">
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
                         <TabsList
@@ -369,8 +354,8 @@ const ManagementView = ({management, onBack}) => {
                             >
                                 <Users className="w-4 h-4 sm:w-5 sm:h-5"/>
                                 <span className="hidden sm:inline ml-1 sm:ml-2">
-                                            Grupos ({groups.length})
-                                        </span>
+                                        Grupos ({groups.length})
+                                    </span>
                             </TabsTrigger>
                             <TabsTrigger
                                 value="participants"
@@ -378,8 +363,8 @@ const ManagementView = ({management, onBack}) => {
                             >
                                 <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5"/>
                                 <span className="hidden sm:inline ml-1 sm:ml-2">
-                                            Estudiantes ({participants?.students?.length || 0})
-                                        </span>
+                                        Estudiantes ({participants?.students?.length || 0})
+                                    </span>
                             </TabsTrigger>
                         </TabsList>
 
@@ -409,15 +394,45 @@ const ManagementView = ({management, onBack}) => {
                         </TabsContent>
                     </Tabs>
                 </CardContent>
-            </Card>)}
+            </Card>
+        </motion.div>
 
-            {selectedGroupDetails && (<GroupDetails
+        {isEvaluating && (<div className="absolute inset-0 bg-white z-50 overflow-y-auto">
+            <EvaluationView
+                groupId={selectedGroupId}
+                onBack={() => setIsEvaluating(false)}
+            />
+        </div>)}
+
+        {isSpecialEvaluationsView && (<div className="absolute inset-0 bg-white z-50 overflow-y-auto">
+            <SpecialEvaluationsView
+                onBack={() => setIsSpecialEvaluationsView(false)}
+                managementId={management.id}
+            />
+        </div>)}
+
+        {isRatingsView2 && (<div className="absolute inset-0 bg-white z-50 overflow-y-auto">
+            <RatingView2
+                onBack={() => setIsRatingsView2(false)}
+                managementId={management.id}
+            />
+        </div>)}
+
+        {isProposalView && (<div className="absolute inset-0 bg-white z-50 overflow-y-auto">
+            <ProposalsView
+                onBack={() => setIsProposalView(false)}
+                managementId={management.id}
+            />
+        </div>)}
+
+        {selectedGroupDetails && (<div className="absolute inset-0 bg-white bg-opacity-90 z-50 overflow-y-auto">
+            <GroupDetails
                 group={selectedGroupDetails}
                 onClose={() => setSelectedGroupDetails(null)}
                 getInitials={getInitials}
-            />)}
-        </motion.div>
-    </>);
+            />
+        </div>)}
+    </div>);
 };
 
 export default ManagementView;
