@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {motion} from "framer-motion";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
@@ -20,7 +20,8 @@ import {
     Megaphone,
     Settings,
     Star,
-    Users
+    Users,
+    Info
 } from 'lucide-react';
 import AnnouncementList from "./AnnouncementList";
 import CreateAnnouncement from "./CreateAnnouncement";
@@ -65,34 +66,68 @@ const CopyButton = React.forwardRef(({textToCopy}, ref) => {
 
 CopyButton.displayName = 'CopyButton';
 
-const InfoItem = ({icon: Icon, title, value, copyable = false}) => (<div className="flex items-center space-x-2 py-1">
-    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0"/>
-    <div className="flex-grow min-w-0">
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <p className="font-medium text-gray-600 truncate">{title}</p>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                    <p>Código para compartir con estudiantes</p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-        <div className="flex items-center space-x-2">
-            <p className="font-semibold text-gray-800 truncate">{value}</p>
-            {copyable && (<TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <CopyButton textToCopy={value}/>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                        <p>Copiar código</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>)}
+const InfoItem = ({icon: Icon, title, value, copyable = false}) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+    const tooltipRef = useRef(null);
+    const isGroupCode = title === "Código de tu grupo";
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+                setShowTooltip(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    return (<div className="flex items-center space-x-2 py-1">
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0"/>
+        <div className="flex-grow min-w-0">
+            <div className="flex items-center">
+                <p className="font-medium text-gray-600 truncate mr-1">{title}</p>
+                {isGroupCode && (<div ref={tooltipRef}>
+                    <TooltipProvider>
+                        <Tooltip open={showTooltip}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="p-0 h-auto hover:bg-transparent focus:ring-0"
+                                    onClick={() => setShowTooltip(!showTooltip)}
+                                >
+                                    <Info className="h-4 w-4 text-purple-500"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                                side="top"
+                                className="bg-purple-100 text-purple-800 border border-purple-300 p-2 rounded-md shadow-md"
+                            >
+                                <p className="text-sm">Código para compartir con estudiantes</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>)}
+            </div>
+            <div className="flex items-center space-x-2">
+                <p className="font-semibold text-gray-800 truncate">{value}</p>
+                {copyable && (<TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <CopyButton textToCopy={value}/>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                            <p>Copiar código</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>)}
+            </div>
         </div>
-    </div>
-</div>);
+    </div>);
+};
 
 const ManagementActions = ({onSettingsClick, onEvaluationsClick, onRatingsClick, onProposalsClick}) => (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
@@ -140,11 +175,11 @@ const CourseInfo = ({managementDetails}) => {
     }, {
         icon: CalendarDays,
         title: "Entrega Final",
-        value: (!managementDetails.project_delivery_date || formatDateOnly(managementDetails.project_delivery_date) === "No establecido") ? "Ve a configuración" : formatDateOnly(managementDetails.project_delivery_date),
+        value: (!managementDetails.project_delivery_date || formatDateOnly(managementDetails.project_delivery_date) === "No establecido") ? "No configurado" : formatDateOnly(managementDetails.project_delivery_date),
     }, {
         icon: Users,
         title: "Max. integrantes",
-        value: (managementDetails.group_limit >= 1 && managementDetails.group_limit <= 3) ? "Ve a configuración" : managementDetails.group_limit,
+        value: (managementDetails.group_limit >= 1 && managementDetails.group_limit <= 3) ? "No configurado" : managementDetails.group_limit,
     }, {
         icon: Clipboard, title: "Código de tu grupo", value: managementDetails.code, copyable: true,
     },], [managementDetails, formatDateWithTime, formatDateOnly]);
