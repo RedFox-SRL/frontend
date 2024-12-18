@@ -65,7 +65,7 @@ export default function ManagementHistory({ onSelectManagement }) {
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-extrabold text-purple-700">Historial de semestres pasados</h1>
+                <h3 className="text-3xl font-extrabold text-purple-700">Historial de semestres pasados</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {managements.length > 0 ? (

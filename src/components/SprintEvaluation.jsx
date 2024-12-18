@@ -154,7 +154,7 @@ export default function SprintEvaluation({ groupId }) {
 
     return (
         <div className="p-4 mx-auto space-y-6 max-w-full">
-            <h1 className="text-2xl font-bold text-center mb-4 text-purple-600">Evaluación de Sprint</h1>
+            <h3 className="text-2xl font-bold text-center mb-4 text-purple-600">Evaluación de Sprint</h3>
 
             {/* Selección de Sprint */}
             <div>
@@ -192,7 +192,7 @@ export default function SprintEvaluation({ groupId }) {
             {/* Mostrar mensaje o contenido del Sprint */}
             {template && !showHistory && (!template.weekly_evaluations_summary || template.weekly_evaluations_summary.length === 0) ? (
                 <div className="p-6 bg-red-100 border border-red-400 text-red-800 rounded-lg shadow-md">
-                    <h1 className="text-2xl font-bold">No se realizaron evaluaciones semanales este sprint</h1>
+                    <h4 className="text-2xl font-bold">No se realizaron evaluaciones semanales este sprint</h4>
                     <p className="mt-2 text-sm">
                         Es necesario registrar evaluaciones semanales para habilitar este módulo. Por favor, regrese y
                         complete las evaluaciones semanales para continuar.

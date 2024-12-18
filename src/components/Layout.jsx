@@ -149,7 +149,7 @@ export default function Layout({children, setCurrentView}) {
                                 </DropdownMenuItem>))}
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <h1 className="text-xl font-bold">TrackMaster</h1>
+                        <h3 className="font-bold">TrackMaster</h3>
                     </div>
 
                     <nav className="hidden md:flex space-x-1">
@@ -158,7 +158,7 @@ export default function Layout({children, setCurrentView}) {
                             variant="ghost"
                             onClick={() => handleMenuItemClick(view)}
                             className={`
-                    flex items-center px-3 py-2 text-sm font-medium
+                    flex items-center px-3 py-2
                     ${activeView === view ? "bg-purple-700 text-white" : "text-purple-200 hover:bg-purple-700 hover:text-white"}
                   `}
                         >

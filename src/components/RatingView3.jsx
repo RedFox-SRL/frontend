@@ -58,7 +58,7 @@ const RatingView3 = ({ onBack, managementId }) => {
         <div className="bg-purple-50 min-h-screen p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
                 <div className="w-full sm:w-auto">
-                    <h1 className="text-purple-700 font-bold text-xl sm:text-2xl mb-2">Resumen de Calificaciones</h1>
+                    <h2 className="text-purple-700 font-bold text-xl sm:text-2xl mb-2">Resumen de Calificaciones</h2>
                     {managementInfo && (
                         <p className="text-purple-600 text-sm sm:text-base">
                             {managementInfo.semester} semestre, {managementInfo.year}
@@ -91,7 +91,7 @@ const RatingView3 = ({ onBack, managementId }) => {
                     >
                         <div className="flex items-center gap-2 text-purple-700 font-bold">
                             <Users className="w-5 h-5"/>
-                            <h2 className="text-sm sm:text-base">{group.group_name}</h2>
+                            <h4 className="text-sm sm:text-base">{group.group_name}</h4>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="text-purple-500 text-xs sm:text-sm">{group.students.length} estudiantes</span>
@@ -108,11 +108,11 @@ const RatingView3 = ({ onBack, managementId }) => {
                                 {Object.entries(group.group_scores).map(([key, value]) => (
                                     <Card key={key}>
                                         <CardContent className="p-4">
-                                            <h3 className="text-purple-600 font-semibold mb-2 capitalize text-sm sm:text-base">
+                                            <h4 className="text-purple-600 font-semibold mb-2 capitalize text-sm sm:text-base">
                                                 {key === 'sprints' ? 'Sprints' :
                                                     key === 'proposal' ? 'Propuesta' :
                                                         key === 'cross_evaluation' ? 'Evaluación Cruzada' : key}
-                                            </h3>
+                                            </h4>
                                             <p className="text-xl sm:text-2xl font-bold text-purple-800">
                                                 {value.toFixed(2)}
                                                 <span className="text-xs sm:text-sm text-purple-600 ml-1">
@@ -165,9 +165,9 @@ const RatingView3 = ({ onBack, managementId }) => {
 
             <Dialog open={!!selectedStudent} onOpenChange={closeModal}>
                 <DialogContent className="bg-white p-4 sm:p-6 rounded-lg w-[95vw] sm:w-[90vw] max-w-2xl mx-auto">
-                    <h2 className="text-purple-700 font-bold text-lg sm:text-xl mb-4">
+                    <h4 className="text-purple-700 font-bold text-lg sm:text-xl mb-4">
                         Detalles de {selectedStudent?.name} {selectedStudent?.last_name}
-                    </h2>
+                    </h4>
 
                     <div className="bg-purple-50 p-4 rounded-lg space-y-2 mb-6">
                         <div className="flex justify-between">
@@ -189,7 +189,7 @@ const RatingView3 = ({ onBack, managementId }) => {
                     </div>
 
                     <div>
-                        <h3 className="text-purple-600 font-semibold mb-2">Detalle de Sprints</h3>
+                        <h4 className="text-purple-600 font-semibold mb-2">Detalle de Sprints</h4>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm">
                                 <thead>

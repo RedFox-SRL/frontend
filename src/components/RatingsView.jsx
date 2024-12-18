@@ -208,7 +208,7 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
 
         return (
             <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-purple-700">{title}</h2>
+                <h4 className="text-lg font-semibold text-purple-700">{title}</h4>
                 <p className="text-sm text-gray-600">{description}</p>
                 {reminder && <p className="text-sm text-gray-600 italic">{reminder}</p>}
                 {inputs.map(({ label, name, value, onChange }) => (
@@ -248,7 +248,7 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
 
     return (
         <div className="max-w-2xl mx-auto p-6">
-            <h1 className="text-purple-700 font-bold text-2xl mb-6">Configurar Ponderaciones</h1>
+            <h3 className="text-purple-700 font-bold text-2xl mb-6">Configurar Ponderaciones</h3>
             <form className="grid grid-cols-1 gap-6" onSubmit={(e) => { e.preventDefault(); setIsConfirmationDialogOpen(true); }}>
                 {renderStep()}
                 <div className="flex justify-between mt-4">

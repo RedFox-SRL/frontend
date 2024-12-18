@@ -84,7 +84,7 @@ export default function CreateManagement({ onManagementCreated, onCancel }) {
 
     return (
         <div className="p-6 max-w-lg mx-auto relative">
-            <h1 className="text-2xl font-bold mb-4 text-purple-700">Crear una nueva gestión</h1>
+            <h3 className="text-2xl font-bold mb-4 text-purple-700">Crear una nueva gestión</h3>
 
             {/* Semestre */}
             <label className="block text-sm font-medium text-purple-700 mb-2">

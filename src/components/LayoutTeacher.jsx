@@ -121,7 +121,7 @@ export default function LayoutTeacher({children, setCurrentView}) {
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <h1 className="text-xl font-bold">TrackMaster</h1>
+                            <h3 className="text-xl font-bold">TrackMaster</h3>
                         </div>
 
                         <nav className="hidden md:flex space-x-1">
@@ -131,7 +131,7 @@ export default function LayoutTeacher({children, setCurrentView}) {
                                     variant="ghost"
                                     onClick={() => handleMenuItemClick(view)}
                                     className={`
-                    flex items-center px-3 py-2 text-sm font-medium
+                    flex items-center px-3 py-2
                     ${activeView === view ? "bg-purple-800 text-white" : "text-purple-200 hover:bg-purple-800 hover:text-white"}
                   `}
                                 >

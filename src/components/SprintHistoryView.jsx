@@ -39,7 +39,7 @@ export default function SprintHistoryView({ sprintId }) {
 
     return (
         <div className="mx-auto p-4 space-y-4">
-            <h1 className="text-2xl font-bold text-purple-700 mb-4 text-center">Reporte de Sprint</h1>
+            <h3 className="text-2xl font-bold text-purple-700 mb-4 text-center">Reporte de Sprint</h3>
 
             {loading && <p className="text-center text-gray-500">Cargando...</p>}
 
@@ -53,7 +53,7 @@ export default function SprintHistoryView({ sprintId }) {
                 <div className="space-y-6">
                     {/* Resumen del Sprint */}
                     <div className="bg-purple-50 rounded-lg shadow-lg p-6">
-                        <h2 className="text-xl font-bold text-purple-700 mb-4">Resumen del Sprint</h2>
+                        <h4 className="text-xl font-bold text-purple-700 mb-4">Resumen del Sprint</h4>
                         <p className="text-gray-700">
                             <strong>Resumen:</strong> {evaluation.summary}
                         </p>

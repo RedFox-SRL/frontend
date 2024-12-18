@@ -75,14 +75,14 @@ export default function ProposalsView({ onBack, managementId }) {
                 <ArrowLeft className="mr-2" /> Retroceder
             </button>
 
-            <h1 className="text-2xl font-bold text-purple-700 mb-6">Propuestas de Grupos</h1>
+            <h3 className="text-2xl font-bold text-purple-700 mb-6">Propuestas de Grupos</h3>
 
             {/* Listado de grupos */}
             {groups.map((group) => (
                 <div key={group.group_id} className="mb-4 border border-purple-200 rounded-md">
                     {/* Cabecera del grupo */}
                     <div className="flex items-center justify-between p-4 bg-purple-100 rounded-t-md">
-                        <h3 className="text-lg font-bold text-purple-700">{group.short_name}</h3>
+                        <h4 className="text-lg font-bold text-purple-700">{group.short_name}</h4>
                     </div>
 
                     {/* Detalles del grupo */}

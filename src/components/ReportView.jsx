@@ -13,9 +13,9 @@ export default function ReportView({ groupId }) {
       <div className="min-h-screen bg-gradient-to-br from-white-100 to-indigo-100 p-2 sm:p-4">
         {/* Padding mínimo */}
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-purple-800 mb-4 text-center">
+          <h3 className="text-3xl font-bold text-purple-800 mb-4 text-center">
             Reportes de Evaluaciones
-          </h1>
+          </h3>
 
           {/* Tabs para navegación entre tipos de reportes */}
           <div className="bg-white shadow-lg rounded-lg p-2 sm:p-4 mb-4 w-full">

@@ -82,11 +82,11 @@ export default function WeeklyReport({ groupId }) {
 
   return (
       <div className="p-4 mx-auto max-w-full space-y-6">
-        <h1 className="text-2xl font-bold text-center text-purple-600">Reporte Semanal</h1>
+        <h3 className="text-2xl font-bold text-center text-purple-600">Reporte Semanal</h3>
 
         {/* Selección de Sprint */}
         <div className="mb-6">
-          <h2 className="text-purple-600 mb-2">Seleccionar Sprint</h2>
+          <h4 className="text-purple-600 mb-2">Seleccionar Sprint</h4>
           <select
               className="p-2 border border-gray-300 rounded-md w-full"
               value={selectedSprintId || ""}
