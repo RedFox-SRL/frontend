@@ -18,7 +18,9 @@ const useFormValues = () => {
     });
 
     const handleInputChange = (e, keys) => {
-        const { name, value } = e.target;
+        let { name, value } = e.target;
+        value = value.replace(/^0+(?=\d)/, ""); // Remove leading zeros
+
         if (!value || (/^[0-9]*$/.test(value) && value >= 0 && value <= 100)) {
             setFormValues((prev) => {
                 const newValues = { ...prev, [name]: value };
@@ -45,18 +47,28 @@ const useDeadlines = () => {
     const [partBDeadline, setPartBDeadline] = useState("");
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
-    const minDate = `${currentYear}-${currentMonth >= 7 ? '07' : '01'}-01`;
-    const maxDate = `${currentYear}-${currentMonth >= 7 ? '12' : '06'}-31`;
+
+    const getAvailableMonths = () => {
+        if (currentMonth <= 6) {
+            return Array.from({ length: 6 }, (_, i) => i + 1);
+        } else {
+            return Array.from({ length: 6 }, (_, i) => i + 7);
+        }
+    };
+
+    const availableMonths = getAvailableMonths();
 
     const handleDateChange = (setter) => (event) => {
         const date = new Date(event.target.value);
-        if (date.getFullYear() === currentYear &&
-            ((currentMonth >= 7 && date.getMonth() + 1 >= 7) || (currentMonth < 7 && date.getMonth() + 1 < 7))) {
+        const selectedYear = date.getFullYear();
+        const selectedMonth = date.getMonth() + 1;
+
+        if (selectedYear === currentYear && availableMonths.includes(selectedMonth)) {
             setter(event.target.value);
         }
     };
 
-    return { partADeadline, setPartADeadline, partBDeadline, setPartBDeadline, handleDateChange, minDate, maxDate };
+    return { partADeadline, setPartADeadline, partBDeadline, setPartBDeadline, handleDateChange, currentYear, availableMonths };
 };
 
 const useFormValidation = (formValues) => {
@@ -83,7 +95,7 @@ const useFormValidation = (formValues) => {
 
 const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
     const [formValues, handleInputChange] = useFormValues();
-    const { partADeadline, setPartADeadline, partBDeadline, setPartBDeadline, handleDateChange, minDate, maxDate } = useDeadlines();
+    const { partADeadline, setPartADeadline, partBDeadline, setPartBDeadline, handleDateChange, currentYear, availableMonths } = useDeadlines();
     const isFormValid = useFormValidation(formValues);
     const [currentStep, setCurrentStep] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,6 +158,7 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
                     title: "Error al Enviar",
                     description: "Hubo un problema al enviar la configuración. Intenta de nuevo.",
                     variant: "destructive",
+                    className: "bg-red-500 text-white",
                 });
             }
         } catch (error) {
@@ -153,6 +166,7 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
                 title: "Error de Conexión",
                 description: "Hubo un error al intentar realizar la solicitud. Intenta nuevamente.",
                 variant: "destructive",
+                className: "bg-red-500 text-white",
             });
         } finally {
             setIsSubmitting(false);
@@ -163,29 +177,29 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
         const stepComponents = [
             {
                 title: "Paso 1: Puntos de Evaluación",
-                description: "Ingresa el valor que asignarás a las calificaciones de los sprints, a la evaluación cruzada y cuánto valdrán las propuestas A y B.",
+                description: "Ingresa el porcentaje de nota que valdrán las evaluaciones de sprint, evaluación cruzada y las propuestas A y B.",
                 reminder: "La suma total debe ser igual a 100.",
                 inputs: [
-                    { label: "Puntos de Sprint", name: "sprint_points" },
-                    { label: "Puntos de Evaluación Cruzada", name: "cross_evaluation_points" },
-                    { label: "Puntos de Propuesta", name: "proposal_points" }
+                    { label: "Porcentaje asignado a evaluación de Sprint", name: "sprint_points" },
+                    { label: "Porcentaje asignado a evaluación Cruzada", name: "cross_evaluation_points" },
+                    { label: "Porcentaje asignado a las propuestas A y B", name: "proposal_points" }
                 ],
                 keys: ["sprint_points", "cross_evaluation_points", "proposal_points"]
             },
             {
                 title: "Paso 2: Porcentajes de Sprint",
-                description: "Asigna el valor que tendrá la calificación del sprint, las autoevaluaciones y la evaluación de pares en las notas.",
+                description: "Asigna el porcentaje que tendra en las notas finales la calificación del sprint, las autoevaluaciones y la evaluación de pares.",
                 reminder: "La suma total debe ser igual a 100.",
                 inputs: [
-                    { label: "Porcentaje de Sprint (Profesor)", name: "sprint_teacher_percentage" },
-                    { label: "Porcentaje de Sprint (Autoevaluación)", name: "sprint_self_percentage" },
-                    { label: "Porcentaje de Sprint (Evaluación de Pares)", name: "sprint_peer_percentage" }
+                    { label: "Porcentaje de Evaluación de Sprint (Docente)", name: "sprint_teacher_percentage" },
+                    { label: "Porcentaje de Autoevaluación", name: "sprint_self_percentage" },
+                    { label: "Porcentaje de Evaluación de Pares", name: "sprint_peer_percentage" }
                 ],
                 keys: ["sprint_teacher_percentage", "sprint_self_percentage", "sprint_peer_percentage"]
             },
             {
                 title: "Paso 3: Porcentajes de Propuesta",
-                description: "Ingresa el porcentaje de nota que valdrán las propuestas A y B.",
+                description: "Asigna el porcentaje en el que se dividiran el valor de las propuestas A y B en las notas.",
                 reminder: "La suma total debe ser igual a 100.",
                 inputs: [
                     { label: "Porcentaje Parte A Propuesta", name: "proposal_part_a_percentage" },
@@ -195,7 +209,8 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
             },
             {
                 title: "Paso 4: Fechas de Propuestas",
-                description: "Ingresa la fecha de entrega para la parte A y B. Recuerda que no se aceptarán fechas en diferentes años o días que pertenezcan a otro semestre.",
+                description: "Ingresa la fecha de entrega para la parte A y B.",
+                reminder: "Recuerda que no se aceptarán fechas en diferentes años o días que pertenezcan a otro semestre.",
                 inputs: [
                     { label: "Fecha límite Parte A", value: partADeadline, onChange: handleDateChange(setPartADeadline) },
                     { label: "Fecha límite Parte B", value: partBDeadline, onChange: handleDateChange(setPartBDeadline) }
@@ -220,19 +235,23 @@ const RatingsView = ({ onBack = () => {}, managementId, onUpdate }) => {
                                 value={value}
                                 onChange={onChange}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                                min={minDate}
-                                max={maxDate}
+                                min={`${currentYear}-01-01T00:00`}
+                                max={`${currentYear}-12-31T23:59`}
+                                pattern={`^${currentYear}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$`}
                             />
                         ) : (
                             <Input
                                 name={name}
-                                type="number"
+                                type="text"
                                 value={formValues[name]}
                                 onChange={(e) => handleInputChange(e, keys)}
                                 className="w-full border-purple-300"
-                                min="1"
-                                max="100"
                                 placeholder="Ingresa un valor entre 1 y 100"
+                                onKeyDown={(e) => {
+                                    if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                                        e.preventDefault();
+                                    }
+                                }}
                             />
                         )}
                     </div>

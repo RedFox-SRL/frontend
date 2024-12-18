@@ -148,9 +148,6 @@ export default function CreateManagement({ onManagementCreated, onCancel }) {
                             {newManagement.year}.
                         </span>
                     </p>
-                    <p className="text-gray-600 mt-2 italic">
-                        Si cree que hay un error, comuníquese con los administradores.
-                    </p>
                     <DialogFooter>
                         <Button
                             variant="secondary"
