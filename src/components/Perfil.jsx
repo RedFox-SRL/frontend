@@ -2,6 +2,7 @@ import React, {Fragment, useEffect, useState} from "react";
 import {getData, putData} from "../api/apiService";
 import {AlertCircle, Briefcase, CheckCircle, Mail, X} from 'lucide-react';
 import {Dialog, Transition} from "@headlessui/react";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 
 const validateName = (name) => {
     const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
@@ -22,6 +23,10 @@ const countNonSpaceCharacters = (str) => {
 
 const normalizeText = (text) => {
     return text.toLowerCase().replace(/\s+/g, '');
+};
+
+const getAvatarUrl = (name, lastName) => {
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(name + " " + lastName)}&backgroundColor=F3E8FF&textColor=6B21A8`;
 };
 
 export default function Perfil({isOpen, onClose}) {
@@ -182,7 +187,6 @@ export default function Perfil({isOpen, onClose}) {
             const response = await putData("/profile", updatedData);
             setMessage(response.message);
             setError({});
-            // The user data will be fetched again when needed
             setIsFormChanged(false);
             setOriginalUserData({
                 nombre: userData.nombre, apellido: userData.apellido,
@@ -271,6 +275,19 @@ export default function Perfil({isOpen, onClose}) {
                                 </div>
                             </div>) : (<>
                                 <div className="mb-6 text-center">
+                                    <div
+                                        className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-lg">
+                                        <Avatar className="w-full h-full border-2 border-white rounded-full">
+                                            <AvatarImage
+                                                src={getAvatarUrl(originalUserData.nombre, originalUserData.apellido)}
+                                                alt={`${originalUserData.nombre} ${originalUserData.apellido}`}
+                                            />
+                                            <AvatarFallback className="bg-purple-200 text-purple-800 text-xl font-bold">
+                                                {originalUserData.nombre.charAt(0)}
+                                                {originalUserData.apellido.charAt(0)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </div>
                                     <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-2">
                                         {userData.nombre} {userData.apellido}
                                     </h3>
@@ -307,8 +324,8 @@ export default function Perfil({isOpen, onClose}) {
                                             />
                                             <span
                                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs sm:text-sm md:text-base text-gray-400">
-                                                        {countNonSpaceCharacters(userData.nombre)}/25
-                                                    </span>
+                                {countNonSpaceCharacters(userData.nombre)}/25
+                            </span>
                                         </div>
                                         {touched.nombre && error.nombre && (
                                             <p className="text-red-500 text-xs sm:text-sm md:text-base mt-1">{error.nombre}</p>)}
@@ -331,8 +348,8 @@ export default function Perfil({isOpen, onClose}) {
                                             />
                                             <span
                                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs sm:text-sm md:text-base text-gray-400">
-                                                        {countNonSpaceCharacters(userData.apellido)}/25
-                                                    </span>
+                                {countNonSpaceCharacters(userData.apellido)}/25
+                            </span>
                                         </div>
                                         {touched.apellido && error.apellido && (
                                             <p className="text-red-500 text-xs sm:text-sm md:text-base mt-1">{error.apellido}</p>)}
@@ -344,8 +361,7 @@ export default function Perfil({isOpen, onClose}) {
                                     >
                                         {isSubmitting ? (<span
                                             className="animate-spin rounded-full h-5 w-5 border-2 border-b-white border-white"></span>) : isSuccess ? (
-                                            <CheckCircle
-                                                className="h-5 w-5 text-white"/>) : ('Guardar Cambios')}
+                                            <CheckCircle className="h-5 w-5 text-white"/>) : ('Guardar Cambios')}
                                     </button>
                                     {message && (<div
                                         className="mt-4 p-2 bg-green-100 border border-green-300 text-green-700 text-sm rounded-md">
@@ -370,8 +386,7 @@ export default function Perfil({isOpen, onClose}) {
                                             leaveFrom="opacity-100"
                                             leaveTo="opacity-0"
                                         >
-                                            <div
-                                                className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"/>
+                                            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"/>
                                         </Transition.Child>
 
                                         <div className="fixed inset-0 overflow-y-auto">
