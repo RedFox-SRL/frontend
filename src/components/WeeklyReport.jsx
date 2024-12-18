@@ -110,7 +110,7 @@ export default function WeeklyReport({ groupId }) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Filtro por miembro */}
               <div>
-                <h2 className="text-purple-600 mb-2">Filtrar por Miembro</h2>
+                <h3 className="text-purple-600 mb-2">Filtrar por Miembro</h3>
                 <select
                     className="p-2 border border-gray-300 rounded-md w-full"
                     value={selectedMember}
@@ -122,7 +122,7 @@ export default function WeeklyReport({ groupId }) {
                       </option>
                   ))}
                 </select>
-                <h2 className="text-purple-600 mt-4">Calificación Promedio</h2>
+                <h3 className="text-purple-600 mt-4">Calificación Promedio</h3>
                 <div className="flex space-x-1 mt-1">
                   {Array.from({ length: 5 }, (_, i) => (
                       <Star
@@ -136,7 +136,7 @@ export default function WeeklyReport({ groupId }) {
 
               {/* Gráfico de participación */}
               <div>
-                <h2 className="text-purple-600 mb-2">Estado de Participación</h2>
+                <h3 className="text-purple-600 mb-2">Estado de Participación</h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -182,7 +182,7 @@ export default function WeeklyReport({ groupId }) {
         {/* Tareas completadas */}
         {selectedSprintId && filteredTasks.length > 0 && (
             <div className="space-y-4 mt-6">
-              <h2 className="text-purple-600">Tareas Completadas</h2>
+              <h3 className="text-purple-600">Tareas Completadas</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredTasks.map((task) => (
                     <div key={task.id} className="bg-white p-4 rounded-lg shadow-md">

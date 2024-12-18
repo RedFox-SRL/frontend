@@ -308,9 +308,9 @@ export default function CalendarioSprints({ groupId }) {
             Hoy
           </Button>
         </div>
-        <h2 className="text-lg sm:text-xl font-semibold text-purple-800">
+        <h3 className="text-lg sm:text-xl font-semibold text-purple-800">
           {label}
-        </h2>
+        </h3>
         <div className="flex space-x-2">
           <Button
               onClick={() => onView("month")}

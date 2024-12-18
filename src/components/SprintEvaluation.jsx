@@ -158,7 +158,7 @@ export default function SprintEvaluation({ groupId }) {
 
             {/* Selección de Sprint */}
             <div>
-                <h2 className="text-purple-600 mb-2">Seleccionar Sprint</h2>
+                <h3 className="text-purple-600 mb-2">Seleccionar Sprint</h3>
                 <select
                     className="p-2 border border-gray-300 rounded-md shadow-sm w-full"
                     value={selectedSprintId || ""}
@@ -203,7 +203,7 @@ export default function SprintEvaluation({ groupId }) {
                 <>
                     {/* Información sobre el Sprint */}
                     <div className="bg-white rounded-lg shadow-md p-4 space-y-2">
-                        <h2 className="text-purple-700 text-lg font-semibold">{template.sprint_title}</h2>
+                        <h3 className="text-purple-700 text-lg font-semibold">{template.sprint_title}</h3>
                         <p><strong>Fecha de inicio:</strong> {new Date(template.start_date.item).toLocaleDateString()}</p>
                         <p><strong>Fecha de fin:</strong> {new Date(template.end_date.item).toLocaleDateString()}</p>
                         <p><strong>Porcentaje Planeado:</strong> {template.percentage}%</p>
@@ -217,7 +217,7 @@ export default function SprintEvaluation({ groupId }) {
 
                     {/* Progreso General de Tareas */}
                     <div className="mt-4">
-                        <h2 className="text-purple-600 mb-4">Progreso General de Tareas</h2>
+                        <h3 className="text-purple-600 mb-4">Progreso General de Tareas</h3>
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie
@@ -254,7 +254,7 @@ export default function SprintEvaluation({ groupId }) {
 
                     {/* Resumen de Evaluaciones Semanales */}
                     <div className="mt-4">
-                        <h2 className="text-purple-600 mb-4">Resumen de Evaluaciones Semanales</h2>
+                        <h3 className="text-purple-600 mb-4">Resumen de Evaluaciones Semanales</h3>
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie
@@ -280,7 +280,7 @@ export default function SprintEvaluation({ groupId }) {
 
                     {/* Evaluación de Estudiantes */}
                     <div className="space-y-4 mt-6">
-                        <h2 className="text-purple-600 mb-4">Ponderación y Calificación de Estudiantes</h2>
+                        <h3 className="text-purple-600 mb-4">Ponderación y Calificación de Estudiantes</h3>
                         {template.student_summaries.length > 0 ? (
                             template.student_summaries.map((student) => {
                                 const noParticipationMessage = student.tasks_summary.completed === 0 ? "Este miembro no participó en el sprint" : null;
@@ -371,7 +371,7 @@ export default function SprintEvaluation({ groupId }) {
                     {/* Fortalezas y Debilidades */}
                     <div className="mt-4 grid grid-cols-2 gap-4">
                         <div>
-                            <h2 className="text-purple-600 mb-4">Fortalezas*</h2>
+                            <h3 className="text-purple-600 mb-4">Fortalezas*</h3>
                             <ul className="list-disc ml-4 space-y-2">
                                 {strengths.map((strength, index) => (
                                     <li key={index} className="flex justify-between items-center">
@@ -401,7 +401,7 @@ export default function SprintEvaluation({ groupId }) {
                         </div>
 
                         <div>
-                            <h2 className="text-purple-600 mb-4">Debilidades*</h2>
+                            <h3 className="text-purple-600 mb-4">Debilidades*</h3>
                             <ul className="list-disc ml-4 space-y-2">
                                 {weaknesses.map((weakness, index) => (
                                     <li key={index} className="flex justify-between items-center">
@@ -433,7 +433,7 @@ export default function SprintEvaluation({ groupId }) {
 
                     {/* Resumen del Sprint */}
                     <div className="mt-4">
-                        <h2 className="text-purple-600 mb-4">Resumen del Sprint</h2>
+                        <h3 className="text-purple-600 mb-4">Resumen del Sprint</h3>
                         <textarea
                             placeholder="Escribe un resumen del sprint"
                             value={summary}

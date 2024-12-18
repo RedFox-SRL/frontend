@@ -73,7 +73,7 @@ export default function WeeklyHistory({evaluations}) {
             <CardContent className="p-4 space-y-6">
                 <div className="flex space-x-4">
                     <div className="w-1/2">
-                        <h2 className="text-purple-600 mb-2">Seleccionar Semana</h2>
+                        <h3 className="text-purple-600 mb-2">Seleccionar Semana</h3>
                         <Select
                             value={selectedWeek}
                             onValueChange={(value) => setSelectedWeek(value)}
@@ -91,7 +91,7 @@ export default function WeeklyHistory({evaluations}) {
                         </Select>
                     </div>
                     <div className="w-1/2">
-                        <h2 className="text-purple-600 mb-2">Filtrar por Miembro</h2>
+                        <h3 className="text-purple-600 mb-2">Filtrar por Miembro</h3>
                         <Select
                             value={selectedMember}
                             onValueChange={(value) => setSelectedMember(value)}
@@ -111,7 +111,7 @@ export default function WeeklyHistory({evaluations}) {
                 </div>
 
                 <div>
-                    <h2 className="text-purple-600 mb-2">Calificación Promedio</h2>
+                    <h3 className="text-purple-600 mb-2">Calificación Promedio</h3>
                     <div className="flex space-x-1">
                         {Array.from({length: 5}, (_, i) => (
                             <Star
@@ -124,7 +124,7 @@ export default function WeeklyHistory({evaluations}) {
                 </div>
 
                 <div>
-                    <h2 className="text-purple-600 mb-2">Estado de Participación</h2>
+                    <h3 className="text-purple-600 mb-2">Estado de Participación</h3>
                     <div className="w-full h-64">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -147,7 +147,7 @@ export default function WeeklyHistory({evaluations}) {
                 </div>
 
                 <div>
-                    <h2 className="text-purple-600 mb-2">Tareas Completadas</h2>
+                    <h3 className="text-purple-600 mb-2">Tareas Completadas</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredTasks.map((task) => (
                             <Card key={task.id} className="bg-white shadow-md">

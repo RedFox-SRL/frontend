@@ -58,7 +58,7 @@ const RatingView3 = ({ onBack, managementId }) => {
         <div className="bg-purple-50 min-h-screen p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
                 <div className="w-full sm:w-auto">
-                    <h2 className="text-purple-700 font-bold text-xl sm:text-2xl mb-2">Resumen de Calificaciones</h2>
+                    <h3 className="text-purple-700 font-bold text-xl sm:text-2xl mb-2">Resumen de Calificaciones</h3>
                     {managementInfo && (
                         <p className="text-purple-600 text-sm sm:text-base">
                             {managementInfo.semester} semestre, {managementInfo.year}

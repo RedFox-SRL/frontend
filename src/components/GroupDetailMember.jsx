@@ -109,9 +109,9 @@ export default function GroupDetailMember({ selectedGroup }) {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">
+                  <h3 className="text-xl font-bold text-gray-800">
                     {selectedGroup.short_name}
-                  </h2>
+                  </h3>
                   <p className="text-sm text-gray-600">{selectedGroup.long_name}</p>
                 </div>
               </div>

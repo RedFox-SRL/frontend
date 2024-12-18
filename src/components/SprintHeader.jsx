@@ -19,9 +19,9 @@ export default function SprintHeader({
     <div className="bg-gradient-to-r from-purple-600 to-purple-800 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">
             Tablero Kanban de Sprints
-          </h2>
+          </h3>
           {currentSprint && (
             <p className="text-purple-200 flex items-center">
               <Calendar className="h-4 w-4 mr-2" />

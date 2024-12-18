@@ -185,9 +185,9 @@ export default function EvaluationTemplate({ groupId }) {
       {/* Filtro de miembros */}
       <div className="flex flex-col lg:flex-row items-start space-y-6 lg:space-y-0 lg:space-x-6">
         <div className="lg:w-1/4 w-full bg-white shadow-lg rounded-lg p-6 transition-all duration-300 ease-in-out">
-          <h2 className="text-xl font-semibold text-purple-700 mb-4">
+          <h3 className="text-xl font-semibold text-purple-700 mb-4">
             Filtrar por Miembro
-          </h2>
+          </h3>
           <ul>
             <li
               className={`cursor-pointer mb-2 ${membersFilter === "Todos" ? "font-bold text-purple-700" : "text-gray-600"}`}
@@ -210,9 +210,9 @@ export default function EvaluationTemplate({ groupId }) {
         {/* Tareas filtradas */}
         <div className="lg:w-3/4 w-full">
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8 transition-all duration-300 ease-in-out transform hover:shadow-xl">
-            <h2 className="text-xl font-semibold text-purple-700 mb-4">
+            <h3 className="text-xl font-semibold text-purple-700 mb-4">
               Seleccionar Sprint
-            </h2>
+            </h3>
             <select
               onChange={(e) => handleSprintChange(e.target.value)}
               value={selectedSprintId || ""}

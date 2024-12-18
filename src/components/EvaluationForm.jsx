@@ -61,9 +61,9 @@ export default function EvaluationForm({ evaluationData, onBack, onSubmit }) {
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-6 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center mb-6">
-                <h2 className="ml-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-800">
+                <h3 className="ml-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-800">
                     {evaluationData.evaluation_period.evaluation_template.name}
-                </h2>
+                </h3>
             </div>
             {evaluationData.evaluation_period.type === "peer" && (
                 <div className="mb-4 p-4 bg-white rounded-lg shadow">

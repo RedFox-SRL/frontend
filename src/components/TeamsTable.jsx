@@ -48,9 +48,9 @@ export default function TeamsTable() {
   return (
     <div className="w-full max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
       <div className="p-6 bg-gradient-to-r from-purple-600 to-purple-800">
-        <h2 className="text-2xl font-bold text-white mb-4">
+        <h3 className="text-2xl font-bold text-white mb-4">
           Grupo empresas registrados
-        </h2>
+        </h3>
       </div>
       <div className="p-4 border-b border-purple-200">
         <div className="relative">

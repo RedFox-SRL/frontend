@@ -335,9 +335,9 @@ export default function GroupDetailCreator({
                 </Button>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-800">
+                <h3 className="font-bold text-gray-800">
                   {groupData.short_name}
-                </h2>
+                </h3>
                 <p className="text-sm text-gray-600">{groupData.long_name}</p>
               </div>
             </div>

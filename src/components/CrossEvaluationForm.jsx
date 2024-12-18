@@ -68,9 +68,9 @@ export default function CrossEvaluationForm({ evaluationData, onSubmit, onBack }
                 <>
                     {/* Información del Grupo Evaluado */}
                     <div className="bg-white border-2 border-purple-500 p-6 rounded-lg shadow-lg text-purple-700">
-                        <h2 className="text-2xl font-bold mb-2">
+                        <h3 className="text-2xl font-bold mb-2">
                             Evaluando al grupo: {evaluated_group?.name || "N/A"}
-                        </h2>
+                        </h3>
                         <p className="text-sm">
                             <strong>Representante:</strong> {evaluated_group?.representative?.name}{" "}
                             {evaluated_group?.representative?.last_name}

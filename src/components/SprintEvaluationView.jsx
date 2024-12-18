@@ -113,7 +113,7 @@ export default function SprintEvaluationView({ groupId }) {
               {/* Estado General y Reporte Semanal */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-purple-50 rounded-lg shadow-lg p-6">
-                  <h2 className="text-lg font-bold text-purple-700 mb-4">Estado General y Progreso Total</h2>
+                  <h3 className="text-lg font-bold text-purple-700 mb-4">Estado General y Progreso Total</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
@@ -150,7 +150,7 @@ export default function SprintEvaluationView({ groupId }) {
                 </div>
 
                 <div className="bg-purple-50 rounded-lg shadow-lg p-6">
-                  <h2 className="text-lg font-bold text-purple-700 mb-4">Reporte Semanal</h2>
+                  <h3 className="text-lg font-bold text-purple-700 mb-4">Reporte Semanal</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
@@ -191,7 +191,7 @@ export default function SprintEvaluationView({ groupId }) {
               {/* Fortalezas y Debilidades */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-purple-50 rounded-lg shadow-md p-4">
-                  <h2 className="text-purple-700 font-bold">Fortalezas</h2>
+                  <h3 className="text-purple-700 font-bold">Fortalezas</h3>
                   <ul>
                     {evaluation.strengths.map((strength, index) => (
                         <li key={index} className="flex items-center space-x-2">
@@ -202,7 +202,7 @@ export default function SprintEvaluationView({ groupId }) {
                   </ul>
                 </div>
                 <div className="bg-white rounded-lg shadow-md p-4">
-                  <h2 className="text-purple-700 font-bold">Debilidades</h2>
+                  <h3 className="text-purple-700 font-bold">Debilidades</h3>
                   <ul>
                     {evaluation.weaknesses.map((weakness, index) => (
                         <li key={index} className="flex items-center space-x-2">
