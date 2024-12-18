@@ -192,7 +192,7 @@ export default function WeeklyEvaluation({groupId}) {
 
     return (
         <div className="p-4 mx-auto space-y-6 max-w-full">
-            <h1 className="text-2xl font-bold text-center mb-4 text-purple-600">Evaluación Semanal</h1>
+            <h3 className="text-2xl font-bold text-center mb-4 text-purple-600">Evaluación Semanal</h3>
 
             <Card>
                 <CardHeader>
@@ -234,9 +234,9 @@ export default function WeeklyEvaluation({groupId}) {
                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                                     />
                                 </svg>
-                                <h2 className="text-lg font-semibold text-green-700 mb-2">
+                                <h3 className="text-lg font-semibold text-green-700 mb-2">
                                     ¡Evaluación completada!
-                                </h2>
+                                </h3>
                                 <p className="text-green-600 text-center mb-4">
                                     Esta semana ya ha sido evaluada. No es necesario realizar otra evaluación.
                                 </p>
@@ -308,7 +308,7 @@ export default function WeeklyEvaluation({groupId}) {
                             </Card>
 
                             <div className="space-y-4">
-                                <h2 className="text-xl font-semibold text-purple-600">Tareas Completadas</h2>
+                                <h3 className="text-xl font-semibold text-purple-600">Tareas Completadas</h3>
                                 {template.tasks.map(task => (
                                     <Card key={task.id}>
                                         <CardContent className="p-6">

@@ -42,9 +42,9 @@ export default function EvaluationView({ groupId, onBack }) {
               Volver
             </Button>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-purple-800 text-center">
+            <h3 className="text-2xl sm:text-3xl font-bold text-purple-800 text-center">
               Evaluaciones
-            </h1>
+            </h3>
             <div className="w-[70px]"></div>
             {/* Espaciado para que el botón y el título queden centrados */}
           </div>

@@ -67,7 +67,7 @@ export default function ManagementList({ onSelectManagement }) {
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-extrabold text-purple-700">Gestión Actual</h1>
+                <h2 className="text-3xl font-extrabold text-purple-700">Gestión Actual</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentManagements.map((management) => (
