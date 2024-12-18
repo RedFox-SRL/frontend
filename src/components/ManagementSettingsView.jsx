@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment, useRef } from "react";
 import { Dialog, Transition, Switch } from "@headlessui/react";
 import { putData } from "../api/apiService";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, X } from "lucide-react";
+import { HelpCircle, X, Loader } from "lucide-react";
 import PropTypes from "prop-types";
 
 export default function ManagementSettingsView({ management, isOpen, onClose, onUpdate }) {
@@ -16,6 +16,8 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
     const [groupLimitMessage, setGroupLimitMessage] = useState("");
     const [codeStatusMessage, setCodeStatusMessage] = useState("");
     const [deliveryDateMessage, setDeliveryDateMessage] = useState("");
+    const [originalGroupLimit, setOriginalGroupLimit] = useState(management.group_limit);
+    const [originalDeliveryDate, setOriginalDeliveryDate] = useState(management.project_delivery_date || "");
     const tooltipRef = useRef(null);
 
     const currentDate = new Date();
@@ -36,6 +38,8 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
         if (management) {
             setNewGroupLimit(management.group_limit);
             setNewDeliveryDate(management.project_delivery_date || "");
+            setOriginalGroupLimit(management.group_limit);
+            setOriginalDeliveryDate(management.project_delivery_date || "");
         }
     }, [management]);
 
@@ -43,6 +47,8 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
         if (isOpen) {
             setNewGroupLimit(management.group_limit);
             setNewDeliveryDate(management.project_delivery_date || "");
+            setOriginalGroupLimit(management.group_limit);
+            setOriginalDeliveryDate(management.project_delivery_date || "");
         }
     }, [isOpen, management]);
 
@@ -59,20 +65,32 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
     }, [tooltipRef]);
 
     const handleGroupLimitChange = (e) => {
-        const value = e.target.value;
-        if (/^[4-9]$|^1[0-5]$/.test(value)) {
+        let value = e.target.value.replace(/[^0-9]/g, ""); // Remove non-numeric characters
+        if (value === "") {
             setNewGroupLimit(value);
+        } else {
+            let numericValue = parseInt(value, 10);
+            if (numericValue > 15) {
+                numericValue = 15;
+            }
+            setNewGroupLimit(numericValue.toString());
         }
     };
 
     const saveGroupLimit = async () => {
+        const groupLimitValue = parseInt(newGroupLimit, 10);
+        if (isNaN(groupLimitValue) || groupLimitValue < 2 || groupLimitValue > 15) {
+            setGroupLimitMessage("El límite de miembros debe estar entre 2 y 15.");
+            return;
+        }
         setGroupLimitLoading(true);
         try {
             await putData(`/managements/${management.id}/update-group-limit`, {
-                group_limit: parseInt(newGroupLimit, 10),
+                group_limit: groupLimitValue,
             });
             setGroupLimitMessage("Límite de grupos actualizado correctamente.");
-            onUpdate({ group_limit: parseInt(newGroupLimit, 10) });
+            onUpdate({ group_limit: groupLimitValue });
+            setOriginalGroupLimit(newGroupLimit);
         } catch (error) {
             setGroupLimitMessage("Error al actualizar el límite de grupos.");
         } finally {
@@ -126,6 +144,7 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
             setDeliveryDateMessage("Fecha de entrega del proyecto actualizada correctamente.");
             if (onUpdate) {
                 onUpdate({ project_delivery_date: formattedDate });
+                setOriginalDeliveryDate(newDeliveryDate);
             }
         } catch (error) {
             setDeliveryDateMessage("Error al actualizar la fecha de entrega.");
@@ -134,6 +153,10 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
             setTimeout(() => setDeliveryDateMessage(""), 5000);
         }
     };
+
+    const hasGroupLimitChanged = () => newGroupLimit !== originalGroupLimit;
+
+    const hasDeliveryDateChanged = () => newDeliveryDate !== originalDeliveryDate;
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -216,7 +239,7 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
                                             </span>
                                         </div>
                                         {codeStatusLoading && <p className="text-sm text-gray-500">Actualizando...</p>}
-                                        {codeStatusMessage && <p className="text-sm text-green-500">{codeStatusMessage}</p>}
+                                        {codeStatusMessage && <p className={`text-sm ${codeStatusMessage.includes("Error") ? "text-red-500" : "text-green-500"}`}>{codeStatusMessage}</p>}
                                     </div>
 
                                     <div>
@@ -232,29 +255,34 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
                                                 <HelpCircle className="inline ml-2 text-gray-500" />
                                                 {tooltipVisible.limit && (
                                                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 text-white text-sm rounded shadow-lg">
-                                                        Establece el límite de miembros por grupo (4-15).
+                                                        Establece el límite de miembros por grupo (2-15).
                                                     </div>
                                                 )}
                                             </div>
                                         </label>
                                         <div className="flex items-center space-x-2">
                                             <input
-                                                type="number"
+                                                type="text" // Change to text to handle invalid characters
                                                 value={newGroupLimit}
                                                 onChange={handleGroupLimitChange}
-                                                min="4"
-                                                max="15"
                                                 className="border rounded p-2 w-24 text-sm"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
+                                                onKeyDown={(e) => {
+                                                    if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
                                             />
                                             <Button
                                                 onClick={saveGroupLimit}
                                                 className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
-                                                disabled={groupLimitLoading}
+                                                disabled={groupLimitLoading || parseInt(newGroupLimit, 10) < 2 || parseInt(newGroupLimit, 10) > 15 || !hasGroupLimitChanged()}
                                             >
                                                 {groupLimitLoading ? "Guardando..." : "Guardar"}
                                             </Button>
                                         </div>
-                                        {groupLimitMessage && <p className="text-sm text-green-500">{groupLimitMessage}</p>}
+                                        {groupLimitMessage && <p className={`text-sm ${groupLimitMessage.includes("Error") || groupLimitMessage.includes("debe ser al menos 2") ? "text-red-500" : "text-green-500"}`}>{groupLimitMessage}</p>}
                                     </div>
 
                                     <div>
@@ -287,12 +315,12 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
                                             <Button
                                                 onClick={saveDeliveryDate}
                                                 className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
-                                                disabled={deliveryDateLoading}
+                                                disabled={deliveryDateLoading || !hasDeliveryDateChanged()}
                                             >
                                                 {deliveryDateLoading ? "Guardando..." : "Guardar"}
                                             </Button>
                                         </div>
-                                        {deliveryDateMessage && <p className="text-sm text-green-500">{deliveryDateMessage}</p>}
+                                        {deliveryDateMessage && <p className={`text-sm ${deliveryDateMessage.includes("Error") ? "text-red-500" : "text-green-500"}`}>{deliveryDateMessage}</p>}
                                     </div>
                                 </div>
                             </Dialog.Panel>
