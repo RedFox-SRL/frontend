@@ -1,8 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
-import {getData, postData} from "../api/apiService";
+import {getData} from "../api/apiService";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import {Calendar, Clipboard, LayoutDashboard, Loader2, Users} from 'lucide-react';
-import {useToast} from "@/hooks/use-toast";
 import CalendarioEventos from "./CalendarioSprints.jsx";
 import SprintKanbanBoard from "./SprintKanbanBoard";
 import GroupMemberListCreator from "./GroupMemberListCreator";
@@ -17,19 +16,13 @@ export default function GruposYPlanificacion() {
     const [isLoading, setIsLoading] = useState(true);
     const [isInManagement, setIsInManagement] = useState(false);
     const [isInGroup, setIsInGroup] = useState(false);
-    const [groupCode, setGroupCode] = useState("");
     const [managementDetails, setManagementDetails] = useState(null);
     const [selectedGroup, setSelectedGroup] = useState(null);
-    const [groupData, setGroupData] = useState({
-        short_name: "", long_name: "", contact_email: "", contact_phone: "", logo: null,
-    });
-    const [errors, setErrors] = useState({});
     const [groupId, setGroupId] = useState(null);
     const [activeCard, setActiveCard] = useState(null);
     const [isCreator, setIsCreator] = useState(false);
     const [userId, setUserId] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
-    const {toast} = useToast();
     const calendarRef = useRef(null);
     const kanbanRef = useRef(null);
     const equipoRef = useRef(null);
@@ -111,113 +104,6 @@ export default function GruposYPlanificacion() {
         }
     };
 
-    const validateForm = () => {
-        const newErrors = {};
-        if (!groupData.short_name.trim()) {
-            newErrors.short_name = "El nombre corto es obligatorio";
-        } else if (groupData.short_name.length > 20) {
-            newErrors.short_name = "El nombre corto no puede tener más de 20 caracteres";
-        }
-        if (!groupData.long_name.trim()) {
-            newErrors.long_name = "El nombre largo es obligatorio";
-        } else if (groupData.long_name.length > 20) {
-            newErrors.long_name = "El nombre largo no puede tener más de 20 caracteres";
-        }
-        if (!/^[67]\d{7}$/.test(groupData.contact_phone)) {
-            newErrors.contact_phone = "Ingrese un número de teléfono válido de Bolivia (8 dígitos, comenzando con 6 o 7)";
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupData.contact_email)) {
-            newErrors.contact_email = "Ingrese un correo electrónico válido";
-        }
-        if (!groupData.logo) {
-            newErrors.logo = "Debe subir una imagen para el logo del grupo (máximo 10MB, formatos: JPEG, PNG, WebP)";
-        }
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleJoinGroup = async () => {
-        try {
-            const response = await postData("/groups/join", {
-                group_code: groupCode,
-            });
-            if (response.success) {
-                toast({
-                    title: "Éxito",
-                    description: response.message || "Te has unido al grupo exitosamente.",
-                    duration: 3000,
-                    className: "bg-green-500 text-white",
-                });
-                await checkManagementAndGroup();
-            } else {
-                handleError(response);
-            }
-        } catch (error) {
-            console.error("Error al unirse al grupo:", error);
-            handleError(error.response?.data);
-        } finally {
-            setGroupCode("");
-        }
-    };
-
-    const handleCreateGroup = async () => {
-        if (!validateForm()) {
-            return;
-        }
-
-        setIsLoading(true);
-        try {
-            const formData = new FormData();
-            Object.keys(groupData).forEach((key) => {
-                if (groupData[key] !== null) {
-                    if (key === "logo" && groupData[key] instanceof Blob) {
-                        formData.append(key, groupData[key], "group_logo.jpg");
-                    } else {
-                        formData.append(key, groupData[key]);
-                    }
-                }
-            });
-
-            const response = await postData("/groups", formData);
-            if (response.success && response.data && response.data.group) {
-                toast({
-                    title: "Éxito",
-                    description: "Grupo creado exitosamente.",
-                    duration: 3000,
-                    className: "bg-green-500 text-white",
-                });
-                setSelectedGroup(response.data.group);
-                setGroupId(response.data.group.id);
-                setIsInGroup(true);
-                if (response.data.group.representative && userId) {
-                    setIsCreator(response.data.group.representative.id === userId);
-                }
-                await checkManagementAndGroup();
-            } else {
-                handleError(response);
-            }
-        } catch (error) {
-            console.error("Error al crear el grupo:", error);
-            handleError(error.response?.data || {
-                message: "Error desconocido al crear el grupo",
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleError = (error) => {
-        let errorMessage = error.message || "Ha ocurrido un error.";
-        if (error.code === 252) {
-            errorMessage = error.data?.management_code?.[0] || "Código inválido.";
-        } else if (error.code === 264) {
-            errorMessage = "El código aún no está activo.";
-        }
-        toast({
-            title: "Error", description: errorMessage, duration: 3000, variant: "destructive",
-        });
-    };
-
     const handleCardClick = (card) => {
         if (activeCard !== card) {
             setActiveCard(card);
@@ -233,38 +119,42 @@ export default function GruposYPlanificacion() {
         setSelectedGroup((prevGroup) => ({
             ...prevGroup, ...updatedGroupData,
         }));
-        toast({
-            title: "Éxito",
-            description: "Información del grupo actualizada correctamente.",
-            duration: 3000,
-            className: "bg-green-500 text-white",
-        });
     };
 
-    const handleImageCropped = (croppedImageBlob) => {
-        setGroupData((prev) => ({...prev, logo: croppedImageBlob}));
+    const handleGroupJoined = async (group) => {
+        setSelectedGroup(group);
+        setGroupId(group.id);
+        setIsInGroup(true);
+        if (group.representative && userId) {
+            setIsCreator(group.representative.id === userId);
+        }
+        // Re-fetch group details to ensure we have the most up-to-date information
+        await checkGroup();
+    };
+
+    const handleGroupCreated = async (group) => {
+        setSelectedGroup(group);
+        setGroupId(group.id);
+        setIsInGroup(true);
+        setIsCreator(true);
+        // Re-fetch group details to ensure we have the most up-to-date information
+        await checkGroup();
     };
 
     if (isLoading) {
         return (<div className="flex items-center justify-center h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-purple-600"/>
             <span className="ml-2 text-lg font-medium text-purple-600">
-          Cargando...
-        </span>
+                    Cargando...
+                </span>
         </div>);
     }
 
     if (!isInGroup) {
         return (<JoinCreateGroup
             isInManagement={isInManagement}
-            groupCode={groupCode}
-            setGroupCode={setGroupCode}
-            groupData={groupData}
-            setGroupData={setGroupData}
-            errors={errors}
-            handleJoinGroup={handleJoinGroup}
-            handleCreateGroup={handleCreateGroup}
-            handleImageCropped={handleImageCropped}
+            onGroupJoined={handleGroupJoined}
+            onGroupCreated={handleGroupCreated}
         />);
     }
 
