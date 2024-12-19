@@ -48,13 +48,19 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     setEvaluationData({
                         id: defaultTemplate.id,
                         type: defaultTemplate.type,
-                        sections: defaultTemplate.sections || [],
+                        sections: defaultTemplate.sections.length ? defaultTemplate.sections : [{
+                            title: "",
+                            criteria: [{ name: "", description: "" }],
+                        }],
                     });
                     setIsEditing(true);
                 } else {
                     setEvaluationData({
                         type: "self",
-                        sections: [],
+                        sections: [{
+                            title: "",
+                            criteria: [{ name: "", description: "" }],
+                        }],
                     });
                     setIsEditing(false);
                 }
@@ -64,7 +70,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     title: "Error",
                     description: "Error al cargar los datos iniciales.",
                     status: "error",
-                    duration: "50",
+                    duration: 1000,
                 });
             } finally {
                 setIsLoading(false);
@@ -82,13 +88,19 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
             setEvaluationData({
                 id: existingTemplate.id,
                 type: existingTemplate.type,
-                sections: existingTemplate.sections || [],
+                sections: existingTemplate.sections.length ? existingTemplate.sections : [{
+                    title: "",
+                    criteria: [{ name: "", description: "" }],
+                }],
             });
             setIsEditing(true);
         } else {
             setEvaluationData({
                 type,
-                sections: [],
+                sections: [{
+                    title: "",
+                    criteria: [{ name: "", description: "" }],
+                }],
             });
             setIsEditing(false);
         }
@@ -115,7 +127,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     description: "Evaluación actualizada exitosamente.",
                     status: "success",
                     className: "bg-green-500 text-white",
-                    duration: "50",
+                    duration: "1000",
                 });
             } else {
                 await postData("/evaluation-templates", dataToSave);
@@ -124,7 +136,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     description: "Evaluación creada exitosamente.",
                     status: "success",
                     className: "bg-green-500 text-white",
-                    duration: "50",
+                    duration: "1000",
                 });
                 setIsEditing(true); // Cambiar estado a edición después de crear
             }
@@ -146,7 +158,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                 title: "Error",
                 description: "Error al guardar la evaluación.",
                 status: "error",
-                duration: "50",
+                duration: "1000",
             });
         } finally {
             setIsSaving(false);
@@ -160,7 +172,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                 description: "No se pueden añadir más de 10 secciones.",
                 status: "warning",
                 className: "bg-red-500 text-white",
-                duration: "50",
+                duration: "1000",
             });
             return;
         }
@@ -183,7 +195,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                 description: "No se pueden añadir más de 10 criterios por sección.",
                 status: "warning",
                 className: "bg-red-500 text-white",
-                duration: "50",
+                duration: "1000",
             });
             return;
         }
@@ -202,7 +214,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
             description: "La sección ha sido eliminada con éxito.",
             status: "success",
             className: "bg-green-500 text-white",
-            duration: "50",
+            duration: "1000",
         });
         setConfirmSectionDialogOpen(false);
         setHasChanges(true);
@@ -218,7 +230,7 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
             description: "El criterio ha sido eliminado con éxito.",
             status: "success",
             className: "bg-green-500 text-white",
-            duration: "50",
+            duration: "1000",
         });
         setConfirmDialogOpen(false);
         setHasChanges(true);
