@@ -1,15 +1,17 @@
-import React, {useEffect, useState} from "react";
-import {getData, postData} from "../api/apiService";
-import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from "recharts";
-import {useToast} from "@/hooks/use-toast";
+import React, { useEffect, useState } from "react";
+import { getData, postData } from "../api/apiService";
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { useToast } from "@/hooks/use-toast";
 import WeeklyHistory from "./WeeklyHistory";
-import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { HelpCircle, Loader2 } from "lucide-react";
 
 const COLORS = ["#8b5cf6", "#a78bfa", "#c4b5fd"];
 
-export default function WeeklyEvaluation({groupId}) {
+export default function WeeklyEvaluation({ groupId }) {
     const [sprints, setSprints] = useState([]);
     const [selectedSprintId, setSelectedSprintId] = useState(null);
     const [template, setTemplate] = useState(null);
@@ -17,19 +19,20 @@ export default function WeeklyEvaluation({groupId}) {
     const [taskEvaluations, setTaskEvaluations] = useState({});
     const [isEvaluated, setIsEvaluated] = useState(false);
     const [showReport, setShowReport] = useState(false);
-    const {toast} = useToast();
+    const [isHelpDialogOpen, setIsHelpDialogOpen] = useState(false);
+    const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchSprints = async () => {
             try {
                 const response = await getData(`/sprints?group_id=${groupId}`);
-                console.log("Sprint response:", response); // Debugging line
                 if (response && Array.isArray(response)) {
                     setSprints(response);
                 } else if (response && response.success && Array.isArray(response.data)) {
                     setSprints(response.data);
                 } else {
-                    console.error("Invalid response format:", response);
                     toast({
                         title: "Error",
                         description: "No se pudieron cargar los sprints. Formato de respuesta inválido.",
@@ -37,7 +40,6 @@ export default function WeeklyEvaluation({groupId}) {
                     });
                 }
             } catch (err) {
-                console.error("Error al obtener los sprints:", err);
                 toast({
                     title: "Error",
                     description: "No se pudieron cargar los sprints. Por favor, intente de nuevo.",
@@ -64,7 +66,6 @@ export default function WeeklyEvaluation({groupId}) {
                         setTemplate(fetchedTemplate);
                         setEvaluationHistory(fetchedHistory);
 
-                        // Check if the current week has already been evaluated
                         const currentWeekEvaluation = fetchedHistory.find(
                             evaluation => evaluation.week_number === fetchedTemplate.week_number
                         );
@@ -73,7 +74,6 @@ export default function WeeklyEvaluation({groupId}) {
                         setShowReport(!!currentWeekEvaluation);
 
                         if (currentWeekEvaluation) {
-                            // Pre-fill the form with existing evaluation data
                             const existingEvaluations = {};
                             currentWeekEvaluation.tasks.forEach(task => {
                                 existingEvaluations[task.id] = {
@@ -83,12 +83,10 @@ export default function WeeklyEvaluation({groupId}) {
                             });
                             setTaskEvaluations(existingEvaluations);
                         } else {
-                            // Reset task evaluations if there's no existing evaluation
                             setTaskEvaluations({});
                         }
                     }
                 } catch (error) {
-                    console.error("Error al cargar datos de evaluación:", error);
                     toast({
                         title: "Error",
                         description: "No se pudieron cargar los datos de evaluación.",
@@ -103,20 +101,22 @@ export default function WeeklyEvaluation({groupId}) {
     const handleSatisfactionChange = (taskId, value) => {
         setTaskEvaluations(prev => ({
             ...prev,
-            [taskId]: {...prev[taskId], satisfaction_level: value}
+            [taskId]: { ...prev[taskId], satisfaction_level: value }
         }));
     };
 
     const handleCommentChange = (taskId, value) => {
-        if (value.length <= 200) {
+        const regex = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ.,\s]*$/;
+        if (regex.test(value) && value.length <= 400) {
             setTaskEvaluations(prev => ({
                 ...prev,
-                [taskId]: {...prev[taskId], comments: value}
+                [taskId]: { ...prev[taskId], comments: value }
             }));
         }
     };
 
     const handleSaveEvaluation = async () => {
+        setIsLoading(true);
         const totalTasks = template.tasks.length;
         const completedEvaluations = Object.values(taskEvaluations).filter(
             (evaluation) => evaluation.satisfaction_level && evaluation.comments
@@ -128,10 +128,11 @@ export default function WeeklyEvaluation({groupId}) {
                 description: `Debe completar la evaluación de todas las tareas (${completedEvaluations}/${totalTasks}).`,
                 variant: "destructive",
             });
+            setIsLoading(false);
             return;
         }
 
-        const tasksData = Object.entries(taskEvaluations).map(([taskId, {comments, satisfaction_level}]) => ({
+        const tasksData = Object.entries(taskEvaluations).map(([taskId, { comments, satisfaction_level }]) => ({
             id: Number(taskId),
             comments,
             satisfaction_level,
@@ -148,8 +149,8 @@ export default function WeeklyEvaluation({groupId}) {
                 description: "Evaluación guardada con éxito.",
                 variant: "default",
                 className: "bg-green-500 text-white",
+                duration: "1000",
             });
-            // Refresh evaluation data after saving
             const historyResponse = await getData(`/sprints/${selectedSprintId}/weekly-evaluations`);
             if (historyResponse.success) {
                 setEvaluationHistory(historyResponse.data.evaluations);
@@ -157,13 +158,23 @@ export default function WeeklyEvaluation({groupId}) {
                 setShowReport(true);
             }
         } catch (error) {
-            console.error("Error al guardar evaluación:", error);
             toast({
                 title: "Error",
-                description: "Ocurrió un error al guardar la evaluación, revise de nuevo el formulario.",
+                description: "Ocurrió un error al guardar la evaluación, revise de nuevo el formulario o en el boton de ayuda.",
                 variant: "destructive",
+                duration: "1000",
             });
+        } finally {
+            setIsLoading(false);
+            setIsConfirmDialogOpen(false);
         }
+    };
+
+    const allFieldsFilled = () => {
+        return template.tasks.every(task => {
+            const evaluation = taskEvaluations[task.id];
+            return evaluation && evaluation.satisfaction_level && evaluation.comments;
+        });
     };
 
     const groupedMembers = template
@@ -192,26 +203,35 @@ export default function WeeklyEvaluation({groupId}) {
 
     return (
         <div className="p-4 mx-auto space-y-6 max-w-full">
-            <h3 className="text-2xl font-bold text-center mb-4 text-purple-600">Evaluación Semanal</h3>
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold text-purple-600 text-center flex-grow">Evaluación Semanal</h3>
+                <Button variant="outline" onClick={() => setIsHelpDialogOpen(true)} className="text-purple-600 border-purple-600 hover:bg-purple-600 hover:text-white">
+                    <HelpCircle className="h-5 w-5" />
+                </Button>
+            </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Seleccionar Sprint</CardTitle>
+                    <CardTitle className="text-purple-600">Seleccionar Sprint</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Select
-                        value={selectedSprintId || ""}
-                        onValueChange={(value) => setSelectedSprintId(value)}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Seleccionar Sprint"/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {sprints.map((sprint) => (
-                                <SelectItem key={sprint.id} value={sprint.id.toString()}>{sprint.title}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {sprints.length === 0 ? (
+                        <p className="text-center text-gray-500">Aún no hay sprints disponibles.</p>
+                    ) : (
+                        <Select
+                            value={selectedSprintId || ""}
+                            onValueChange={(value) => setSelectedSprintId(value)}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Seleccionar Sprint" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {sprints.map((sprint) => (
+                                    <SelectItem key={sprint.id} value={sprint.id.toString()}>{sprint.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                 </CardContent>
             </Card>
 
@@ -252,20 +272,20 @@ export default function WeeklyEvaluation({groupId}) {
                         <>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Reporte semanal - Semana {template.week_number}</CardTitle>
+                                    <CardTitle className="text-purple-600">Reporte semanal - Semana {template.week_number}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-2">Requerimientos</h3>
-                                            <ul className="list-disc list-inside space-y-2">
+                                            <h3 className="text-lg font-semibold mb-2 text-purple-700">Requerimientos</h3>
+                                            <ul className="list-disc list-inside space-y-2 text-purple-700">
                                                 {template.features.split("\n").map((feature, index) => (
                                                     <li key={index}>{feature}</li>
                                                 ))}
                                             </ul>
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-2">Estado de Participación</h3>
+                                            <h3 className="text-lg font-semibold mb-2 text-purple-700">Estado de Participación</h3>
                                             <ResponsiveContainer width="100%" height={250}>
                                                 <PieChart>
                                                     <Pie
@@ -274,24 +294,24 @@ export default function WeeklyEvaluation({groupId}) {
                                                         outerRadius={80}
                                                         paddingAngle={5}
                                                         dataKey="value"
-                                                        label={({name, value}) => `${name}: ${value}`}
+                                                        label={({ name, value }) => `${name}: ${value}`}
                                                     >
                                                         {taskData.map((entry, index) => (
                                                             <Cell key={`cell-${index}`}
-                                                                  fill={COLORS[index % COLORS.length]}/>
+                                                                  fill={COLORS[index % COLORS.length]} />
                                                         ))}
                                                     </Pie>
-                                                    <Tooltip/>
-                                                    <Legend/>
+                                                    <Tooltip />
+                                                    <Legend />
                                                 </PieChart>
                                             </ResponsiveContainer>
-                                            <div className="space-y-2 mt-4">
+                                            <div className="space-y-2 mt-4 text-purple-700">
                                                 {taskData.map((item, index) => (
                                                     <div key={index} className="flex justify-between items-center">
                                                         <div className="flex items-center gap-2">
                                                             <div
                                                                 className="w-3 h-3 rounded-full"
-                                                                style={{backgroundColor: COLORS[index % COLORS.length]}}
+                                                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
                                                             ></div>
                                                             <span>{item.name}</span>
                                                         </div>
@@ -335,13 +355,13 @@ export default function WeeklyEvaluation({groupId}) {
                                             )}
                                             <div className="space-y-2">
                                                 <label
-                                                    className="block text-sm font-medium text-gray-700">Satisfacción:</label>
+                                                    className="block text-sm font-medium text-purple-700">Satisfacción:</label>
                                                 <Select
                                                     value={taskEvaluations[task.id]?.satisfaction_level?.toString() || ""}
                                                     onValueChange={(value) => handleSatisfactionChange(task.id, Number(value))}
                                                 >
                                                     <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder="Seleccionar nivel de satisfacción"/>
+                                                        <SelectValue placeholder="Seleccionar nivel de satisfacción" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="5">Excelente</SelectItem>
@@ -354,22 +374,25 @@ export default function WeeklyEvaluation({groupId}) {
                                             </div>
                                             <div className="space-y-2 mt-4">
                                                 <label
-                                                    className="block text-sm font-medium text-gray-700">Comentarios:</label>
+                                                    className="block text-sm font-medium text-purple-700">Comentarios:</label>
                                                 <textarea
                                                     value={taskEvaluations[task.id]?.comments || ""}
                                                     onChange={(e) => handleCommentChange(task.id, e.target.value)}
                                                     className="w-full p-2 border rounded-md"
                                                     rows={3}
-                                                    maxLength={200}
+                                                    maxLength={400}
                                                 />
+                                                <div className="text-right text-xs text-gray-600">
+                                                    {taskEvaluations[task.id]?.comments?.length || 0}/400
+                                                </div>
                                             </div>
                                         </CardContent>
                                     </Card>
                                 ))}
                             </div>
 
-                            <Button onClick={handleSaveEvaluation} className="w-full">
-                                Guardar evaluación
+                            <Button onClick={() => setIsConfirmDialogOpen(true)} className="w-full bg-purple-600 hover:bg-purple-700 text-white" disabled={!allFieldsFilled()}>
+                                {isLoading ? (<Loader2 className="h-5 w-5 animate-spin" />) : "Guardar evaluación"}
                             </Button>
                         </>
                     )}
@@ -377,9 +400,45 @@ export default function WeeklyEvaluation({groupId}) {
             )}
 
             {showReport && evaluationHistory && (
-                <WeeklyHistory evaluations={evaluationHistory}/>
+                <WeeklyHistory evaluations={evaluationHistory} />
             )}
+
+            <Dialog open={isHelpDialogOpen} onOpenChange={setIsHelpDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Instrucciones</DialogTitle>
+                    </DialogHeader>
+                    <p>Para usar este componente:</p>
+                    <ul className="list-disc list-inside ml-4">
+                        <li>Todos los campos son obligatorios.</li>
+                        <li>No se pueden colocar caracteres especiales a excepción de "," "." y los acentos, ñ, y diéresis.</li>
+                        <li>Este componente es un resumen de las tareas que hicieron los estudiantes en la semana del sprint.</li>
+                        <li>Recuerda: Solo puedes evaluar los avances semanales con un margen de 2 dias antes del fin del sprint, si se pasa de la fecha no podras realizar evaluaciones</li>
+                    </ul>
+                    <DialogFooter>
+                        <Button onClick={() => setIsHelpDialogOpen(false)} className="bg-purple-600 hover:bg-purple-700 text-white">
+                            Cerrar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirmar Acción</DialogTitle>
+                    </DialogHeader>
+                    <p>¿Está seguro de que desea guardar esta evaluación? No se puede revertir despues</p>
+                    <DialogFooter>
+                        <Button onClick={() => setIsConfirmDialogOpen(false)}className="bg-red-600 hover:bg-red-700 text-white" variant="outline">
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleSaveEvaluation} className="bg-purple-600 hover:bg-purple-700 text-white">
+                            Confirmar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
-
