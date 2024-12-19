@@ -21,7 +21,8 @@ import {
     Settings,
     Star,
     Users,
-    Info
+    Info,
+    AlertCircle
 } from 'lucide-react';
 import AnnouncementList from "./AnnouncementList";
 import CreateAnnouncement from "./CreateAnnouncement";
@@ -416,12 +417,22 @@ const ManagementView = ({management, onBack}) => {
                         </TabsContent>
 
                         <TabsContent value="groups">
-                            {errorMessage ? (<p className="mt-4 text-red-500">{errorMessage}</p>) : (<GroupListComponent
-                                groups={groups}
-                                handleEvaluateClick={handleEvaluateClick}
-                                handleViewDetails={handleViewDetails}
-                                getInitials={getInitials}
-                            />)}
+                            {groups.length === 0 ? (<Card className="overflow-hidden">
+                                    <CardContent className="p-8 flex flex-col items-center justify-center text-center">
+                                        <AlertCircle className="w-12 h-12 text-purple-300 mb-4"/>
+                                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay grupos
+                                            registrados</h3>
+                                        <p className="text-gray-500 text-sm max-w-md">
+                                            Actualmente no hay grupos para mostrar. Los grupos aparecerán aquí a medida
+                                            que se vayan registrando.
+                                        </p>
+                                    </CardContent>
+                                </Card>) : (<GroupListComponent
+                                    groups={groups}
+                                    handleEvaluateClick={handleEvaluateClick}
+                                    handleViewDetails={handleViewDetails}
+                                    getInitials={getInitials}
+                                />)}
                         </TabsContent>
 
                         <TabsContent value="participants">
