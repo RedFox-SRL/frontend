@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { Trash2, Plus, HelpCircle, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { getData, postData } from "../api/apiService";
+import React, {useState, useEffect} from "react";
+import {PieChart, Pie, Cell, ResponsiveContainer, Tooltip} from "recharts";
+import {Trash2, Plus, HelpCircle, Loader2} from "lucide-react";
+import {useToast} from "@/hooks/use-toast";
+import {getData, postData} from "../api/apiService";
 import SprintHistoryView from "./SprintHistoryView";
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -12,10 +12,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {Card, CardContent} from "@/components/ui/card.jsx";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select.jsx";
 
 const COLORS = ["#a78bfa", "#c4b5fd", "#8b5cf6"];
 
-export default function SprintEvaluation({ groupId }) {
+export default function SprintEvaluation({groupId}) {
     const [sprints, setSprints] = useState([]);
     const [selectedSprintId, setSelectedSprintId] = useState(null);
     const [template, setTemplate] = useState(null);
@@ -32,7 +34,7 @@ export default function SprintEvaluation({ groupId }) {
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { toast } = useToast();
+    const {toast} = useToast();
 
     useEffect(() => {
         const fetchSprints = async () => {
@@ -202,30 +204,51 @@ export default function SprintEvaluation({ groupId }) {
         <div className="p-4 mx-auto space-y-6 max-w-full">
             <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-bold text-center mb-4 text-purple-600 flex-grow">Evaluación de Sprint</h3>
-                <button onClick={() => setIsHelpDialogOpen(true)} className="text-purple-600 border-purple-600 hover:bg-purple-600 hover:text-white">
-                    <HelpCircle className="h-5 w-5" />
+                <button onClick={() => setIsHelpDialogOpen(true)}
+                        className="text-purple-600 border-purple-600 hover:bg-purple-600 hover:text-white">
+                    <HelpCircle className="h-5 w-5"/>
                 </button>
             </div>
 
             {/* Selección de Sprint */}
             <div>
                 <h3 className="text-purple-600 mb-2">Seleccionar Sprint</h3>
-                {sprints.length === 0 ? (
-                    <p className="text-center text-gray-500">Aún no hay sprints disponibles.</p>
-                ) : (
-                    <select
-                        className="p-2 border border-gray-300 rounded-md shadow-sm w-full"
-                        value={selectedSprintId || ""}
-                        onChange={(e) => setSelectedSprintId(e.target.value)}
-                    >
-                        <option value="">Seleccionar Sprint</option>
-                        {sprints.map((sprint) => (
-                            <option key={sprint.id} value={sprint.id}>
-                                {sprint.title}
-                            </option>
-                        ))}
-                    </select>
-                )}
+                {sprints.length === 0 ? (<Card className="bg-yellow-100 border-yellow-300 shadow-md">
+                    <CardContent className="flex items-center justify-center p-6">
+                        <svg
+                            className="w-8 h-8 text-yellow-600 mr-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                            />
+                        </svg>
+                        <div>
+                            <h4 className="text-lg font-semibold text-yellow-800 mb-2">No hay sprints
+                                disponibles</h4>
+                            <p className="text-yellow-700">
+                                El grupo a evaluar no cuenta con sprints creados.
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>) : (<Select
+                    value={selectedSprintId || ""}
+                    onValueChange={(value) => setSelectedSprintId(value)}
+                >
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleccionar Sprint"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {sprints.map((sprint) => (<SelectItem key={sprint.id}
+                                                              value={sprint.id.toString()}>{sprint.title}</SelectItem>))}
+                    </SelectContent>
+                </Select>)}
             </div>
             {/* Botón para Mostrar/Ocultar Historial */}
             {isEvaluationCompleted && (
@@ -241,26 +264,47 @@ export default function SprintEvaluation({ groupId }) {
             {/* Mostrar Componente SprintHistoryView */}
             {showHistory && selectedSprintId && (
                 <div className="mt-6">
-                    <SprintHistoryView sprintId={selectedSprintId} />
+                    <SprintHistoryView sprintId={selectedSprintId}/>
                 </div>
             )}
             {/* Mostrar mensaje o contenido del Sprint */}
             {template && !showHistory && (!template.weekly_evaluations_summary || template.weekly_evaluations_summary.length === 0) ? (
-                <div className="p-6 bg-red-100 border border-red-400 text-red-800 rounded-lg shadow-md">
-                    <h4 className="text-2xl font-bold">No se realizaron evaluaciones semanales este sprint</h4>
-                    <p className="mt-2 text-sm">
-                        Es necesario registrar evaluaciones semanales para habilitar este módulo. Por favor, regrese y
-                        complete las evaluaciones semanales para continuar.
-                    </p>
-                </div>
+                <Card className="bg-purple-100 border-purple-300 shadow-md">
+                    <CardContent className="flex items-center justify-center p-6">
+                        <svg
+                            className="w-8 h-8 text-purple-600 mr-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                            />
+                        </svg>
+                        <div>
+                            <h4 className="text-lg font-semibold text-purple-800 mb-2">No se realizaron evaluaciones
+                                semanales este sprint</h4>
+                            <p className="text-purple-700">
+                                Es necesario que el sprint cuente por lo menos con una evaluación semanal para poder
+                                realizar la evaluación del sprint.
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
             ) : (
                 template && !showHistory && (
                     <>
                         {/* Información sobre el Sprint */}
                         <div className="bg-white rounded-lg shadow-md p-4 space-y-2">
                             <h3 className="text-purple-700 text-lg font-semibold">{template.sprint_title}</h3>
-                            <p><strong>Fecha de inicio:</strong> {new Date(template.start_date.item).toLocaleDateString()}</p>
-                            <p><strong>Fecha de fin:</strong> {new Date(template.end_date.item).toLocaleDateString()}</p>
+                            <p><strong>Fecha de
+                                inicio:</strong> {new Date(template.start_date.item).toLocaleDateString()}</p>
+                            <p><strong>Fecha de fin:</strong> {new Date(template.end_date.item).toLocaleDateString()}
+                            </p>
                             <p><strong>Porcentaje Planeado:</strong> {template.percentage}%</p>
                             <p><strong>Funcionalidades Planeadas:</strong></p>
                             <ul className="list-disc ml-4">
@@ -276,31 +320,37 @@ export default function SprintEvaluation({ groupId }) {
                             <ResponsiveContainer width="100%" height={200}>
                                 <PieChart>
                                     <Pie
-                                        data={[{ name: "Hecho", value: template.overall_progress.completed_tasks }, { name: "En progreso", value: template.overall_progress.in_progress_tasks }, { name: "Por hacer", value: template.overall_progress.todo_tasks }]}
+                                        data={[{
+                                            name: "Hecho",
+                                            value: template.overall_progress.completed_tasks
+                                        }, {
+                                            name: "En progreso",
+                                            value: template.overall_progress.in_progress_tasks
+                                        }, {name: "Por hacer", value: template.overall_progress.todo_tasks}]}
                                         innerRadius={60}
                                         outerRadius={80}
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
                                         {COLORS.map((color, index) => (
-                                            <Cell key={`cell-${index}`} fill={color} />
+                                            <Cell key={`cell-${index}`} fill={color}/>
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip/>
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="mt-4 text-center">
                                 <div className="flex justify-around">
                                     <div className="flex items-center">
-                                        <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[0] }}></div>
+                                        <div className="w-4 h-4 mr-2" style={{backgroundColor: COLORS[0]}}></div>
                                         <span>Hecho: {template.overall_progress.completed_tasks}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[1] }}></div>
+                                        <div className="w-4 h-4 mr-2" style={{backgroundColor: COLORS[1]}}></div>
                                         <span>En progreso: {template.overall_progress.in_progress_tasks}</span>
                                     </div>
                                     <div className="flex items-center">
-                                        <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[2] }}></div>
+                                        <div className="w-4 h-4 mr-2" style={{backgroundColor: COLORS[2]}}></div>
                                         <span>Por hacer: {template.overall_progress.todo_tasks}</span>
                                     </div>
                                 </div>
@@ -313,23 +363,32 @@ export default function SprintEvaluation({ groupId }) {
                             <ResponsiveContainer width="100%" height={200}>
                                 <PieChart>
                                     <Pie
-                                        data={[{ name: "Min Satisfacción", value: template.weekly_evaluations_summary[0].min_satisfaction }, { name: "Max Satisfacción", value: template.weekly_evaluations_summary[0].max_satisfaction }]}
+                                        data={[{
+                                            name: "Min Satisfacción",
+                                            value: template.weekly_evaluations_summary[0].min_satisfaction
+                                        }, {
+                                            name: "Max Satisfacción",
+                                            value: template.weekly_evaluations_summary[0].max_satisfaction
+                                        }]}
                                         innerRadius={60}
                                         outerRadius={80}
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
                                         {COLORS.map((color, index) => (
-                                            <Cell key={`cell-${index}`} fill={color} />
+                                            <Cell key={`cell-${index}`} fill={color}/>
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip/>
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="mt-4 text-center">
-                                <p className="text-purple-600">Tareas Evaluadas: {template.weekly_evaluations_summary[0].tasks_evaluated}</p>
-                                <p className="text-purple-600">Satisfacción Promedio: {template.weekly_evaluations_summary[0].average_satisfaction}</p>
-                                <p className="text-purple-600">Fecha de Evaluación: {new Date(template.weekly_evaluations_summary[0].evaluation_date).toLocaleDateString()}</p>
+                                <p className="text-purple-600">Tareas
+                                    Evaluadas: {template.weekly_evaluations_summary[0].tasks_evaluated}</p>
+                                <p className="text-purple-600">Satisfacción
+                                    Promedio: {template.weekly_evaluations_summary[0].average_satisfaction}</p>
+                                <p className="text-purple-600">Fecha de
+                                    Evaluación: {new Date(template.weekly_evaluations_summary[0].evaluation_date).toLocaleDateString()}</p>
                             </div>
                         </div>
 
@@ -347,37 +406,51 @@ export default function SprintEvaluation({ groupId }) {
                                                 <p className="text-black">{noParticipationMessage}</p>
                                             ) : (
                                                 <>
-                                                    <p>Tareas completadas: {student.tasks_summary.completed} de {student.tasks_summary.total}</p>
-                                                    <p>Calificación Promedio: {student.satisfaction_levels.average || "N/A"} / 5</p>
+                                                    <p>Tareas
+                                                        completadas: {student.tasks_summary.completed} de {student.tasks_summary.total}</p>
+                                                    <p>Calificación
+                                                        Promedio: {student.satisfaction_levels.average || "N/A"} / 5</p>
                                                     <ResponsiveContainer width="100%" height={200}>
                                                         <PieChart>
                                                             <Pie
-                                                                data={[{ name: "Hecho", value: student.tasks_summary.completed }, { name: "En progreso", value: student.tasks_summary.in_progress }, { name: "Por hacer", value: student.tasks_summary.todo }]}
+                                                                data={[{
+                                                                    name: "Hecho",
+                                                                    value: student.tasks_summary.completed
+                                                                }, {
+                                                                    name: "En progreso",
+                                                                    value: student.tasks_summary.in_progress
+                                                                }, {
+                                                                    name: "Por hacer",
+                                                                    value: student.tasks_summary.todo
+                                                                }]}
                                                                 innerRadius={60}
                                                                 outerRadius={80}
                                                                 paddingAngle={5}
                                                                 dataKey="value"
                                                             >
                                                                 {COLORS.map((color, index) => (
-                                                                    <Cell key={`cell-${index}`} fill={color} />
+                                                                    <Cell key={`cell-${index}`} fill={color}/>
                                                                 ))}
                                                             </Pie>
-                                                            <Tooltip />
+                                                            <Tooltip/>
                                                         </PieChart>
                                                     </ResponsiveContainer>
                                                 </>
                                             )}
                                             <div className="flex justify-around mt-2 text-sm">
                                                 <div className="flex items-center">
-                                                    <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[0] }}></div>
+                                                    <div className="w-4 h-4 mr-2"
+                                                         style={{backgroundColor: COLORS[0]}}></div>
                                                     <span>Hecho: {student.tasks_summary.completed}</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[1] }}></div>
+                                                    <div className="w-4 h-4 mr-2"
+                                                         style={{backgroundColor: COLORS[1]}}></div>
                                                     <span>En progreso: {student.tasks_summary.in_progress}</span>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <div className="w-4 h-4 mr-2" style={{ backgroundColor: COLORS[2] }}></div>
+                                                    <div className="w-4 h-4 mr-2"
+                                                         style={{backgroundColor: COLORS[2]}}></div>
                                                     <span>Por hacer: {student.tasks_summary.todo}</span>
                                                 </div>
                                             </div>
@@ -401,14 +474,16 @@ export default function SprintEvaluation({ groupId }) {
                                                         }}
                                                         className="border border-gray-300 rounded-md p-2 w-24"
                                                     />
-                                                    <span className="ml-2 text-sm text-gray-500">/{template.percentage}</span>
+                                                    <span
+                                                        className="ml-2 text-sm text-gray-500">/{template.percentage}</span>
                                                 </div>
 
                                                 <textarea
                                                     placeholder="Comentarios sobre el rendimiento"
                                                     value={comments[student.id] || ""}
                                                     onChange={handleInputChange((value) =>
-                                                        setComments((prevComments) => ({...prevComments,
+                                                        setComments((prevComments) => ({
+                                                            ...prevComments,
                                                             [student.id]: value,
                                                         }))
                                                     )}
@@ -516,7 +591,7 @@ export default function SprintEvaluation({ groupId }) {
                             onClick={() => setIsConfirmDialogOpen(true)}
                             disabled={!allFieldsFilled()}
                         >
-                            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Guardar evaluación"}
+                            {isLoading ? <Loader2 className="h-5 w-5 animate-spin"/> : "Guardar evaluación"}
                         </button>
                     </>
                 )
@@ -538,7 +613,9 @@ export default function SprintEvaluation({ groupId }) {
                         </li>
                         <li>No olvides presionar enter o el boton de "+" para agregar las fortalezas y debilidades.
                         </li>
-                        <li>Recuerda: La evaluación de sprint solo se puede crear dentro de los 4 días posteriores a la fecha de finalización del sprint o después de que haya terminado.</li>
+                        <li>Recuerda: La evaluación de sprint solo se puede crear dentro de los 4 días posteriores a la
+                            fecha de finalización del sprint o después de que haya terminado.
+                        </li>
                     </ul>
                     <DialogFooter>
                         <Button onClick={() => setIsHelpDialogOpen(false)}
@@ -556,7 +633,8 @@ export default function SprintEvaluation({ groupId }) {
                     </DialogHeader>
                     <p>¿Está seguro de que desea guardar esta evaluación? No se puede revertir después</p>
                     <DialogFooter>
-                        <Button onClick={() => setIsConfirmDialogOpen(false)}className="bg-red-600 hover:bg-red-700 text-white" variant="outline">
+                        <Button onClick={() => setIsConfirmDialogOpen(false)}
+                                className="bg-red-600 hover:bg-red-700 text-white" variant="outline">
                             Cancelar
                         </Button>
                         <Button onClick={handleSaveEvaluation} className="bg-purple-600 hover:bg-purple-700 text-white">
