@@ -407,17 +407,23 @@ export default function SpecialEvaluationsView({ onBack, managementId }) {
                     <p>Utilice este formulario para crear y gestionar evaluaciones especiales. Siga estos pasos:</p>
                     <ul className="list-disc list-inside">
                         <li>Asegúrese de que cada sección tenga un título no vacío (máximo 50 caracteres).</li>
-                        <li>Cada sección debe tener al menos un criterio con un nombre no vacío (máximo 50 caracteres).</li>
+                        <li>Cada sección debe tener al menos un criterio con un nombre no vacío (máximo 50
+                            caracteres).
+                        </li>
                         <li>La descripción de cada criterio es opcional, pero no debe exceder los 200 caracteres.</li>
+                        <li>Para que un grupo pueda recibir la autoevaluacion y la de pares debe tener al menos una evaluación semanal y que el sprint haya terminado</li>
+                        <li>Para que a un grupo se le habilite la evaluación cruzada debe sumar mas del 90% de todos sus sprints evaluados con notas, y existir mas de dos grupos en la gestión caso contrario no se habilitara nunca</li>
+                        <li>Recuerde que las notificaciones para los estudiantes se hara de forma automatica cuando el sprint termine, en el caso de la evaluación cruzada al final del proyecto</li>
                     </ul>
                     <DialogFooter>
-                        <Button onClick={() => setHelpDialogOpen(false)} className="bg-purple-700 text-white">Cerrar</Button>
+                        <Button onClick={() => setHelpDialogOpen(false)}
+                                className="bg-purple-700 text-white">Cerrar</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-                <DialogContent>
+            <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Confirmar Eliminación</DialogTitle>
                     </DialogHeader>
