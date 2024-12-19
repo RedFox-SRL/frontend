@@ -92,8 +92,8 @@ const HelpDialog = ({isOpen, onClose, scoreConfiguration, sprintComposition}) =>
                             La evaluación de la propuesta se divide en dos partes:
                         </p>
                         <ul className="list-disc list-inside text-sm text-gray-600 ml-4">
-                            <li>Parte A: Aspectos técnicos</li>
-                            <li>Parte B: Presentación y defensa</li>
+                            <li>Parte A: Especificación de la grupo-empresa constituida.</li>
+                            <li>Parte B: Propuesta técnica.</li>
                         </ul>
                     </div>
                     <div>
