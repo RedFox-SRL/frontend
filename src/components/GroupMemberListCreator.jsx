@@ -170,23 +170,24 @@ export default function GroupMemberListCreator({ groupId, members, userId }) {
       if (response.success) {
         setNewMemberEmail("");
         toast({
-          title: "Miembro agregado",
-          description: "El nuevo miembro ha sido agregado exitosamente.",
+          title: "Invitación exitosa",
+          description: "Se ha enviado la invitacion exitosamente.",
           className: "bg-green-500 text-white",
         });
         invitationListRef.current.fetchInvitations(); // Actualizar lista de invitaciones
       } else {
         toast({
           title: "Error",
-          description: response.message || "No se pudo agregar al nuevo miembro.",
+          description: response.message || "No se pudo enviar la invitación.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error adding new member:", error);
+      const errorMessage = error.response?.data?.message || "Ocurrió un error al enviar la invitación.";
       toast({
         title: "Error",
-        description: "Ocurrió un error al agregar al nuevo miembro.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

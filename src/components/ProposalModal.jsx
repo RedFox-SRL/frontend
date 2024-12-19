@@ -252,9 +252,9 @@ export default function ProposalModal({ isOpen, onClose }) {
                 )}
                 <DialogFooter className="flex flex-col space-y-4 items-center">
                     <span className="text-sm text-gray-600">
-                        Puedes continuar con tu trabajo y subir después las propuestas, pero no olvides que tienes una fecha límite en el inicio.
+                        Puedes continuar con tu trabajo y subir después las propuestas, pero no olvides que tienes una fecha límite en el inicio y el maximo de peso de 10mb.
                     </span>
-                    <Button variant="outline" onClick={onClose}>
+                    <Button variant="outline" className="bg-red-600 text-white hover:bg-red-700" onClick={onClose}>
                         Cerrar
                     </Button>
                 </DialogFooter>
@@ -273,7 +273,8 @@ export default function ProposalModal({ isOpen, onClose }) {
                             </p>
                         </div>
                         <DialogFooter className="flex justify-between">
-                            <Button variant="outline" onClick={() => setConfirmDialog({ isOpen: false, part: "" })}>
+                            <Button variant="outline" className="bg-red-600 text-white hover:bg-red-700"
+                                    onClick={() => setConfirmDialog({ isOpen: false, part: "" })}>
                                 Cancelar
                             </Button>
                             <Button
