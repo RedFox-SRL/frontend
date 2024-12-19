@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardContent} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
 import {AlertTriangle, Loader2, CheckCircle, AlertCircle} from 'lucide-react';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import ImageCropper from "./ImageCropper";
@@ -76,8 +76,7 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
     };
 
     const handleJoinGroupSubmit = async () => {
-        const code = groupCode.join(''); // Update: Removed toUpperCase()
-        console.log("Código a enviar:", code); // Added console.log
+        const code = groupCode.join('');
         if (code.length !== 7) {
             setJoinError("El código debe tener 7 caracteres.");
             return;
@@ -90,7 +89,7 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
         try {
             const response = await postData("/groups/join", {group_code: code});
             if (response.success) {
-                setJoinSuccess("Te has unido al grupo exitosamente. Redirigiendo...");
+                setJoinSuccess("Te has unido al grupo exitosamente.");
                 setTimeout(() => {
                     onGroupJoined(response.data.group);
                 }, 2000);
@@ -107,24 +106,32 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
 
     const validateForm = () => {
         const newErrors = {};
-        if (!groupData.short_name.trim()) {
-            newErrors.short_name = "El nombre corto es obligatorio";
+
+        if (groupData.short_name.trim().length < 2) {
+            newErrors.short_name = "El nombre corto debe tener al menos 2 caracteres";
         } else if (groupData.short_name.length > 20) {
             newErrors.short_name = "El nombre corto no puede tener más de 20 caracteres";
+        } else if (!/^[a-zA-Z][a-zA-Z0-9\s.&-]*$/.test(groupData.short_name)) {
+            newErrors.short_name = "El nombre corto debe comenzar con una letra y solo puede contener letras, números, espacios, puntos, guiones y '&'";
         }
-        if (!groupData.long_name.trim()) {
-            newErrors.long_name = "El nombre largo es obligatorio";
-        } else if (groupData.long_name.length > 20) {
-            newErrors.long_name = "El nombre largo no puede tener más de 20 caracteres";
+
+        if (groupData.long_name.trim().length < 3) {
+            newErrors.long_name = "El nombre largo debe tener al menos 3 caracteres";
+        } else if (groupData.long_name.length > 60) {
+            newErrors.long_name = "El nombre largo no puede tener más de 60 caracteres";
+        } else if (!/^[a-zA-Z][a-zA-Z\s.&-]*$/.test(groupData.long_name)) {
+            newErrors.long_name = "El nombre largo debe comenzar con una letra y solo puede contener letras, espacios, puntos, guiones y '&'";
         }
-        if (!/^[67]\d{7}$/.test(groupData.contact_phone)) {
-            newErrors.contact_phone = "Ingrese un número de teléfono válido de Bolivia (8 dígitos, comenzando con 6 o 7)";
+
+        if (!/^(6|7)\d{7}$/.test(groupData.contact_phone) && !/^4\d{6}$/.test(groupData.contact_phone)) {
+            newErrors.contact_phone = "Ingrese un número de teléfono válido de Bolivia (8 dígitos para celular comenzando con 6 o 7, o 7 dígitos para fijo comenzando con 4)";
         }
+
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupData.contact_email)) {
             newErrors.contact_email = "Ingrese un correo electrónico válido";
         }
         if (!groupData.logo) {
-            newErrors.logo = "Debe subir una imagen para el logo del grupo (máximo 10MB, formatos: JPEG, PNG, WebP)";
+            newErrors.logo = "El logo del grupo es obligatorio";
         }
         setCreateErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -150,26 +157,50 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
                     }
                 }
             });
-            console.log("Logo being sent:", groupData.logo); // Update: Log logo data
 
             const response = await postData("/groups", formData);
-            if (response.success && response.data && response.data.group) {
-                setCreateSuccess("Grupo creado exitosamente.");
-                onGroupCreated(response.data.group);
+            if (response.success) {
+                setCreateSuccess("Grupo empresa creado exitosamente.");
+                setTimeout(() => {
+                    onGroupCreated(response.data.group);
+                }, 2000);
             } else {
-                throw new Error(response.message || "Error al crear el grupo");
+                throw new Error(response.message || "Error al crear el grupo empresa");
             }
         } catch (error) {
-            console.error("Error al crear el grupo:", error);
-            setCreateErrors({general: error.message || "Error desconocido al crear el grupo"});
+            console.error("Error al crear el grupo empresa:", error);
+            setCreateErrors({
+                general: error.response?.data?.message || error.message || "Error desconocido al crear el grupo empresa"
+            });
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleImageCropped = (croppedImageBlob) => {
-        console.log("Cropped image blob:", croppedImageBlob); // Update: Log cropped image blob
         setGroupData((prev) => ({...prev, logo: croppedImageBlob}));
+    };
+
+    const handleInputChange = (e) => {
+        const {name, value} = e.target;
+        let sanitizedValue = value;
+
+        if (name === 'short_name') {
+            sanitizedValue = value.replace(/[^a-zA-Z\s.&-]/g, '');
+        } else if (name === 'long_name') {
+            sanitizedValue = value.replace(/[^a-zA-Z\s.&-]/g, '');
+        } else if (name === 'contact_phone') {
+            sanitizedValue = sanitizedValue.replace(/\D/g, '').slice(0, 8);
+        }
+
+        if ((name === 'short_name' && sanitizedValue.trim().length >= 2) || (name === 'long_name' && sanitizedValue.trim().length >= 3)) {
+            sanitizedValue = sanitizedValue.replace(/\s+/g, ' ');
+        } else {
+            sanitizedValue = sanitizedValue.trim();
+        }
+
+        setGroupData({...groupData, [name]: sanitizedValue});
+        setCreateErrors({...createErrors, [name]: ""});
     };
 
     const isCodeComplete = groupCode.every(char => char !== '');
@@ -177,12 +208,10 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
     if (!isInManagement) {
         return (<div className="space-y-4 p-4 sm:p-6 max-w-md mx-auto">
             <Card className="bg-gradient-to-br from-purple-100 to-indigo-100 shadow-lg">
-                <CardHeader className="pb-4">
-                    <CardTitle className="text-center font-bold text-purple-800">
+                <CardContent className="p-6">
+                    <h2 className="text-2xl font-bold text-center mb-4 text-purple-800">
                         No perteneces a ningún grupo de la materia TIS
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
+                    </h2>
                     <div className="flex flex-col items-center space-y-4">
                         <AlertTriangle className="h-16 w-16 text-yellow-500"/>
                         <p className="text-center text-gray-700">
@@ -207,13 +236,23 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
         </div>);
     }
 
-    return (<div className="flex items-start justify-center min-h-screen pt-10 px-4">
-        <Card className="w-full max-w-md shadow-lg rounded-lg overflow-hidden">
+    return (<div className="flex items-start justify-center min-h-screen pt-4 px-4">
+        <Card className="w-full max-w-md shadow-lg rounded-lg overflow-hidden shadow-purple-500/50">
             <CardContent className="p-6 space-y-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="join">Unirse por código</TabsTrigger>
-                        <TabsTrigger value="create">Crear grupo</TabsTrigger>
+                        <TabsTrigger
+                            value="join"
+                            className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                        >
+                            Unirse por código
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="create"
+                            className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                        >
+                            Crear grupo empresa
+                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="join">
                         <div className="space-y-4">
@@ -229,7 +268,7 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
                                         id={`group-code-input-${index}`}
                                         type="text"
                                         maxLength="1"
-                                        className="w-10 h-12 sm:w-11 sm:h-13 md:w-12 md:h-14 text-center text-lg sm:text-xl md:text-2xl font-bold border-2 border-purple-300 rounded focus:outline-none focus:border-purple-500 bg-white shadow-sm transition-all duration-200 ease-in-out"
+                                        className="w-10 h-12 sm:w-11 sm:h-13 md:w-12 md:h-14 text-center text-lg sm:text-xl md:text-2xl font-bold border-2 border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white shadow-sm transition-all duration-200"
                                         value={char}
                                         onChange={(e) => handleCodeChange(index, e.target.value)}
                                         onKeyDown={(e) => {
@@ -243,8 +282,8 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
                             </div>
                             {(joinError || joinSuccess) && (<div
                                 className={`flex items-center ${joinSuccess ? 'text-green-600' : 'text-red-600'} mt-2`}>
-                                {joinSuccess ? (<CheckCircle className="h-5 w-5 mr-2"/>) : (
-                                    <AlertCircle className="h-5 w-5 mr-2"/>)}
+                                {joinSuccess ? <CheckCircle className="h-5 w-5 mr-2"/> :
+                                    <AlertCircle className="h-5 w-5 mr-2"/>}
                                 <p>{joinSuccess || joinError}</p>
                             </div>)}
                             <Button
@@ -261,44 +300,97 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
                     </TabsContent>
                     <TabsContent value="create">
                         <div className="space-y-4">
-                            <Input
-                                type="text"
-                                placeholder="Nombre corto del grupo empresa"
-                                value={groupData.short_name}
-                                onChange={(e) => setGroupData({...groupData, short_name: e.target.value})}
-                                className={createErrors.short_name ? "border-red-500" : ""}
-                            />
-                            {createErrors.short_name && (
-                                <p className="text-red-500 text-sm mt-1">{createErrors.short_name}</p>)}
-                            <Input
-                                type="text"
-                                placeholder="Nombre largo del grupo empresa"
-                                value={groupData.long_name}
-                                onChange={(e) => setGroupData({...groupData, long_name: e.target.value})}
-                                className={createErrors.long_name ? "border-red-500" : ""}
-                            />
-                            {createErrors.long_name && (
-                                <p className="text-red-500 text-sm mt-1">{createErrors.long_name}</p>)}
-                            <Input
-                                type="email"
-                                placeholder="Email de contacto del grupo empresa"
-                                value={groupData.contact_email}
-                                onChange={(e) => setGroupData({...groupData, contact_email: e.target.value})}
-                                className={createErrors.contact_email ? "border-red-500" : ""}
-                            />
-                            {createErrors.contact_email && (
-                                <p className="text-red-500 text-sm mt-1">{createErrors.contact_email}</p>)}
-                            <Input
-                                type="tel"
-                                placeholder="Teléfono de contacto del grupo empresa"
-                                value={groupData.contact_phone}
-                                onChange={(e) => setGroupData({...groupData, contact_phone: e.target.value})}
-                                className={createErrors.contact_phone ? "border-red-500" : ""}
-                            />
-                            {createErrors.contact_phone && (
-                                <p className="text-red-500 text-sm mt-1">{createErrors.contact_phone}</p>)}
-                            <ImageCropper onImageCropped={handleImageCropped}/>
-                            {createErrors.logo && (<p className="text-red-500 text-sm mt-1">{createErrors.logo}</p>)}
+                            <p className="text-sm text-gray-600 font-semibold mb-4">
+                                Antes de crear un grupo, asegúrate de que el nombre no esté registrado en
+                                Fundempresa.
+                            </p>
+                            <div>
+                                <Label htmlFor="short_name" className="text-gray-700 font-semibold">
+                                    Nombre corto del grupo empresa *
+                                </Label>
+                                <input
+                                    id="short_name"
+                                    name="short_name"
+                                    type="text"
+                                    placeholder="Ej: Red Fox S.R.L."
+                                    value={groupData.short_name}
+                                    onChange={handleInputChange}
+                                    className="w-full h-12 px-3 text-base border-2 border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white shadow-sm"
+                                    maxLength={20}
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {groupData.short_name.length}/20 caracteres (mínimo 2)
+                                </p>
+                                {createErrors.short_name && (
+                                    <p className="text-red-500 text-sm mt-1">{createErrors.short_name}</p>)}
+                            </div>
+                            <div>
+                                <Label htmlFor="long_name" className="text-gray-700 font-semibold">
+                                    Nombre largo del grupo empresa *
+                                </Label>
+                                <input
+                                    id="long_name"
+                                    name="long_name"
+                                    type="text"
+                                    placeholder="Ej: Red Fox Sociedad de Responsabilidad Limitada"
+                                    value={groupData.long_name}
+                                    onChange={handleInputChange}
+                                    className="w-full h-12 px-3 text-base border-2 border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white shadow-sm"
+                                    style={{
+                                        height: 'auto', minHeight: '48px', resize: 'none', overflow: 'hidden'
+                                    }}
+                                    onInput={(e) => {
+                                        e.target.style.height = 'auto';
+                                        e.target.style.height = e.target.scrollHeight + 'px';
+                                    }}
+                                    maxLength={60}
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {groupData.long_name.length}/60 caracteres (mínimo 3)
+                                </p>
+                                {createErrors.long_name && (
+                                    <p className="text-red-500 text-sm mt-1">{createErrors.long_name}</p>)}
+                            </div>
+                            <div>
+                                <Label htmlFor="contact_email" className="text-gray-700 font-semibold">
+                                    Email de contacto del grupo empresa *
+                                </Label>
+                                <input
+                                    id="contact_email"
+                                    name="contact_email"
+                                    type="email"
+                                    value={groupData.contact_email}
+                                    onChange={handleInputChange}
+                                    className="w-full h-12 px-3 text-base border-2 border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white shadow-sm"
+                                />
+                                {createErrors.contact_email && (
+                                    <p className="text-red-500 text-sm mt-1">{createErrors.contact_email}</p>)}
+                            </div>
+                            <div>
+                                <Label htmlFor="contact_phone" className="text-gray-700 font-semibold">
+                                    Teléfono de contacto del grupo empresa *
+                                </Label>
+                                <input
+                                    id="contact_phone"
+                                    name="contact_phone"
+                                    type="tel"
+                                    placeholder="Ej: 77777777 o 4444444"
+                                    value={groupData.contact_phone}
+                                    onChange={handleInputChange}
+                                    className="w-full h-12 px-3 text-base border-2 border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white shadow-sm"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    8 dígitos para celular (6 o 7) o 7 dígitos para teléfono fijo (4)
+                                </p>
+                                {createErrors.contact_phone && (
+                                    <p className="text-red-500 text-sm mt-1">{createErrors.contact_phone}</p>)}
+                            </div>
+                            <div>
+                                <Label className="text-gray-700 font-semibold">Logo del grupo empresa *</Label>
+                                <ImageCropper onImageCropped={handleImageCropped}/>
+                                {createErrors.logo && (
+                                    <p className="text-red-500 text-sm mt-1">{createErrors.logo}</p>)}
+                            </div>
                             {createErrors.general && (
                                 <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mt-4"
                                      role="alert">
@@ -313,7 +405,7 @@ export default function JoinCreateGroup({isInManagement, onGroupJoined, onGroupC
                                 </div>)}
                             <Button
                                 onClick={handleCreateGroup}
-                                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                                className="w-full bg-purple-600 hover:bg-purple-700 text-white focus:ring-purple-500 focus:border-purple-500"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (<>
