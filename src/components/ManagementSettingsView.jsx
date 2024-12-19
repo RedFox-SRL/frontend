@@ -244,7 +244,7 @@ export default function ManagementSettingsView({ management, isOpen, onClose, on
 
                                     <div>
                                         <label className="block font-semibold text-gray-700 mb-2">
-                                            Límite de miembros:
+                                            Límite por grupo:
                                             <div
                                                 className="relative inline-block"
                                                 onMouseEnter={() => setTooltipVisible({ ...tooltipVisible, limit: true })}

@@ -178,7 +178,7 @@ const CourseInfo = ({managementDetails}) => {
         value: (!managementDetails.project_delivery_date || formatDateOnly(managementDetails.project_delivery_date) === "No establecido") ? "No configurado" : formatDateOnly(managementDetails.project_delivery_date),
     }, {
         icon: Users,
-        title: "Max. integrantes",
+        title: "Límite por grupo",
         value: (managementDetails.group_limit >= 1 && managementDetails.group_limit <= 3) ? "No configurado" : managementDetails.group_limit,
     }, {
         icon: Clipboard, title: "Código de tu grupo", value: managementDetails.code, copyable: true,

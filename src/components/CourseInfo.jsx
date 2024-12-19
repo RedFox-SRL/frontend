@@ -33,7 +33,7 @@ export default function CourseInfo({managementDetails}) {
     }, {
         icon: CalendarDays, title: "Entrega Final", value: formatDateOnly(managementDetails.project_delivery_date),
     }, {
-        icon: Users, title: "Max. Integrantes", value: managementDetails.group_limit,
+        icon: Users, title: "Límite por grupo", value: managementDetails.group_limit,
     },], [managementDetails, formatDateWithTime, formatDateOnly]);
 
     return (<div className="bg-white shadow rounded-lg overflow-hidden">

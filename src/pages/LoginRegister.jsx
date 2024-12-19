@@ -225,7 +225,7 @@ const LoginRegister = () => {
                         <p className="text-sm text-purple-900 font-medium">
                             Usa tu correo institucional:
                             <br/>- Estudiantes: <span className="font-bold">codsis@est.umss.edu</span>
-                            <br/>- Docentes: <span className="font-bold">@fcyt.umss.edu.bo</span>
+                            <br/>- Docentes: <span className="font-bold">contacto@fcyt.umss.edu.bo</span>
                         </p>
                     </div>
                     <div className="space-y-4 sm:space-y-5 md:space-y-6">
